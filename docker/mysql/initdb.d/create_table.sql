@@ -1,7 +1,7 @@
 CREATE
-DATABASE IF NOT EXISTS fit_link DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;;
+    DATABASE IF NOT EXISTS fit_link DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;;
 ALTER
-DATABASE fit_link CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+    DATABASE fit_link CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 USE fit_link;
 
@@ -88,8 +88,7 @@ CREATE TABLE workout_schedule
     workout_schedule_id BIGINT NOT NULL AUTO_INCREMENT,
     member_id           BIGINT,
     day_of_week         ENUM ('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'),
-    start_time          DATETIME(6),
-    end_time            DATETIME(6),
+    preference_times    VARCHAR(255),
     created_at          DATETIME(6),
     updated_at          DATETIME(6),
     PRIMARY KEY (workout_schedule_id)
@@ -137,7 +136,7 @@ CREATE TABLE session
 -- 예약 정보 테이블
 CREATE TABLE reservation
 (
-    reservation_id   BIGINT NOT NULL AUTO_INCREMENT,
+    reservation_id   BIGINT      NOT NULL AUTO_INCREMENT,
     member_id        BIGINT,
     trainer_id       BIGINT,
     session_info_id  BIGINT,
