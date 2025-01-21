@@ -1,0 +1,61 @@
+# common profile
+
+spring:
+  application:
+    name: FitLink-BE
+  profiles:
+    default: local
+server:
+  port: 8080
+
+---
+# local profile
+
+spring:
+  profiles:
+    default: local
+  datasource:
+    hikari:
+      jdbc-url: jdbc:mysql://localhost:23306/fit_link?useUnicode=yes&characterEncoding=UTF-8&rewriteBatchedStatements=true
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: root
+      password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+        default_batch_fetch_size: 500
+
+---
+
+# dev profile
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    hikari:
+      jdbc-url: jdbc:mysql:dev:url.com
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: root
+      password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+        default_batch_fetch_size: 500
+logging:
+  level:
+    org:
+      web: debug
+      hibernate:
+        SQL: debug
