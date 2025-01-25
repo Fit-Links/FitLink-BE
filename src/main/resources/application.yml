@@ -5,6 +5,7 @@ spring:
     name: FitLink-BE
   profiles:
     default: local
+    include: secret
 server:
   port: 8080
 
@@ -14,12 +15,12 @@ server:
 spring:
   profiles:
     default: local
-  datasource:
-    hikari:
-      jdbc-url: jdbc:mysql://localhost:23306/fit_link?useUnicode=yes&characterEncoding=UTF-8&rewriteBatchedStatements=true
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      username: root
-      password: 1234
+#  datasource:
+#    hikari:
+#      jdbc-url: jdbc:mysql://localhost:23306/fit_link?useUnicode=yes&characterEncoding=UTF-8&rewriteBatchedStatements=true
+#      driver-class-name: com.mysql.cj.jdbc.Driver
+#      username: root
+#      password: 1234
   jpa:
     hibernate:
       ddl-auto: none

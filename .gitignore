@@ -38,3 +38,7 @@ out/
 
 ### docker ###
 docker/mysql/mysql-logs/slow.log
+
+
+### ymls ###
+application-secret.yml
