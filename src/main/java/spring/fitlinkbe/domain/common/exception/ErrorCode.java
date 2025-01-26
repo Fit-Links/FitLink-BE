@@ -13,11 +13,14 @@ public enum ErrorCode {
     // Member 관련 ErrorCode
 
     // Reservation 관련 ErrorCode
-    RESERVATION_IS_FAILED("예약에 실패하였습니다.");
+    RESERVATION_IS_FAILED("예약에 실패하였습니다."),
 
     // Session 관련 ErrorCode
 
     // Notification 관련 ErrorCode
+
+    // Auth 관련 ErrorCode
+    UNSUPPORTED_OAUTH_PROVIDER("지원하지 않는 OAuth 제공자입니다.");
 
     private final String msg;
 }

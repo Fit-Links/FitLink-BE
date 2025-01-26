@@ -6,5 +6,5 @@ import spring.fitlinkbe.infra.common.model.TokenEntity;
 import java.util.Optional;
 
 public interface TokenJpaRepository extends JpaRepository<TokenEntity, Long> {
-    Optional<TokenEntity> findByPersonalDetailId(Long personalDetailId);
+    Optional<TokenEntity> findByPersonalDetail_PersonalDetailId(Long personalDetailId);
 }

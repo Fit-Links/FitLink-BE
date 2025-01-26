@@ -20,7 +20,7 @@ public class TokenRepositoryImpl implements TokenRepository {
 
     @Override
     public Token saveOrUpdate(Token token) {
-        Optional<TokenEntity> tokenEntity = tokenJpaRepository.findByPersonalDetailId(token.getPersonalDetailId());
+        Optional<TokenEntity> tokenEntity = tokenJpaRepository.findByPersonalDetail_PersonalDetailId(token.getPersonalDetailId());
         Token result;
 
         if (tokenEntity.isPresent()) {

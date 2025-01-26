@@ -17,6 +17,7 @@ public class ApiControllerAdvice {
     @ExceptionHandler(CustomException.class)
     public ApiResultResponse<Object> handlerCustomException(CustomException e) {
         log.info("CustomException is occurred! {}", e.getMessage());
+        e.printStackTrace();
         return ApiResultResponse.of(HttpStatus.OK, false, e.getMessage(), null);
     }
 
@@ -24,6 +25,7 @@ public class ApiControllerAdvice {
     @ExceptionHandler(Exception.class)
     public ApiResultResponse<Object> handlerException(Exception e) {
         log.error("Exception is occurred! {}", e.getMessage());
+        e.printStackTrace();
         return ApiResultResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, false, null);
     }
 }
