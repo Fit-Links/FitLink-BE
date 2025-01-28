@@ -43,6 +43,9 @@ public class SecurityUser implements OAuth2User {
 
     @Override
     public String getName() {
-        return this.name;
+        if (name == null || name.isEmpty()) {
+            return "unknown";
+        }
+        return name;
     }
 }

@@ -21,12 +21,10 @@ public class GoogleProviderHandler implements Oauth2ProviderHandler {
     @Override
     public PersonalDetail handle(OAuth2UserRequest userRequest, OAuth2User user) {
         String sub = user.getAttribute("sub");
-        String name = user.getAttribute("name");
         String email = user.getAttribute("email");
 
 
         return PersonalDetail.builder()
-                .name(name)
                 .email(email)
                 .providerId(sub)
                 .oauthProvider(OauthProvider.GOOGLE)

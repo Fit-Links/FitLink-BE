@@ -14,27 +14,24 @@ import static spring.fitlinkbe.domain.common.model.PersonalDetail.OauthProvider;
 @Component
 @Transactional
 @RequiredArgsConstructor
-public class KakaoProviderHandler implements Oauth2ProviderHandler {
+public class NaverProviderHandler implements Oauth2ProviderHandler {
     @Override
     public boolean supports(OauthProvider provider) {
-        return provider == OauthProvider.KAKAO;
+        return provider == OauthProvider.NAVER;
     }
 
     @Override
     public PersonalDetail handle(OAuth2UserRequest userRequest, OAuth2User user) {
-        Map<String, String> properties = user.getAttribute("properties");
-        assert properties != null;
+        Map<String, String> response = user.getAttribute("response");
+        assert response != null;
 
-        Long id = user.getAttribute("id");
-        assert id != null;
-
-        // todo: email 받을 수 있도록 kakao 비즈앱 신청 후 추가 (FitLink 로고 필요)
-
+        String id = response.get("id");
+        String email = response.get("email");
 
         return PersonalDetail.builder()
-                .providerId(id.toString())
-                .email(null)
-                .oauthProvider(OauthProvider.KAKAO)
+                .providerId(id)
+                .email(email)
+                .oauthProvider(OauthProvider.NAVER)
                 .status(PersonalDetail.Status.REQUIRED_SMS)
                 .build();
     }
