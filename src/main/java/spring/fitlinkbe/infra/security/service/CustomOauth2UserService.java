@@ -29,7 +29,11 @@ public class CustomOauth2UserService implements OAuth2UserService<OAuth2UserRequ
         DefaultOAuth2UserService defaultOAuth2UserService = new DefaultOAuth2UserService();
         OAuth2User user = defaultOAuth2UserService.loadUser(userRequest);
 
-        return process(userRequest, user);
+        try {
+            return process(userRequest, user);
+        } catch (Exception e) {
+            throw new OAuth2AuthenticationException(e.getMessage());
+        }
     }
 
     private OAuth2User process(OAuth2UserRequest userRequest, OAuth2User user) {

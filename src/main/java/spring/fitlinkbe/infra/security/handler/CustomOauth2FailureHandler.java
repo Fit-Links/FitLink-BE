@@ -20,6 +20,6 @@ public class CustomOauth2FailureHandler implements AuthenticationFailureHandler 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException e) throws IOException, ServletException {
-        response.sendRedirect(applicationYmlRead.getFrontUrl() + "/error");
+        response.sendRedirect(applicationYmlRead.getFrontUrl() + "/auth-error");
     }
 }
