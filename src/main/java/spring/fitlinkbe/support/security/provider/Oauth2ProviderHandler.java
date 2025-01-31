@@ -1,4 +1,4 @@
-package spring.fitlinkbe.infra.security.provider;
+package spring.fitlinkbe.support.security.provider;
 
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;

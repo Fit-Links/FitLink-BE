@@ -1,4 +1,4 @@
-package spring.fitlinkbe.infra.security.service;
+package spring.fitlinkbe.support.security.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -13,8 +13,8 @@ import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.OauthProvider;
-import spring.fitlinkbe.infra.security.SecurityUser;
-import spring.fitlinkbe.infra.security.provider.Oauth2ProviderHandler;
+import spring.fitlinkbe.support.security.SecurityUser;
+import spring.fitlinkbe.support.security.provider.Oauth2ProviderHandler;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package spring.fitlinkbe.infra.common;
+package spring.fitlinkbe.infra.common.token;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import spring.fitlinkbe.infra.common.model.TokenEntity;

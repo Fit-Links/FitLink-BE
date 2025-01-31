@@ -1,4 +1,4 @@
-package spring.fitlinkbe.infra.security;
+package spring.fitlinkbe.support.security;
 
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;

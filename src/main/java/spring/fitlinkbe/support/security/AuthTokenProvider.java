@@ -1,4 +1,4 @@
-package spring.fitlinkbe.infra.security;
+package spring.fitlinkbe.support.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

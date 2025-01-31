@@ -1,4 +1,4 @@
-package spring.fitlinkbe.infra.security.provider;
+package spring.fitlinkbe.support.security.provider;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -14,24 +14,27 @@ import static spring.fitlinkbe.domain.common.model.PersonalDetail.OauthProvider;
 @Component
 @Transactional
 @RequiredArgsConstructor
-public class NaverProviderHandler implements Oauth2ProviderHandler {
+public class KakaoProviderHandler implements Oauth2ProviderHandler {
     @Override
     public boolean supports(OauthProvider provider) {
-        return provider == OauthProvider.NAVER;
+        return provider == OauthProvider.KAKAO;
     }
 
     @Override
     public PersonalDetail handle(OAuth2UserRequest userRequest, OAuth2User user) {
-        Map<String, String> response = user.getAttribute("response");
-        assert response != null;
+        Map<String, String> properties = user.getAttribute("properties");
+        assert properties != null;
 
-        String id = response.get("id");
-        String email = response.get("email");
+        Long id = user.getAttribute("id");
+        assert id != null;
+
+        // todo: email 받을 수 있도록 kakao 비즈앱 신청 후 추가 (FitLink 로고 필요)
+
 
         return PersonalDetail.builder()
-                .providerId(id)
-                .email(email)
-                .oauthProvider(OauthProvider.NAVER)
+                .providerId(id.toString())
+                .email(null)
+                .oauthProvider(OauthProvider.KAKAO)
                 .status(PersonalDetail.Status.REQUIRED_SMS)
                 .build();
     }

@@ -1,4 +1,4 @@
-package spring.fitlinkbe.infra.security.handler;
+package spring.fitlinkbe.support.security.handler;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,8 +12,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import spring.fitlinkbe.domain.common.TokenRepository;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.Status;
 import spring.fitlinkbe.domain.common.model.Token;
-import spring.fitlinkbe.infra.security.AuthTokenProvider;
-import spring.fitlinkbe.infra.security.SecurityUser;
+import spring.fitlinkbe.support.security.AuthTokenProvider;
+import spring.fitlinkbe.support.security.SecurityUser;
 import spring.fitlinkbe.support.config.ApplicationYmlRead;
 
 import java.io.IOException;

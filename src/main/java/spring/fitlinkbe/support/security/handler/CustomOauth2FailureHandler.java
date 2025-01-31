@@ -1,4 +1,4 @@
-package spring.fitlinkbe.infra.security.handler;
+package spring.fitlinkbe.support.security.handler;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

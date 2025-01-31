@@ -8,8 +8,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.stereotype.Component;
-import spring.fitlinkbe.infra.security.handler.CustomOauth2FailureHandler;
-import spring.fitlinkbe.infra.security.handler.CustomOauth2SuccessHandler;
+import spring.fitlinkbe.support.security.handler.CustomOauth2FailureHandler;
+import spring.fitlinkbe.support.security.handler.CustomOauth2SuccessHandler;
 
 @RequiredArgsConstructor
 @Component
