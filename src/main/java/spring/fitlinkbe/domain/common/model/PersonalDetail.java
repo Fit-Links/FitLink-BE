@@ -25,13 +25,23 @@ public class PersonalDetail {
 
     private String birthDate;
 
-    private String phoneNumber;
+    private PhoneNumber phoneNumber;
 
     private String email;
 
-    private OauthProvider oauth_provider;
+    private OauthProvider oauthProvider;
+
+    private String providerId;
 
     private Status status;
+
+
+    public String getPhoneNumber() {
+        if (phoneNumber == null) {
+            return null;
+        }
+        return phoneNumber.getPhoneNumber();
+    }
 
     public enum Gender {
         MALE, FEMALE
