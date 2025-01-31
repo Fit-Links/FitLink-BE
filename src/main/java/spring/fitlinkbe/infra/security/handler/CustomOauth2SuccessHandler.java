@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 import spring.fitlinkbe.domain.common.TokenRepository;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.Status;
@@ -19,6 +20,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Transactional
 public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final AuthTokenProvider authTokenProvider;

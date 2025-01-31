@@ -2,7 +2,6 @@ package spring.fitlinkbe.infra.common;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.TokenRepository;
 import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.infra.common.model.PersonalDetailEntity;
@@ -12,7 +11,6 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-@Transactional
 public class TokenRepositoryImpl implements TokenRepository {
 
     private final TokenJpaRepository tokenJpaRepository;

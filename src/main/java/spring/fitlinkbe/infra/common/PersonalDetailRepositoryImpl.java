@@ -2,7 +2,6 @@ package spring.fitlinkbe.infra.common;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.infra.common.model.PersonalDetailEntity;
@@ -10,7 +9,6 @@ import spring.fitlinkbe.infra.common.model.PersonalDetailEntity;
 import java.util.Optional;
 
 @Repository
-@Transactional
 @RequiredArgsConstructor
 public class PersonalDetailRepositoryImpl implements PersonalDetailRepository {
 
