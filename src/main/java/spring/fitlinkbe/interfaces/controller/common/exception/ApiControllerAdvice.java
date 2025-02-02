@@ -17,7 +17,7 @@ public class ApiControllerAdvice {
     @ExceptionHandler(CustomException.class)
     public ApiResultResponse<Object> handlerCustomException(CustomException e) {
         log.info("CustomException is occurred! {}", e.getMessage());
-        return ApiResultResponse.of(HttpStatus.OK, false, e.getMessage(), null);
+        return ApiResultResponse.of(HttpStatus.valueOf(e.getStatus()), false, e.getMessage(), null);
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

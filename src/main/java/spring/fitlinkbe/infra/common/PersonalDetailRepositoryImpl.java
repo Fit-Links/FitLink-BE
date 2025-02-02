@@ -3,6 +3,8 @@ package spring.fitlinkbe.infra.common;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.infra.common.model.PersonalDetailEntity;
 
@@ -25,5 +27,12 @@ public class PersonalDetailRepositoryImpl implements PersonalDetailRepository {
             PersonalDetailEntity entity = personalDetailJpaRepository.save(PersonalDetailEntity.from(personalDetail));
             return entity.toDomain();
         }
+    }
+
+    @Override
+    public PersonalDetail getById(Long personalDetailId) {
+        return personalDetailJpaRepository.findById(personalDetailId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PERSONAL_DETAIL_NOT_FOUND))
+                .toDomain();
     }
 }
