@@ -8,7 +8,6 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
-import spring.fitlinkbe.domain.common.annotation.Login;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
 import spring.fitlinkbe.support.security.SecurityUser;
 import spring.fitlinkbe.support.utils.HeaderUtils;

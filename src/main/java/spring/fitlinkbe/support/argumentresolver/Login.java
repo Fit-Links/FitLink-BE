@@ -1,4 +1,4 @@
-package spring.fitlinkbe.domain.common.annotation;
+package spring.fitlinkbe.support.argumentresolver;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,21 +1,19 @@
 package spring.fitlinkbe.domain.common.exception;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-@AllArgsConstructor
 @Getter
 public enum ErrorCode {
 
     // Trainer 관련 ErrorCode
-    TRAINER_IS_NOT_FOUND("트레이너 정보가 존재하지 않습니다."),
+    TRAINER_IS_NOT_FOUND("트레이너 정보가 존재하지 않습니다.", 404),
 
     // Member 관련 ErrorCode
 
     // Reservation 관련 ErrorCode
-    RESERVATION_IS_FAILED("예약에 실패하였습니다."),
+    RESERVATION_IS_FAILED("예약에 실패하였습니다.", 400),
 
     // Session 관련 ErrorCode
 
@@ -31,5 +29,5 @@ public enum ErrorCode {
     ;
 
     private final String msg;
-    private int status;
+    private final int status;
 }
