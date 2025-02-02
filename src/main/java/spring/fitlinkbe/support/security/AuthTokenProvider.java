@@ -1,6 +1,7 @@
 package spring.fitlinkbe.support.security;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -34,9 +35,8 @@ public class AuthTokenProvider {
     static final String CLAIM_KEY_STATUS = "status";
     static final String CLAIM_KEY_DETAIL_ID = "detailId";
 
-
     @PostConstruct
-    public void init() {
+    private void init() {
         key = Keys.hmacShaKeyFor(tokenSecret.getBytes());
         refreshKey = Keys.hmacShaKeyFor(refreshTokenSecret.getBytes());
     }
@@ -72,25 +72,28 @@ public class AuthTokenProvider {
                 .compact();
     }
 
-    private Claims getClaims(String token, Key key) {
-        try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-        } catch (SecurityException e) {
-            log.info("Invalid JWT signature.");
-        } catch (MalformedJwtException e) {
-            log.info("Invalid JWT token.");
-        } catch (ExpiredJwtException e) {
-            log.info("Expired JWT token.");
-        } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT token.");
-        } catch (IllegalArgumentException e) {
-            log.info("JWT token compact of handler are invalid.");
+    public Long getPersonalDetailIdFromAccessToken(String token) {
+        Claims claims = getClaims(token, key);
+        if (claims == null) {
+            return null;
         }
-        return null;
+        return claims.get(CLAIM_KEY_DETAIL_ID, Long.class);
+    }
+
+    public Status getStatusFromAccessToken(String token) {
+        Claims claims = getClaims(token, key);
+        if (claims == null) {
+            return null;
+        }
+        return Status.valueOf(claims.get(CLAIM_KEY_STATUS, String.class));
+    }
+
+    private Claims getClaims(String token, Key key) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
 }
