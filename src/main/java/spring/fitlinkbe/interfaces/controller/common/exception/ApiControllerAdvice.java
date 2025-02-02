@@ -23,7 +23,6 @@ public class ApiControllerAdvice {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public ApiResultResponse<Object> handlerException(Exception e) {
-        e.printStackTrace();
         log.error("Exception is occurred! {}", e.getMessage());
         return ApiResultResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, false, null);
     }
