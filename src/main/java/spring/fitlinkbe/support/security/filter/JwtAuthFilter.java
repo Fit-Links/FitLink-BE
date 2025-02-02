@@ -5,7 +5,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -16,6 +15,7 @@ import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.Status;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
 import spring.fitlinkbe.support.security.SecurityUser;
+import spring.fitlinkbe.support.utils.HeaderUtils;
 
 import java.io.IOException;
 
@@ -27,19 +27,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String tokenHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String accessToken = HeaderUtils.getAccessToken(request);
 
-        if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
+        if (accessToken == null) {
             filterChain.doFilter(request, response);
             return;
         }
-        OAuth2AuthenticationToken authentication = validate(tokenHeader);
+        OAuth2AuthenticationToken authentication = validate(accessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         filterChain.doFilter(request, response);
     }
 
-    private OAuth2AuthenticationToken validate(String tokenHeader) {
-        String accessToken = tokenHeader.substring(7);
+    private OAuth2AuthenticationToken validate(String accessToken) {
         Status status = tokenProvider.getStatusFromAccessToken(accessToken);
 
         if (!status.equals(Status.NORMAL)) {
