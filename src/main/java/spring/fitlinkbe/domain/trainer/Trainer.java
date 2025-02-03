@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.SessionInfo;
 
 import java.time.LocalDateTime;
 
@@ -18,7 +18,9 @@ public class Trainer {
 
     private Long trainerId;
 
-    private PersonalDetail personalDetail;
+    private Long sessionInfoId;
+
+    private SessionInfo sessionInfo;
 
     private String trainerCode;
 
