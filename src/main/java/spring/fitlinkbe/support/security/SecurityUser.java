@@ -20,8 +20,8 @@ public class SecurityUser implements OAuth2User {
 
     public SecurityUser(PersonalDetail personalDetail) {
         this.name = personalDetail.getName();
-        this.trainerId = personalDetail.getTrainerId();
-        this.memberId = personalDetail.getMemberId();
+        this.trainerId = personalDetail.getTrainer() != null ? personalDetail.getTrainer().getTrainerId() : null;
+        this.memberId = personalDetail.getMember() != null ? personalDetail.getMember().getMemberId() : null;
         this.personalDetailId = personalDetail.getPersonalDetailId();
         this.status = personalDetail.getStatus();
     }
