@@ -60,10 +60,10 @@ spring:
 
   datasource:
     hikari:
-      jdbc-url:
-      driver-class-name:
-      username:
-      password:
+      jdbc-url: jdbc:mysql://localhost:3306/fit_link?useUnicode=yes&characterEncoding=UTF-8&rewriteBatchedStatements=true
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: root
+      password: 1234
 
   jpa:
     hibernate:
