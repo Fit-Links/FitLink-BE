@@ -45,6 +45,11 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    /* oauth test */
+    testImplementation("org.springframework.security:spring-security-test")
+    /* integration test */
+    testImplementation 'io.rest-assured:rest-assured:5.1.1'
+
 }
 
 tasks.named('test') {
