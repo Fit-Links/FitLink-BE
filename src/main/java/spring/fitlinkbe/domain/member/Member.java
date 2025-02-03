@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import spring.fitlinkbe.domain.common.model.PhoneNumber;
+import spring.fitlinkbe.domain.common.model.SessionInfo;
+import spring.fitlinkbe.domain.trainer.Trainer;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,9 +16,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Member {
-    private Long id;
+
+    private Long memberId;
 
     private Long trainerId;
+
+    private Trainer trainer;
+
+    private Long sessionInfoId;
+
+    private SessionInfo sessionInfo;
 
     private String name;
 
