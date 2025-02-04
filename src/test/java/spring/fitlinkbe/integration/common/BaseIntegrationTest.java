@@ -20,9 +20,6 @@ public class BaseIntegrationTest {
     @Autowired
     private DbCleaUp dbCleaUp;
 
-    @Autowired
-    private TestDataHandler testDataHandler;
-
     @LocalServerPort
     protected int port;
 
@@ -31,8 +28,6 @@ public class BaseIntegrationTest {
     @BeforeEach
     void setUp() {
         RestAssured.port = port;
-        // 초기 예약 정보 세팅
-        testDataHandler.settingReservationInfo();
     }
 
     @AfterEach

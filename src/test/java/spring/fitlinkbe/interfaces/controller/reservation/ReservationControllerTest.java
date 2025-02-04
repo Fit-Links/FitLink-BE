@@ -210,6 +210,50 @@ class ReservationControllerTest {
     }
 
     @Test
+    @DisplayName("정확한 날짜 형식을 넣지 않으면, success를 false를 반환한다")
+    void getReservationsWithStrangeDate() throws Exception {
+
+        //given
+        Reservation reservation = Reservation.builder()
+                .reservationId(1L)
+                .memberId(1L)
+                .sessionInfoId(1L)
+                .reservationDate(LocalDateTime.now())
+                .priority(1)
+                .dayOfWeek(LocalDateTime.now().getDayOfWeek())
+                .name("홍길동")
+                .build();
+
+        List<Reservation> response = List.of(reservation);
+
+        String requestDate = "2024년4월20일";
+
+        PersonalDetail personalDetail = PersonalDetail.builder()
+                .personalDetailId(1L)
+                .name("강산")
+                .memberId(null)
+                .trainerId(1L)
+                .build();
+
+        SecurityUser user = new SecurityUser(personalDetail);
+
+        String accessToken = getAccessToken(personalDetail);
+
+        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
+
+        //when & then
+        mockMvc.perform(get("/v1/reservations")
+                        .queryParam("date", requestDate.toString())
+                        .header("Authorization", "Bearer " + accessToken)
+                        .with(oauth2Login().oauth2User(user)))  // OAuth2 인증
+                .andDo(print())
+                .andExpect(status().is5xxServerError())
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
     @DisplayName("인증을 거치지 않은 유저가 예약 목록을 조회하면 success를 false를 반환한다")
     void getReservationsWithNoAuthUser() throws Exception {
 
