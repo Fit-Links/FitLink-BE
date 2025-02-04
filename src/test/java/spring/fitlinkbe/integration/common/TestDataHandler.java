@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.SessionInfoRepository;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.reservation.ReservationRepository;
@@ -64,5 +65,17 @@ public class TestDataHandler {
                 .oauthProvider(PersonalDetail.OauthProvider.GOOGLE)
                 .build());
 
+    }
+
+    public void settingSessionInfo() {
+
+        Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+        Member member = memberRepository.getMember(1L).orElseThrow();
+        SessionInfo sessionInfo = SessionInfo.builder()
+                .trainer(trainer)
+                .member(member)
+                .build();
+
+        sessionInfoRepository.saveSessionInfo(sessionInfo);
     }
 }

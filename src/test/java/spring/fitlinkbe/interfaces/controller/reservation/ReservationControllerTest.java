@@ -9,7 +9,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import spring.fitlinkbe.application.reservation.ReservationFacade;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.SessionInfo;
+import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.reservation.Reservation;
+import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.support.argumentresolver.LoginMemberArgumentResolver;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
 import spring.fitlinkbe.support.security.SecurityUser;
@@ -51,8 +54,9 @@ class ReservationControllerTest {
         //given
         Reservation reservation = Reservation.builder()
                 .reservationId(1L)
-                .memberId(1L)
-                .sessionInfoId(1L)
+                .member(Member.builder().memberId(1L).build())
+                .trainer(Trainer.builder().trainerId(1L).build())
+                .sessionInfo(SessionInfo.builder().SessionInfoId(1L).build())
                 .reservationDate(LocalDateTime.now())
                 .priority(1)
                 .dayOfWeek(LocalDateTime.now().getDayOfWeek())
@@ -96,8 +100,8 @@ class ReservationControllerTest {
         //given
         Reservation reservation = Reservation.builder()
                 .reservationId(1L)
-                .memberId(1L)
-                .sessionInfoId(1L)
+                .member(Member.builder().memberId(1L).build())
+                .sessionInfo(SessionInfo.builder().SessionInfoId(1L).build())
                 .reservationDate(LocalDateTime.now())
                 .priority(1)
                 .dayOfWeek(LocalDateTime.now().getDayOfWeek())
@@ -175,8 +179,8 @@ class ReservationControllerTest {
         //given
         Reservation reservation = Reservation.builder()
                 .reservationId(1L)
-                .memberId(1L)
-                .sessionInfoId(1L)
+                .member(Member.builder().memberId(1L).build())
+                .sessionInfo(SessionInfo.builder().SessionInfoId(1L).build())
                 .reservationDate(LocalDateTime.now())
                 .priority(1)
                 .dayOfWeek(LocalDateTime.now().getDayOfWeek())
@@ -216,8 +220,8 @@ class ReservationControllerTest {
         //given
         Reservation reservation = Reservation.builder()
                 .reservationId(1L)
-                .memberId(1L)
-                .sessionInfoId(1L)
+                .member(Member.builder().memberId(1L).build())
+                .sessionInfo(SessionInfo.builder().SessionInfoId(1L).build())
                 .reservationDate(LocalDateTime.now())
                 .priority(1)
                 .dayOfWeek(LocalDateTime.now().getDayOfWeek())
@@ -243,7 +247,7 @@ class ReservationControllerTest {
 
         //when & then
         mockMvc.perform(get("/v1/reservations")
-                        .queryParam("date", requestDate.toString())
+                        .queryParam("date", requestDate)
                         .header("Authorization", "Bearer " + accessToken)
                         .with(oauth2Login().oauth2User(user)))  // OAuth2 인증
                 .andDo(print())
@@ -260,8 +264,8 @@ class ReservationControllerTest {
         //given
         Reservation reservation = Reservation.builder()
                 .reservationId(1L)
-                .memberId(1L)
-                .sessionInfoId(1L)
+                .member(Member.builder().memberId(1L).build())
+                .sessionInfo(SessionInfo.builder().SessionInfoId(1L).build())
                 .reservationDate(LocalDateTime.now())
                 .priority(1)
                 .dayOfWeek(LocalDateTime.now().getDayOfWeek())

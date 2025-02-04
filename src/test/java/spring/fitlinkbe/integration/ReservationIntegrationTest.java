@@ -7,7 +7,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
+import spring.fitlinkbe.domain.common.SessionInfoRepository;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.reservation.Reservation;
@@ -45,6 +47,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
     ReservationRepository reservationRepository;
 
     @Autowired
+    SessionInfoRepository sessionInfoRepository;
+
+    @Autowired
     MemberRepository memberRepository;
 
     @Autowired
@@ -54,6 +59,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
     @BeforeEach
     void setUp() {
         testDataHandler.settingUserInfo();
+        testDataHandler.settingSessionInfo();
     }
 
     @Test
@@ -69,14 +75,19 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                 personalDetails.getPersonalDetailId());
 
+        Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
         Member member = memberRepository.getMember(1L).orElseThrow();
 
         LocalDateTime reqeustDate = LocalDateTime.now().plusWeeks(2).minusDays(1).minusSeconds(1);
 
+        SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+
         Reservation reservation = Reservation.builder()
                 .reservationDate(reqeustDate)
-                .trainerId(1L)
-                .memberId(1L)
+                .trainer(trainer)
+                .member(member)
+                .sessionInfo(sessionInfo)
                 .name(member.getName())
                 .dayOfWeek(reqeustDate.getDayOfWeek())
                 .priority(0)
@@ -103,12 +114,12 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         Map<String, String> params = new HashMap<>();
         params.put("date", LocalDate.now().toString());
 
-        List<Trainer> trainers = trainerRepository.getTrainers();
+        Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
         LocalDate dayOffDate = LocalDate.now().plusDays(1);
 
         DayOff dayOff = DayOff.builder()
-                .trainer(trainers.get(0))
+                .trainer(trainer)
                 .dayOffDate(LocalDate.now().plusDays(1))
                 .build();
 
@@ -116,7 +127,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         Reservation reservation = Reservation.builder()
                 .reservationDate(dayOffDate.atStartOfDay())
-                .trainerId(dayOff.getTrainer().getTrainerId())
+                .trainer(trainer)
                 .isDayOff(true)
                 .build();
 
@@ -155,14 +166,19 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                 personalDetails.getPersonalDetailId());
 
+        Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
         Member member = memberRepository.getMember(1L).orElseThrow();
+
+        SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
 
         LocalDateTime reqeustDate = LocalDateTime.now().plusWeeks(2);
 
         Reservation reservation = Reservation.builder()
                 .reservationDate(reqeustDate)
-                .trainerId(1L)
-                .memberId(1L)
+                .trainer(trainer)
+                .member(member)
+                .sessionInfo(sessionInfo)
                 .name(member.getName())
                 .dayOfWeek(reqeustDate.getDayOfWeek())
                 .priority(0)
@@ -195,14 +211,19 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                 personalDetails.getPersonalDetailId());
 
+        Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
         Member member = memberRepository.getMember(1L).orElseThrow();
+
+        SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
 
         LocalDateTime reqeustDate = LocalDateTime.now().plusMonths(1).minusDays(1).minusSeconds(1);
 
         Reservation reservation = Reservation.builder()
                 .reservationDate(reqeustDate)
-                .trainerId(1L)
-                .memberId(1L)
+                .trainer(trainer)
+                .member(member)
+                .sessionInfo(sessionInfo)
                 .name(member.getName())
                 .dayOfWeek(reqeustDate.getDayOfWeek())
                 .priority(0)
@@ -235,14 +256,19 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                 personalDetails.getPersonalDetailId());
 
+        Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
         Member member = memberRepository.getMember(1L).orElseThrow();
+
+        SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
 
         LocalDateTime reqeustDate = LocalDateTime.now().plusMonths(1).minusSeconds(1);
 
         Reservation reservation = Reservation.builder()
                 .reservationDate(reqeustDate)
-                .trainerId(1L)
-                .memberId(1L)
+                .trainer(trainer)
+                .member(member)
+                .sessionInfo(sessionInfo)
                 .name(member.getName())
                 .dayOfWeek(reqeustDate.getDayOfWeek())
                 .priority(0)
