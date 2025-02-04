@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 
+import java.net.BindException;
+
 
 @RestControllerAdvice
 @Slf4j(topic = "ExceptionLogger")
@@ -16,7 +18,14 @@ public class ApiControllerAdvice {
     @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler(CustomException.class)
     public ApiResultResponse<Object> handlerCustomException(CustomException e) {
-        log.info("CustomException is occurred! {}", e.getMessage());
+        log.error("CustomException is occurred! {}", e.getMessage());
+        return ApiResultResponse.of(HttpStatus.valueOf(e.getStatus()), false, e.getMessage(), null);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler(BindException.class)
+    public ApiResultResponse<Object> handlerBindingException(CustomException e) {
+        log.error("BindException is occurred! {}", e.getMessage());
         return ApiResultResponse.of(HttpStatus.valueOf(e.getStatus()), false, e.getMessage(), null);
     }
 
