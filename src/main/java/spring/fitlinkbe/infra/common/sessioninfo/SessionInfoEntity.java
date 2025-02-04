@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
+import spring.fitlinkbe.infra.member.MemberEntity;
+import spring.fitlinkbe.infra.trainer.TrainerEntity;
 
 @Entity
 @Getter
@@ -17,9 +19,13 @@ public class SessionInfoEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long sessionInfoId;
 
-    private Long trainerId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trainer_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private TrainerEntity trainer;
 
-    private Long memberId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private MemberEntity member;
 
     private int totalCount;
 
@@ -29,8 +35,8 @@ public class SessionInfoEntity extends BaseTimeEntity {
 
         return SessionInfoEntity.builder()
                 .sessionInfoId(sessionInfo.getSessionInfoId() != null ? sessionInfo.getSessionInfoId() : null)
-                .trainerId(sessionInfo.getTrainerId())
-                .memberId(sessionInfo.getMemberId())
+                .trainer(TrainerEntity.from(sessionInfo.getTrainer()))
+                .member(MemberEntity.from(sessionInfo.getMember()))
                 .totalCount(sessionInfo.getTotalCount())
                 .remainCount(sessionInfo.getRemainCount())
                 .build();
@@ -39,8 +45,8 @@ public class SessionInfoEntity extends BaseTimeEntity {
     public SessionInfo toDomain() {
         return SessionInfo.builder()
                 .SessionInfoId(sessionInfoId)
-                .trainerId(trainerId)
-                .memberId(memberId)
+                .trainer(trainer.toDomain())
+                .member(member.toDomain())
                 .totalCount(totalCount)
                 .remainCount(remainCount)
                 .build();

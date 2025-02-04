@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
+import spring.fitlinkbe.infra.common.sessioninfo.SessionInfoEntity;
+import spring.fitlinkbe.infra.member.MemberEntity;
+import spring.fitlinkbe.infra.trainer.TrainerEntity;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -20,11 +23,17 @@ public class ReservationEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reservationId;
 
-    private Long memberId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private MemberEntity member;
 
-    private Long trainerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trainer_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private TrainerEntity trainer;
 
-    private Long sessionInfoId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_info_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private SessionInfoEntity sessionInfo;
 
     private String name;
 
@@ -53,10 +62,13 @@ public class ReservationEntity extends BaseTimeEntity {
     public static ReservationEntity from(Reservation reservation) {
 
         return ReservationEntity.builder()
-                .reservationId(reservation.getReservationId() != null ? reservation.getReservationId() : null)
-                .trainerId(reservation.getTrainerId())
-                .memberId(reservation.getMemberId())
-                .sessionInfoId(reservation.getSessionInfoId())
+                .reservationId(reservation.getReservationId() != null
+                        ? reservation.getReservationId() : null)
+                .trainer(TrainerEntity.from(reservation.getTrainer()))
+                .member(reservation.isReservationNotAllowed() ? null
+                        : MemberEntity.from(reservation.getMember()))
+                .sessionInfo(reservation.isReservationNotAllowed() ? null
+                        : SessionInfoEntity.from(reservation.getSessionInfo()))
                 .name(reservation.getName())
                 .reservationDate(reservation.getReservationDate())
                 .changeDate(reservation.getChangeDate())
@@ -74,9 +86,9 @@ public class ReservationEntity extends BaseTimeEntity {
     public Reservation toDomain() {
         return Reservation.builder()
                 .reservationId(reservationId)
-                .memberId(memberId)
+                .member((isDayOff || isDisabled) ? null : member.toDomain())
+                .sessionInfo((isDayOff || isDisabled) ? null : sessionInfo.toDomain())
                 .name(name)
-                .sessionInfoId(sessionInfoId)
                 .reservationDate(reservationDate)
                 .changeDate(changeDate)
                 .dayOfWeek(dayOfWeek)
