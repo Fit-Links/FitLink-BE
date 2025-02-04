@@ -5,12 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.trainer.Trainer;
+import spring.fitlinkbe.support.utils.DateUtils;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+
+import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 
 @Builder(toBuilder = true)
 @Getter
@@ -18,9 +22,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Reservation {
     private Long reservationId;
-    private Long memberId;
-    private Long trainerId;
-    private Long sessionInfoId;
     private Member member;
     private Trainer trainer;
     private SessionInfo sessionInfo;
@@ -44,6 +45,16 @@ public class Reservation {
         RESERVATION_CANCELLED, // 예약 취소
         RESERVATION_REJECTED,  // 예약 거부
         RESERVATION_CHANGE_REQUEST //예약 변경 요청
+    }
+
+    public static LocalDateTime getEndDate(LocalDateTime startDate, UserRole userRole) {
+        return (userRole == MEMBER) ? DateUtils.getOneMonthAfterDate(startDate)
+                : DateUtils.getTwoWeekAfterDate(startDate);
+    }
+
+    public boolean isReservationNotAllowed() {
+
+        return (isDayOff || isDisabled);
     }
 
 }

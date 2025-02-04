@@ -15,8 +15,6 @@ import spring.fitlinkbe.domain.trainer.Trainer;
 public class SessionInfo {
 
     private Long SessionInfoId;
-    private Long memberId;
-    private Long trainerId;
     private Member member;
     private Trainer trainer;
     private int totalCount;

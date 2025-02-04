@@ -19,11 +19,7 @@ public class Member {
 
     private Long memberId;
 
-    private Long trainerId;
-
     private Trainer trainer;
-
-    private Long sessionInfoId;
 
     private SessionInfo sessionInfo;
 
