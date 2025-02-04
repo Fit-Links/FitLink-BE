@@ -3,12 +3,16 @@ package spring.fitlinkbe.support.security;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.Status;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
+import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
 
 @Getter
 public class SecurityUser implements OAuth2User {
@@ -47,5 +51,13 @@ public class SecurityUser implements OAuth2User {
             return "unknown";
         }
         return name;
+    }
+
+    public UserRole getUserRole() {
+        return trainerId == null ? MEMBER : TRAINER;
+    }
+
+    public Long getUserId() {
+        return trainerId == null ? memberId : trainerId;
     }
 }
