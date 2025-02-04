@@ -53,5 +53,14 @@ public class PersonalDetailRepositoryImpl implements PersonalDetailRepository {
         return Optional.empty();
     }
 
+    @Override
+    public Optional<PersonalDetail> getMemberDetail(Long memberId) {
+        Optional<PersonalDetailEntity> findEntity = personalDetailJpaRepository.findByMemberId(memberId);
+        if (findEntity.isPresent()) {
+            return findEntity.map(PersonalDetailEntity::toDomain);
+        }
+
+        return Optional.empty();
+    }
 
 }

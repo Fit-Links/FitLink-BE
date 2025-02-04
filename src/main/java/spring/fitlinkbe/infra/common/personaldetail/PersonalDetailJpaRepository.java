@@ -19,4 +19,7 @@ public interface PersonalDetailJpaRepository extends JpaRepository<PersonalDetai
 
     @Query("SELECT pd FROM PersonalDetailEntity pd JOIN FETCH pd.trainer t WHERE t.trainerId = :trainerId")
     Optional<PersonalDetailEntity> findByTrainerId(Long trainerId);
+
+    @Query("SELECT pd FROM PersonalDetailEntity pd JOIN FETCH pd.member t WHERE t.memberId = :memberId")
+    Optional<PersonalDetailEntity> findByMemberId(Long memberId);
 }

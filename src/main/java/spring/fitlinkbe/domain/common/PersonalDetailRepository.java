@@ -13,4 +13,6 @@ public interface PersonalDetailRepository {
     PersonalDetail getById(Long personalDetailId);
 
     Optional<PersonalDetail> getTrainerDetail(Long trainerId);
+
+    Optional<PersonalDetail> getMemberDetail(Long memberId);
 }
