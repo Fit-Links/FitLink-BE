@@ -23,7 +23,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public Optional<Member> getMember(Long memberId) {
-        Optional<MemberEntity> findEntity = memberJpaRepository.findById(memberId);
+        Optional<MemberEntity> findEntity = memberJpaRepository.findByIdJoinFetch(memberId);
 
         if (findEntity.isPresent()) {
             return findEntity.map(MemberEntity::toDomain);
