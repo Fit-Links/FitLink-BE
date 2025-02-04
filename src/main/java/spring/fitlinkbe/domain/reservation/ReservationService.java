@@ -6,13 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.enums.UserRole;
-import spring.fitlinkbe.support.utils.DateUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +22,8 @@ public class ReservationService {
     public List<Reservation> getReservations(LocalDate date, UserRole role, Long userId) {
 
         LocalDateTime startDate = date.atStartOfDay();
-        LocalDateTime endDate = (role == MEMBER) ? DateUtils.getOneMonthAfterDate(startDate)
-                : DateUtils.getTwoWeekAfterDate(startDate);
+        LocalDateTime endDate = Reservation.getEndDate(startDate, role);
 
         return reservationRepository.getReservations(startDate, endDate, role, userId);
     }
-
 }

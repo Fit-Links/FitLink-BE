@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 
 public class ReservationDto {
 
-
     @Builder(toBuilder = true)
     public record Response(Long reservationId, Long sessionInfoId,
                            boolean isDayOff, DayOfWeek dayOfWeek, LocalDateTime reservationDate,
@@ -18,13 +17,15 @@ public class ReservationDto {
 
             return Response.builder()
                     .reservationId(reservation.getReservationId())
-                    .sessionInfoId(reservation.getSessionInfoId())
+                    .sessionInfoId(reservation.isReservationNotAllowed() ? null :
+                            reservation.getSessionInfo().getSessionInfoId())
                     .isDayOff(reservation.isDayOff())
                     .dayOfWeek(reservation.getDayOfWeek())
                     .reservationDate(reservation.getReservationDate())
                     .priority(reservation.getPriority())
                     .status(reservation.getStatus())
-                    .memberInfo(new MemberInfo(reservation.getMemberId(), reservation.getName()))
+                    .memberInfo(reservation.isReservationNotAllowed() ? null :
+                            new MemberInfo(reservation.getMember().getMemberId(), reservation.getName()))
                     .build();
         }
     }
