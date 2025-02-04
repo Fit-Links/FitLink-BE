@@ -20,4 +20,16 @@ public class SessionInfoRepositoryImpl implements SessionInfoRepository {
 
         return Optional.of(savedEntity.toDomain());
     }
+
+    @Override
+    public Optional<SessionInfo> getSessionInfo(long sessionInfoId) {
+
+        Optional<SessionInfoEntity> findEntity = sessionInfoJpaRepository.findByIdJoinFetch(sessionInfoId);
+
+        if (findEntity.isPresent()) {
+            return findEntity.map(SessionInfoEntity::toDomain);
+        }
+
+        return Optional.empty();
+    }
 }

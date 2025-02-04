@@ -7,4 +7,6 @@ import java.util.Optional;
 public interface SessionInfoRepository {
 
     Optional<SessionInfo> saveSessionInfo(SessionInfo sessionInfo);
+
+    Optional<SessionInfo> getSessionInfo(long sessionInfoId);
 }
