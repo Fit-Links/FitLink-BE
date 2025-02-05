@@ -13,7 +13,6 @@ public class TrainerDto {
 
             return Response.builder()
                     .trainerId(trainer.getTrainerId())
-                    .personalDetail(trainer.getPersonalDetail())
                     .trainerCode(trainer.getTrainerCode())
                     .build();
         }

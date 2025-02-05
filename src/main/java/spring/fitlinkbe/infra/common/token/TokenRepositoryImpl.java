@@ -4,9 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import spring.fitlinkbe.domain.common.TokenRepository;
 import spring.fitlinkbe.domain.common.model.Token;
-import spring.fitlinkbe.infra.common.PersonalDetailJpaRepository;
-import spring.fitlinkbe.infra.common.model.PersonalDetailEntity;
-import spring.fitlinkbe.infra.common.model.TokenEntity;
+import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailEntity;
+import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailJpaRepository;
 
 import java.util.Optional;
 

@@ -1,9 +1,11 @@
-package spring.fitlinkbe.infra.common.model;
+package spring.fitlinkbe.infra.common.personaldetail;
 
 import jakarta.persistence.*;
 import lombok.*;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.PhoneNumber;
+import spring.fitlinkbe.infra.member.MemberEntity;
+import spring.fitlinkbe.infra.trainer.TrainerEntity;
 
 import static spring.fitlinkbe.domain.common.model.PersonalDetail.*;
 
@@ -21,9 +23,13 @@ public class PersonalDetailEntity {
 
     private String name;
 
-    private Long trainerId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trainer_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private TrainerEntity trainer;
 
-    private Long memberId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private MemberEntity member;
 
     private String profilePictureUrl;
 
@@ -48,7 +54,8 @@ public class PersonalDetailEntity {
         return PersonalDetail.builder()
                 .personalDetailId(personalDetailId)
                 .name(name)
-                .trainerId(trainerId)
+                .trainerId(trainer != null ? trainer.getTrainerId() : null)
+                .memberId(member != null ? member.getMemberId() : null)
                 .profilePictureUrl(profilePictureUrl)
                 .gender(gender)
                 .birthDate(birthDate)
@@ -62,10 +69,11 @@ public class PersonalDetailEntity {
 
     public static PersonalDetailEntity from(PersonalDetail personalDetail) {
         return PersonalDetailEntity.builder()
-                .personalDetailId(personalDetail.getPersonalDetailId())
+                .personalDetailId(personalDetail.getPersonalDetailId() != null ? personalDetail.getPersonalDetailId() : null)
                 .name(personalDetail.getName())
-                .trainerId(personalDetail.getTrainerId())
-                .memberId(personalDetail.getMemberId())
+                .trainer(personalDetail.getTrainer() != null ? TrainerEntity.from(personalDetail.getTrainer()) : null)
+                .member(personalDetail.getMember() != null ? MemberEntity.from(personalDetail.getMember())
+                        : null)
                 .profilePictureUrl(personalDetail.getProfilePictureUrl())
                 .gender(personalDetail.getGender())
                 .birthDate(personalDetail.getBirthDate())

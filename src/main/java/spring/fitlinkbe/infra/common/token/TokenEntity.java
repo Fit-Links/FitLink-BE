@@ -1,8 +1,10 @@
-package spring.fitlinkbe.infra.common.model;
+package spring.fitlinkbe.infra.common.token;
 
 import jakarta.persistence.*;
 import lombok.*;
 import spring.fitlinkbe.domain.common.model.Token;
+import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
+import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailEntity;
 
 @Entity
 @Getter
@@ -16,6 +18,7 @@ public class TokenEntity extends BaseTimeEntity {
     private Long tokenId;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "personal_detail_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private PersonalDetailEntity personalDetail;
 
     private String refreshToken;

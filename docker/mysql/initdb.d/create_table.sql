@@ -35,8 +35,6 @@ CREATE TABLE day_off
 (
     day_off_id   BIGINT NOT NULL AUTO_INCREMENT,
     trainer_id   BIGINT,
-    weekend      INT,
-    day_of_week  ENUM ('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'),
     day_off_date DATETIME(6),
     PRIMARY KEY (day_off_id)
 );
@@ -60,6 +58,7 @@ CREATE TABLE personal_detail
     name                VARCHAR(255),
     trainer_id          BIGINT,
     member_id           BIGINT,
+    provider_id         VARCHAR(255),
     profile_picture_url VARCHAR(255),
     gender              ENUM ('MAN', 'WOMAN'),
     birth_date          VARCHAR(10),
@@ -73,12 +72,11 @@ CREATE TABLE personal_detail
 -- 토큰 정보 테이블
 CREATE TABLE token
 (
-    token_id      BIGINT NOT NULL AUTO_INCREMENT,
-    user_id       BIGINT,
-    user_role     ENUM ('TRAINER', 'MEMBER'),
-    refresh_token VARCHAR(255),
-    created_at    DATETIME(6),
-    updated_at    DATETIME(6),
+    token_id           BIGINT NOT NULL AUTO_INCREMENT,
+    personal_detail_id BIGINT,
+    refresh_token      VARCHAR(255),
+    created_at         DATETIME(6),
+    updated_at         DATETIME(6),
     PRIMARY KEY (token_id)
 );
 
@@ -87,7 +85,6 @@ CREATE TABLE workout_schedule
 (
     workout_schedule_id BIGINT NOT NULL AUTO_INCREMENT,
     member_id           BIGINT,
-    day_of_week         ENUM ('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'),
     preference_times    VARCHAR(255),
     created_at          DATETIME(6),
     updated_at          DATETIME(6),
@@ -99,11 +96,10 @@ CREATE TABLE available_time
 (
     available_time_id BIGINT NOT NULL AUTO_INCREMENT,
     trainer_id        BIGINT,
-    day_of_week       ENUM ('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'),
     is_holiday        BOOLEAN,
     unavailable       BOOLEAN,
-    start_time        DATETIME(6),
-    end_time          DATETIME(6),
+    start_time        DATETIME(12),
+    end_time          DATETIME(12),
     created_at        DATETIME(6),
     updated_at        DATETIME(6),
     PRIMARY KEY (available_time_id)
@@ -136,19 +132,20 @@ CREATE TABLE session
 -- 예약 정보 테이블
 CREATE TABLE reservation
 (
-    reservation_id   BIGINT      NOT NULL AUTO_INCREMENT,
+    reservation_id   BIGINT       NOT NULL AUTO_INCREMENT,
     member_id        BIGINT,
     trainer_id       BIGINT,
     session_info_id  BIGINT,
     name             VARCHAR(255),
-    weekend          INT,
-    reservation_date DATETIME(6) NOT NULL,
-    change_date      DATETIME(6),
+    reservation_date DATETIME(12) NOT NULL,
+    change_date      DATETIME(12),
     status           ENUM ('CANCEL', 'RESERVATION_REQUEST', 'CHANGE_REQUEST', 'CANCEL_REQUEST', 'COMPLETED'),
     cancel_reason    VARCHAR(255),
     approved_cancel  BOOLEAN,
     priority         INT,
     is_fixed         BOOLEAN,
+    is_disabled      BOOLEAN,
+    is_day_off       BOOLEAN,
     created_at       DATETIME(6),
     updated_at       DATETIME(6),
     PRIMARY KEY (reservation_id)
@@ -158,8 +155,6 @@ CREATE TABLE reservation
 CREATE TABLE calendar
 (
     calendar_date DATETIME(6) NOT NULL,
-    day_of_week   ENUM ('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'),
-    weekend       INT,
     is_weekend    BOOLEAN,
     is_holiday    BOOLEAN,
     PRIMARY KEY (calendar_date)
@@ -168,30 +163,28 @@ CREATE TABLE calendar
 -- 통합 이력 정보 테이블
 CREATE TABLE history
 (
-    history_id BIGINT NOT NULL AUTO_INCREMENT,
-    ref_id     BIGINT,
-    ref_type   ENUM ('RESERVATION', 'SESSION', 'CONNECTING'),
-    user_id    BIGINT,
-    user_role  ENUM ('TRAINER', 'MEMBER'),
-    content    VARCHAR(255),
-    created_at DATETIME(6),
+    history_id         BIGINT NOT NULL AUTO_INCREMENT,
+    ref_id             BIGINT,
+    ref_type           ENUM ('RESERVATION', 'SESSION', 'CONNECTING'),
+    personal_detail_id BIGINT,
+    content            VARCHAR(255),
+    created_at         DATETIME(6),
     PRIMARY KEY (history_id)
 );
 
 -- 알림 정보 테이블
 CREATE TABLE notification
 (
-    notification_id   BIGINT NOT NULL AUTO_INCREMENT,
-    ref_id            BIGINT,
-    ref_type          ENUM ('RESERVATION', 'SESSION', 'CONNECTING'),
-    trainer_id        BIGINT,
-    member_id         BIGINT,
-    name              VARCHAR(255),
-    content           VARCHAR(255),
-    notification_type ENUM ('SESSION_REMAIN_5', 'SESSION_COMPLETE', 'SESSION_CANCEL'),
-    is_sent           BOOLEAN,
-    is_read           BOOLEAN,
-    is_processed      BOOLEAN,
-    send_date         DATETIME(6),
+    notification_id    BIGINT NOT NULL AUTO_INCREMENT,
+    ref_id             BIGINT,
+    ref_type           ENUM ('RESERVATION', 'SESSION', 'CONNECTING'),
+    personal_detail_id BIGINT,
+    name               VARCHAR(255),
+    content            VARCHAR(255),
+    notification_type  ENUM ('SESSION_REMAIN_5', 'SESSION_COMPLETE', 'SESSION_CANCEL'),
+    is_sent            BOOLEAN,
+    is_read            BOOLEAN,
+    is_processed       BOOLEAN,
+    send_date          DATETIME(12),
     PRIMARY KEY (notification_id)
 );

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import spring.fitlinkbe.domain.member.Member;
+import spring.fitlinkbe.domain.trainer.Trainer;
 
 @Builder(toBuilder = true)
 @Getter
@@ -14,6 +16,10 @@ public class PersonalDetail {
     private Long personalDetailId;
 
     private String name;
+
+    private Trainer trainer;
+
+    private Member member;
 
     private Long trainerId;
 
