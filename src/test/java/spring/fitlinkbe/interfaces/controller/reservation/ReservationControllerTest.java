@@ -7,11 +7,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import spring.fitlinkbe.application.reservation.ReservationFacade;
+import spring.fitlinkbe.application.reservation.ReservationResult;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
+import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.reservation.Reservation;
+import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.support.argumentresolver.LoginMemberArgumentResolver;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
@@ -28,6 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_NOT_FOUND;
 
 @WebMvcTest(ReservationController.class)
 class ReservationControllerTest {
@@ -78,7 +82,7 @@ class ReservationControllerTest {
 
         String accessToken = getAccessToken(personalDetail);
 
-        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
+        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(response));
 
         //when & then
         mockMvc.perform(get("/v1/reservations")
@@ -122,7 +126,7 @@ class ReservationControllerTest {
         SecurityUser user = new SecurityUser(personalDetail);
         String accessToken = getAccessToken(personalDetail);
 
-        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
+        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(response));
 
         //when & then
         mockMvc.perform(get("/v1/reservations")
@@ -157,7 +161,7 @@ class ReservationControllerTest {
         SecurityUser user = new SecurityUser(personalDetail);
         String accessToken = getAccessToken(personalDetail);
 
-        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
+        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(response));
 
         //when //then
         mockMvc.perform(get("/v1/reservations")
@@ -200,7 +204,7 @@ class ReservationControllerTest {
 
         String accessToken = getAccessToken(personalDetail);
 
-        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
+        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(response));
 
         //when & then
         mockMvc.perform(get("/v1/reservations")
@@ -243,7 +247,7 @@ class ReservationControllerTest {
 
         String accessToken = getAccessToken(personalDetail);
 
-        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
+        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(response));
 
         //when & then
         mockMvc.perform(get("/v1/reservations")
@@ -285,7 +289,7 @@ class ReservationControllerTest {
 
         SecurityUser user = new SecurityUser(personalDetail);
 
-        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
+        when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(response));
 
         //when & then
         mockMvc.perform(get("/v1/reservations")
@@ -294,6 +298,84 @@ class ReservationControllerTest {
                 .andDo(print())
                 .andExpect(status().is5xxServerError())
                 .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    @DisplayName("트레이너가 예약 상세 목록을 조회한다.")
+    void getReservationWithTrainer() throws Exception {
+        //given
+        Reservation reservation = Reservation.builder()
+                .reservationId(1L)
+                .member(Member.builder().memberId(1L).build())
+                .trainer(Trainer.builder().trainerId(1L).build())
+                .sessionInfo(SessionInfo.builder().SessionInfoId(1L).build())
+                .reservationDate(LocalDateTime.now())
+                .priority(1)
+                .dayOfWeek(LocalDateTime.now().getDayOfWeek())
+                .name("홍길동")
+                .build();
+
+        Session session = Session.builder()
+                .sessionId(1L)
+                .build();
+
+        PersonalDetail personalDetail = PersonalDetail.builder()
+                .personalDetailId(1L)
+                .name("강산")
+                .memberId(null)
+                .trainerId(1L)
+                .build();
+
+        SecurityUser user = new SecurityUser(personalDetail);
+
+        String accessToken = getAccessToken(personalDetail);
+
+        ReservationResult.ReservationDetail result = ReservationResult.ReservationDetail
+                .from(reservation, session, personalDetail);
+
+        when(reservationFacade.getReservation(any(Long.class), any(SecurityUser.class))).thenReturn(result);
+
+        //when & then
+        mockMvc.perform(get("/v1/reservations/%s".formatted(reservation.getReservationId()))
+                        .header("Authorization", "Bearer " + accessToken)
+                        .with(oauth2Login().oauth2User(user)))  // OAuth2 인증
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.msg").value("OK"))
+                .andExpect(jsonPath("$.data").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("없는 예약을 조회하면 success를 false를 반환한다.")
+    void getReservationWithNotFound() throws Exception {
+        //given
+        PersonalDetail personalDetail = PersonalDetail.builder()
+                .personalDetailId(1L)
+                .name("강산")
+                .memberId(null)
+                .trainerId(1L)
+                .build();
+
+        SecurityUser user = new SecurityUser(personalDetail);
+
+        String accessToken = getAccessToken(personalDetail);
+
+        //when
+        when(reservationFacade.getReservation(any(Long.class), any(SecurityUser.class))).thenThrow(
+                new CustomException(RESERVATION_NOT_FOUND,
+                        RESERVATION_NOT_FOUND.getMsg())
+        );
+        //then
+        mockMvc.perform(get("/v1/reservations/%s".formatted(10L))
+                        .header("Authorization", "Bearer " + accessToken)
+                        .with(oauth2Login().oauth2User(user)))  // OAuth2 인증
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
