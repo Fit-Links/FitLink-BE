@@ -10,10 +10,10 @@ import java.util.Map;
 @Setter
 @ConfigurationProperties(prefix = "app")
 public class ApplicationYmlRead {
-	private Map<String, String> front;
+    private Map<String, String> front;
 
-	public String getFrontUrl() {
-		return front.get("url");
-	}
+    public String getFrontUrl() {
+        return front.get("url");
+    }
 
 }
