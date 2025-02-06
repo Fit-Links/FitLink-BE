@@ -11,7 +11,7 @@ public class ReservationDto {
     @Builder(toBuilder = true)
     public record Response(Long reservationId, Long sessionInfoId,
                            boolean isDayOff, DayOfWeek dayOfWeek, LocalDateTime reservationDate,
-                           Reservation.Status status, int priority, MemberInfo memberInfo) {
+                           Reservation.Status status, MemberInfo memberInfo) {
 
         public static ReservationDto.Response of(Reservation reservation) {
 
@@ -22,7 +22,6 @@ public class ReservationDto {
                     .isDayOff(reservation.isDayOff())
                     .dayOfWeek(reservation.getDayOfWeek())
                     .reservationDate(reservation.getReservationDate())
-                    .priority(reservation.getPriority())
                     .status(reservation.getStatus())
                     .memberInfo(reservation.isReservationNotAllowed() ? null :
                             new MemberInfo(reservation.getMember().getMemberId(), reservation.getName()))
