@@ -1,13 +1,12 @@
 package spring.fitlinkbe.interfaces.controller.reservation;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.reservation.ReservationFacade;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
+import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationDetailDto;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationDto;
 import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
@@ -27,8 +26,17 @@ public class ReservationController {
     public ApiResultResponse<List<ReservationDto.Response>> getReservations(@RequestParam LocalDate date,
                                                                             @Login SecurityUser user) {
 
-        return ApiResultResponse.ok(reservationFacade.getReservations(date, user).stream()
+        return ApiResultResponse.ok(reservationFacade.getReservations(date, user).reservations().stream()
                 .map(ReservationDto.Response::of).toList());
+
+    }
+
+    @GetMapping("/{reservationId}")
+    public ApiResultResponse<ReservationDetailDto.Response> getReservation(@PathVariable("reservationId")
+                                                                           @NotNull Long reservationId) {
+
+        return ApiResultResponse.ok(ReservationDetailDto.Response.of(
+                reservationFacade.getReservation(reservationId)));
 
     }
 }

@@ -14,11 +14,13 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationRepository;
+import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.domain.trainer.DayOff;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
 import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
+import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationDetailDto;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationDto;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
 
@@ -29,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_APPROVED;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_WAITING;
 
 public class ReservationIntegrationTest extends BaseIntegrationTest {
 
@@ -285,6 +289,145 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             List<ReservationDto.Response> content = result.body().jsonPath()
                     .getList("data", ReservationDto.Response.class);
             softly.assertThat(content.size()).isEqualTo(0);
+        });
+    }
+
+    @Test
+    @DisplayName("트레이너는 예약 상세 목록을 조회한다.")
+    void getReservationWithTrainer() {
+        // given
+        PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+                .orElseThrow();
+
+        String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                personalDetails.getPersonalDetailId());
+
+        Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
+        Member member = memberRepository.getMember(1L).orElseThrow();
+
+        SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+
+        LocalDateTime reqeustDate = LocalDateTime.now().plusMonths(1).minusSeconds(1);
+
+        Reservation reservation = Reservation.builder()
+                .reservationDate(reqeustDate)
+                .trainer(trainer)
+                .member(member)
+                .sessionInfo(sessionInfo)
+                .name(member.getName())
+                .dayOfWeek(reqeustDate.getDayOfWeek())
+                .status(RESERVATION_WAITING)
+                .priority(0)
+                .build();
+
+        Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+        // when
+        ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/"
+                + savedReservation.getReservationId(), accessToken);
+
+        // then
+        assertSoftly(softly -> {
+            softly.assertThat(result.statusCode()).isEqualTo(200);
+            softly.assertThat(result.body().jsonPath().getObject("data", ReservationDetailDto.Response.class)
+                            .reservationId())
+                    .isEqualTo(1L);
+        });
+    }
+
+    @Test
+    @DisplayName("멤버가 예약 상세 목록을 조회한다.")
+    void getReservationWithMember() {
+        // given
+        PersonalDetail personalDetails = personalDetailRepository.getMemberDetail(1L)
+                .orElseThrow();
+
+        String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                personalDetails.getPersonalDetailId());
+
+        Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
+        Member member = memberRepository.getMember(1L).orElseThrow();
+
+        SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+
+        LocalDateTime reqeustDate = LocalDateTime.now().plusMonths(1).minusSeconds(1);
+
+        Reservation reservation = Reservation.builder()
+                .reservationDate(reqeustDate)
+                .trainer(trainer)
+                .member(member)
+                .sessionInfo(sessionInfo)
+                .name(member.getName())
+                .dayOfWeek(reqeustDate.getDayOfWeek())
+                .status(RESERVATION_WAITING)
+                .priority(2)
+                .build();
+
+        Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+        // when
+        ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/"
+                + savedReservation.getReservationId(), accessToken);
+
+        // then
+        assertSoftly(softly -> {
+            softly.assertThat(result.statusCode()).isEqualTo(200);
+            softly.assertThat(result.body().jsonPath().getObject("data", ReservationDetailDto.Response.class)
+                            .reservationId())
+                    .isEqualTo(1L);
+        });
+    }
+
+    @Test
+    @DisplayName("예약이 승낙이 됐다면, 세션 정보도 같이 상세 목록에 조회한다.")
+    void getReservationWithApproved() {
+        // given
+        PersonalDetail personalDetails = personalDetailRepository.getMemberDetail(1L)
+                .orElseThrow();
+
+        String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                personalDetails.getPersonalDetailId());
+
+        Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
+        Member member = memberRepository.getMember(1L).orElseThrow();
+
+        SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+
+        LocalDateTime reqeustDate = LocalDateTime.now().plusMonths(1).minusSeconds(1);
+
+        Reservation reservation = Reservation.builder()
+                .reservationDate(reqeustDate)
+                .trainer(trainer)
+                .member(member)
+                .sessionInfo(sessionInfo)
+                .name(member.getName())
+                .dayOfWeek(reqeustDate.getDayOfWeek())
+                .status(RESERVATION_APPROVED)
+                .isApproved(true)
+                .priority(0)
+                .build();
+
+        Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+        Session session = Session.builder()
+                .reservation(savedReservation)
+                .build();
+
+        reservationRepository.saveSession(session);
+
+        // when
+        ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/"
+                + savedReservation.getReservationId(), accessToken);
+
+        // then
+        assertSoftly(softly -> {
+            softly.assertThat(result.statusCode()).isEqualTo(200);
+            softly.assertThat(result.body().jsonPath().getObject("data", ReservationDetailDto.Response.class)
+                            .sessionId())
+                    .isEqualTo(1L);
         });
     }
 }

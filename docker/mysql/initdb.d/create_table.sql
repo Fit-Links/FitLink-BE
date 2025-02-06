@@ -98,8 +98,8 @@ CREATE TABLE available_time
     trainer_id        BIGINT,
     is_holiday        BOOLEAN,
     unavailable       BOOLEAN,
-    start_time        DATETIME(12),
-    end_time          DATETIME(12),
+    start_time        DATETIME(6),
+    end_time          DATETIME(6),
     created_at        DATETIME(6),
     updated_at        DATETIME(6),
     PRIMARY KEY (available_time_id)
@@ -132,16 +132,16 @@ CREATE TABLE session
 -- 예약 정보 테이블
 CREATE TABLE reservation
 (
-    reservation_id   BIGINT       NOT NULL AUTO_INCREMENT,
+    reservation_id   BIGINT      NOT NULL AUTO_INCREMENT,
     member_id        BIGINT,
     trainer_id       BIGINT,
     session_info_id  BIGINT,
     name             VARCHAR(255),
-    reservation_date DATETIME(12) NOT NULL,
-    change_date      DATETIME(12),
+    reservation_date DATETIME(6) NOT NULL,
+    change_date      DATETIME(6),
     status           ENUM ('CANCEL', 'RESERVATION_REQUEST', 'CHANGE_REQUEST', 'CANCEL_REQUEST', 'COMPLETED'),
     cancel_reason    VARCHAR(255),
-    approved_cancel  BOOLEAN,
+    is_approved      BOOLEAN,
     priority         INT,
     is_fixed         BOOLEAN,
     is_disabled      BOOLEAN,
@@ -185,6 +185,6 @@ CREATE TABLE notification
     is_sent            BOOLEAN,
     is_read            BOOLEAN,
     is_processed       BOOLEAN,
-    send_date          DATETIME(12),
+    send_date          DATETIME(6),
     PRIMARY KEY (notification_id)
 );

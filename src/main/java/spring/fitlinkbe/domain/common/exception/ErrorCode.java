@@ -11,11 +11,15 @@ public enum ErrorCode {
     TRAINER_IS_NOT_FOUND("트레이너 정보가 존재하지 않습니다.", 404),
 
     // Member 관련 ErrorCode
+    MEMBER_DETAIL_NOT_FOUND("멤버 상세 정보를 찾지 못하였습니다", 404),
+
 
     // Reservation 관련 ErrorCode
     RESERVATION_IS_FAILED("예약에 실패하였습니다.", 400),
+    RESERVATION_NOT_FOUND("예약 정보를 찾지 못하였습니다.", 404),
 
     // Session 관련 ErrorCode
+    SESSION_NOT_FOUND("세션 정보를 찾지 못하였습니다.", 404),
 
     // Notification 관련 ErrorCode
 

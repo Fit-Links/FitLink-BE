@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationRepository;
+import spring.fitlinkbe.domain.reservation.Session;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +18,7 @@ import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 public class ReservationRepositoryImpl implements ReservationRepository {
 
     private final ReservationJpaRepository reservationJpaRepository;
+    private final SessionJpaRepository sessionJpaRepository;
 
     @Override
     public List<Reservation> getReservations(LocalDateTime startDate, LocalDateTime endDate,
@@ -38,9 +40,34 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
+    public Optional<Reservation> getReservation(Long reservationId) {
+        Optional<ReservationEntity> findEntity = reservationJpaRepository.findByIdJoinFetch(reservationId);
+        if (findEntity.isPresent()) {
+            return findEntity.map(ReservationEntity::toDomain);
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public Optional<Reservation> saveReservation(Reservation reservation) {
         ReservationEntity reservationEntity = reservationJpaRepository.save(ReservationEntity.from(reservation));
 
         return Optional.of(reservationEntity.toDomain());
+    }
+
+    @Override
+    public Optional<Session> getSession(Long reservationId) {
+        Optional<SessionEntity> findEntity = sessionJpaRepository.findByReservation_ReservationId(reservationId);
+        if (findEntity.isPresent()) {
+            return findEntity.map(SessionEntity::toDomain);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Session> saveSession(Session session) {
+        SessionEntity savedEntity = sessionJpaRepository.save(SessionEntity.from(session));
+
+        return Optional.of(savedEntity.toDomain());
     }
 }
