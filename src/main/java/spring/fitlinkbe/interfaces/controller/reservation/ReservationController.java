@@ -33,11 +33,10 @@ public class ReservationController {
 
     @GetMapping("/{reservationId}")
     public ApiResultResponse<ReservationDetailDto.Response> getReservation(@PathVariable("reservationId")
-                                                                           @NotNull Long reservationId,
-                                                                           @Login SecurityUser user) {
+                                                                           @NotNull Long reservationId) {
 
         return ApiResultResponse.ok(ReservationDetailDto.Response.of(
-                reservationFacade.getReservation(reservationId, user)));
+                reservationFacade.getReservation(reservationId)));
 
     }
 }

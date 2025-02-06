@@ -335,7 +335,7 @@ class ReservationControllerTest {
         ReservationResult.ReservationDetail result = ReservationResult.ReservationDetail
                 .from(reservation, session, personalDetail);
 
-        when(reservationFacade.getReservation(any(Long.class), any(SecurityUser.class))).thenReturn(result);
+        when(reservationFacade.getReservation(any(Long.class))).thenReturn(result);
 
         //when & then
         mockMvc.perform(get("/v1/reservations/%s".formatted(reservation.getReservationId()))
@@ -365,7 +365,7 @@ class ReservationControllerTest {
         String accessToken = getAccessToken(personalDetail);
 
         //when
-        when(reservationFacade.getReservation(any(Long.class), any(SecurityUser.class))).thenThrow(
+        when(reservationFacade.getReservation(any(Long.class))).thenThrow(
                 new CustomException(RESERVATION_NOT_FOUND,
                         RESERVATION_NOT_FOUND.getMsg())
         );
