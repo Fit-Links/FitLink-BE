@@ -132,7 +132,7 @@ CREATE TABLE session
 -- 예약 정보 테이블
 CREATE TABLE reservation
 (
-    reservation_id   BIGINT       NOT NULL AUTO_INCREMENT,
+    reservation_id   BIGINT      NOT NULL AUTO_INCREMENT,
     member_id        BIGINT,
     trainer_id       BIGINT,
     session_info_id  BIGINT,
@@ -141,7 +141,7 @@ CREATE TABLE reservation
     change_date      DATETIME(6),
     status           ENUM ('CANCEL', 'RESERVATION_REQUEST', 'CHANGE_REQUEST', 'CANCEL_REQUEST', 'COMPLETED'),
     cancel_reason    VARCHAR(255),
-    approved_cancel  BOOLEAN,
+    is_approved      BOOLEAN,
     priority         INT,
     is_fixed         BOOLEAN,
     is_disabled      BOOLEAN,
