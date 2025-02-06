@@ -1,6 +1,8 @@
 package spring.fitlinkbe.domain.common.model;
 
 import lombok.Getter;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 
 @Getter
 public class PhoneNumber {
@@ -10,7 +12,7 @@ public class PhoneNumber {
         this.phoneNumber = phoneNumber;
 
         if (!isValidPhoneNumber(phoneNumber)) {
-            throw new IllegalArgumentException("Invalid phone number");
+            throw new CustomException(ErrorCode.INVALID_PHONE_NUMBER_FORMAT);
         }
     }
 

@@ -38,7 +38,7 @@ public class MemberEntity extends BaseTimeEntity {
 
         return MemberEntity.builder()
                 .memberId(member.getMemberId() != null ? member.getMemberId() : null)
-                .trainer(TrainerEntity.from(member.getTrainer()))
+                .trainer(member.getTrainer() != null ? TrainerEntity.from(member.getTrainer()) : null)
                 .name(member.getName())
                 .birthDate(member.getBirthDate())
                 .isRequest(member.getIsRequest())
@@ -49,7 +49,7 @@ public class MemberEntity extends BaseTimeEntity {
     public Member toDomain() {
         return Member.builder()
                 .memberId(memberId)
-                .trainer(trainer.toDomain())
+                .trainer(trainer != null ? trainer.toDomain() : null)
                 .name(name)
                 .birthDate(birthDate)
                 .phoneNumber(new PhoneNumber(phoneNumber))

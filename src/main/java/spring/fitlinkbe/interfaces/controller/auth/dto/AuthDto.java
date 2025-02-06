@@ -25,14 +25,14 @@ public class AuthDto {
 
     }
 
-    public record MemberRegisterRequest(String name, LocalDate birthDate, PhoneNumber phoneNumber, Gender gender,
+    public record MemberRegisterRequest(String name, LocalDate birthDate, String phoneNumber, Gender gender,
                                         String profileUrl, List<WorkoutScheduleRequest> workoutSchedule) {
 
         public AuthSo.MemberRegisterRequest toSo() {
             return AuthSo.MemberRegisterRequest.builder()
                     .name(name)
                     .birthDate(birthDate)
-                    .phoneNumber(phoneNumber)
+                    .phoneNumber(new PhoneNumber(phoneNumber))
                     .gender(gender)
                     .profileUrl(profileUrl)
                     .workoutSchedule(workoutSchedule.stream().map(WorkoutScheduleRequest::toSo).toList())

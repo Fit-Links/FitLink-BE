@@ -7,6 +7,8 @@ import spring.fitlinkbe.domain.common.model.PhoneNumber;
 import spring.fitlinkbe.infra.member.MemberEntity;
 import spring.fitlinkbe.infra.trainer.TrainerEntity;
 
+import java.time.LocalDate;
+
 import static spring.fitlinkbe.domain.common.model.PersonalDetail.*;
 
 @Entity
@@ -36,7 +38,7 @@ public class PersonalDetailEntity {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    private String birthDate;
+    private LocalDate birthDate;
 
     private String phoneNumber;
 

@@ -13,6 +13,7 @@ import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.Status;
+import spring.fitlinkbe.support.config.SecurityConfig;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
 import spring.fitlinkbe.support.security.SecurityUser;
 import spring.fitlinkbe.support.utils.HeaderUtils;
@@ -29,13 +30,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String accessToken = HeaderUtils.getAccessToken(request);
 
-        if (accessToken == null) {
+        if (accessToken == null || shouldNotFilter(request)) {
             filterChain.doFilter(request, response);
             return;
         }
         OAuth2AuthenticationToken authentication = validate(accessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+
+        // whitelist 에 등록된 패턴에 해당하면 필터 실행하지 않음
+        return SecurityConfig.getWhiteListUrls().stream().anyMatch(path::contains);
     }
 
     private OAuth2AuthenticationToken validate(String accessToken) {
