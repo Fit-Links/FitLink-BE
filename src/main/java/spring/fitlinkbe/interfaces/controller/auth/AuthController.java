@@ -1,6 +1,8 @@
 package spring.fitlinkbe.interfaces.controller.auth;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +30,7 @@ public class AuthController {
      */
     @PostMapping("/members/register")
     public ApiResultResponse<Object> registerMember(@Login SecurityUser user,
-                                                    @RequestBody AuthDto.MemberRegisterRequest requestBody) {
+                                                    @RequestBody @Valid AuthDto.MemberRegisterRequest requestBody) {
         checkUserStatusOrThrow(user);
         AuthSo.Response result = authService.registerMember(user.getPersonalDetailId(), requestBody.toSo());
 

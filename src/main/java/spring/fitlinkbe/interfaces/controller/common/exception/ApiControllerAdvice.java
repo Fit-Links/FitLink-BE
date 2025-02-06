@@ -3,6 +3,7 @@ package spring.fitlinkbe.interfaces.controller.common.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -33,6 +34,13 @@ public class ApiControllerAdvice {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ApiResultResponse<Object> handlerHttpMessageNotReadableException(HttpMessageNotReadableException e) {
         log.error("HttpMessageNotReadableException is occurred! {}", e.getMessage());
+        return ApiResultResponse.of(HttpStatus.BAD_REQUEST, false, e.getMessage(), null);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ApiResultResponse<Object> handlerMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.error("MethodArgumentNotValidException is occurred! {}", e.getMessage());
         return ApiResultResponse.of(HttpStatus.BAD_REQUEST, false, e.getMessage(), null);
     }
 

@@ -1,5 +1,7 @@
 package spring.fitlinkbe.interfaces.controller.auth.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import spring.fitlinkbe.domain.auth.so.AuthSo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.Gender;
@@ -25,8 +27,14 @@ public class AuthDto {
 
     }
 
-    public record MemberRegisterRequest(String name, LocalDate birthDate, String phoneNumber, Gender gender,
-                                        String profileUrl, List<WorkoutScheduleRequest> workoutSchedule) {
+    public record MemberRegisterRequest(
+            @NotNull String name,
+            @NotNull LocalDate birthDate,
+            @NotNull String phoneNumber,
+            @NotNull Gender gender,
+            String profileUrl,
+            @Valid List<WorkoutScheduleRequest> workoutSchedule
+    ) {
 
         public AuthSo.MemberRegisterRequest toSo() {
             return AuthSo.MemberRegisterRequest.builder()
@@ -40,7 +48,9 @@ public class AuthDto {
         }
     }
 
-    public record WorkoutScheduleRequest(DayOfWeek dayOfWeek, List<LocalTime> preferenceTimes) {
+
+//    @Valid
+    public record WorkoutScheduleRequest(@NotNull DayOfWeek dayOfWeek, @NotNull List<LocalTime> preferenceTimes) {
 
         public AuthSo.WorkoutScheduleRequest toSo() {
             return AuthSo.WorkoutScheduleRequest.builder()
