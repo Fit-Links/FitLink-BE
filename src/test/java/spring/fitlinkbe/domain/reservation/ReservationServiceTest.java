@@ -8,13 +8,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import spring.fitlinkbe.domain.common.enums.UserRole;
+import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.support.utils.DateUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_NOT_FOUND;
 
 class ReservationServiceTest {
 
@@ -92,6 +97,78 @@ class ReservationServiceTest {
 
         //then
         Assertions.assertThat(result).hasSize(0);
+    }
+
+    @Test
+    @DisplayName("트레이너의 예약 상세 정보를 반환한다.")
+    void getReservation() {
+
+        //given
+        Reservation reservation = Reservation.builder()
+                .reservationId(1L)
+                .build();
+
+        when(reservationRepository.getReservation(reservation.getReservationId()))
+                .thenReturn(Optional.of(reservation));
+
+        //when
+        Reservation result = reservationService.getReservation(reservation.getReservationId());
+
+        //then
+        Assertions.assertThat(result.getReservationId()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("없는 예약 정보를 조회하면 RESERVATION_NOT_FOUND 예외를 반환한다.")
+    void getReservationWithNotFound() {
+
+        //given
+        Long reservationId = 1000L;
+
+        when(reservationRepository.getReservation(any(Long.class))).thenThrow(
+                new CustomException(RESERVATION_NOT_FOUND,
+                        RESERVATION_NOT_FOUND.getMsg()));
+
+        //when & then
+        assertThatThrownBy(() -> reservationService.getReservation(reservationId))
+                .isInstanceOf(CustomException.class)
+                .extracting("errorCode")
+                .isEqualTo(RESERVATION_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("세션 정보를 반환한다.")
+    void getSession() {
+        //given
+        Session session = Session.builder()
+                .reservation(Reservation.builder().reservationId(10L).build())
+                .sessionId(1L)
+                .build();
+
+        when(reservationRepository.getSession(session.getReservation().getReservationId()))
+                .thenReturn(Optional.of(session));
+
+        //when
+        Session result = reservationService.getSession(true, session.getReservation().getReservationId());
+
+        //then
+        Assertions.assertThat(result.getSessionId()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("예약 승낙이 나지 않았다면 세션 정보는 null을 반환한다.")
+    void getSessionWithEmpty() {
+        //given
+        Long reservationId = 1L;
+
+        when(reservationRepository.getSession(reservationId))
+                .thenReturn(Optional.empty());
+
+        //when
+        Session result = reservationService.getSession(false, reservationId);
+
+        //then
+        Assertions.assertThat(result).isNull();
     }
 
 }

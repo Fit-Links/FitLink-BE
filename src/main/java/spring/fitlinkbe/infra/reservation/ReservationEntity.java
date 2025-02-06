@@ -49,9 +49,9 @@ public class ReservationEntity extends BaseTimeEntity {
 
     private String cancelReason;
 
-    private boolean approvedCancel;
-
     private int priority;
+
+    private boolean isApproved;
 
     private boolean isFixed;
 
@@ -75,7 +75,7 @@ public class ReservationEntity extends BaseTimeEntity {
                 .dayOfWeek(reservation.getDayOfWeek())
                 .status(reservation.getStatus())
                 .cancelReason(reservation.getCancelReason())
-                .approvedCancel(reservation.isApprovedCancel())
+                .isApproved(reservation.isApproved())
                 .priority(reservation.getPriority())
                 .isFixed(reservation.isFixed())
                 .isDayOff(reservation.isDayOff())
@@ -87,6 +87,7 @@ public class ReservationEntity extends BaseTimeEntity {
         return Reservation.builder()
                 .reservationId(reservationId)
                 .member((isDayOff || isDisabled) ? null : member.toDomain())
+                .trainer(trainer.toDomain())
                 .sessionInfo((isDayOff || isDisabled) ? null : sessionInfo.toDomain())
                 .name(name)
                 .reservationDate(reservationDate)
@@ -94,8 +95,8 @@ public class ReservationEntity extends BaseTimeEntity {
                 .dayOfWeek(dayOfWeek)
                 .status(status)
                 .cancelReason(cancelReason)
-                .approvedCancel(approvedCancel)
                 .priority(priority)
+                .isApproved(isApproved)
                 .isFixed(isFixed)
                 .isDayOff(isDayOff)
                 .isDisabled(isDisabled)
