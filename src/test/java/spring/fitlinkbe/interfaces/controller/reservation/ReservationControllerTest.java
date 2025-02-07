@@ -296,8 +296,8 @@ class ReservationControllerTest {
                         .queryParam("date", requestDate.toString())
                         .with(oauth2Login().oauth2User(user)))  // OAuth2 인증
                 .andDo(print())
-                .andExpect(status().is5xxServerError())
-                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(401))
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.data").isEmpty());
     }
