@@ -48,8 +48,6 @@ public class AuthDto {
         }
     }
 
-
-//    @Valid
     public record WorkoutScheduleRequest(@NotNull DayOfWeek dayOfWeek, @NotNull List<LocalTime> preferenceTimes) {
 
         public AuthSo.WorkoutScheduleRequest toSo() {

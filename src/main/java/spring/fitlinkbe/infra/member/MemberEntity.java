@@ -41,6 +41,7 @@ public class MemberEntity extends BaseTimeEntity {
                 .trainer(member.getTrainer() != null ? TrainerEntity.from(member.getTrainer()) : null)
                 .name(member.getName())
                 .birthDate(member.getBirthDate())
+                .phoneNumber(member.getPhoneNumber())
                 .isRequest(member.getIsRequest())
                 .isConnected(member.getIsConnected())
                 .build();

@@ -1,5 +1,7 @@
 package spring.fitlinkbe.integration.common;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -20,6 +22,9 @@ public class BaseIntegrationTest {
     @Autowired
     private DbCleaUp dbCleaUp;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @LocalServerPort
     protected int port;
 
@@ -34,6 +39,30 @@ public class BaseIntegrationTest {
     void tearDown() {
         // 데이터 초기화
         dbCleaUp.execute();
+    }
+
+    public <T> T readValue(String body, Class<T> clazz) {
+        try {
+            return objectMapper.readValue(body, clazz);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public <T> T readValue(String body, TypeReference<T> ref) {
+        try {
+            return objectMapper.readValue(body, ref);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String writeValueAsString(Object object) {
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static ExtractableResponse<Response> get(String path) {
