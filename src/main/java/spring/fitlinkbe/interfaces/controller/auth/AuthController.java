@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import spring.fitlinkbe.application.auth.AuthFacade;
 import spring.fitlinkbe.domain.auth.AuthService;
 import spring.fitlinkbe.domain.auth.so.AuthSo;
 import spring.fitlinkbe.domain.common.exception.CustomException;
@@ -22,7 +23,7 @@ import spring.fitlinkbe.support.security.SecurityUser;
 @RequestMapping("/v1/auth")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthFacade authFacade;
 
     /**
      * Member 등록 API </br>
@@ -32,7 +33,7 @@ public class AuthController {
     public ApiResultResponse<Object> registerMember(@Login SecurityUser user,
                                                     @RequestBody @Valid AuthDto.MemberRegisterRequest requestBody) {
         checkUserStatusOrThrow(user);
-        AuthSo.Response result = authService.registerMember(user.getPersonalDetailId(), requestBody.toSo());
+        AuthSo.Response result = authFacade.registerMember(user.getPersonalDetailId(), requestBody.toSo());
 
         return ApiResultResponse.ok(AuthDto.Response.from(result));
     }

@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
+import spring.fitlinkbe.domain.common.PersonalDetailService;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 
@@ -21,13 +22,10 @@ import static spring.fitlinkbe.domain.common.exception.ErrorCode.MEMBER_DETAIL_N
 class MemberServiceTest {
 
     @Mock
-    private MemberRepository memberRepository;
-
-    @Mock
     private PersonalDetailRepository personalDetailRepository;
 
     @InjectMocks
-    private MemberService memberService;
+    private PersonalDetailService personalDetailService;
 
     @BeforeEach
     void setUp() {
@@ -48,7 +46,7 @@ class MemberServiceTest {
                 .thenReturn(Optional.of(memberDetail));
 
         //when
-        PersonalDetail result = memberService.getMemberDetail(memberDetail.getMemberId());
+        PersonalDetail result = personalDetailService.getMemberDetail(memberDetail.getMemberId());
 
         //then
         Assertions.assertThat(result.getMemberId()).isEqualTo(1L);
@@ -65,7 +63,7 @@ class MemberServiceTest {
                         MEMBER_DETAIL_NOT_FOUND.getMsg()));
 
         //when & then
-        assertThatThrownBy(() -> memberService.getMemberDetail(memberId))
+        assertThatThrownBy(() -> personalDetailService.getMemberDetail(memberId))
                 .isInstanceOf(CustomException.class)
                 .extracting("errorCode")
                 .isEqualTo(MEMBER_DETAIL_NOT_FOUND);

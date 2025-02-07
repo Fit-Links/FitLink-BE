@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailEntity;
 import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailJpaRepository;
+import spring.fitlinkbe.infra.common.token.TokenEntity;
+import spring.fitlinkbe.infra.common.token.TokenJpaRepository;
 import spring.fitlinkbe.infra.member.MemberEntity;
 import spring.fitlinkbe.infra.member.MemberJpaRepository;
 import spring.fitlinkbe.infra.member.WorkoutScheduleEntity;
@@ -26,6 +28,8 @@ import spring.fitlinkbe.support.security.AuthTokenProvider;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -45,6 +49,9 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     MemberJpaRepository memberJpaRepository;
+
+    @Autowired
+    TokenJpaRepository tokenJpaRepository;
 
 
     @Nested
@@ -92,7 +99,27 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(member.getPhoneNumber()).isEqualTo(request.phoneNumber());
 
                 List<WorkoutScheduleEntity> workoutSchedules = workoutScheduleJpaRepository.findAllByMember_MemberId(member.getMemberId());
-                softly.assertThat(workoutSchedules).hasSize(request.workoutSchedule().size());
+                workoutSchedules.sort(Comparator.comparing(WorkoutScheduleEntity::getDayOfWeek));
+
+                List<AuthDto.WorkoutScheduleRequest> workoutScheduleRequests = new ArrayList<>(request.workoutSchedule());
+                workoutScheduleRequests.sort(Comparator.comparing(AuthDto.WorkoutScheduleRequest::dayOfWeek));
+
+                softly.assertThat(workoutSchedules).hasSize(workoutScheduleRequests.size());
+
+                for (int i = 0; i < workoutSchedules.size(); i++) {
+                    WorkoutScheduleEntity workoutSchedule = workoutSchedules.get(i);
+                    AuthDto.WorkoutScheduleRequest workoutScheduleRequest = workoutScheduleRequests.get(i);
+
+                    softly.assertThat(workoutSchedule.getDayOfWeek()).isEqualTo(workoutScheduleRequest.dayOfWeek());
+                    softly.assertThat(workoutSchedule.getPreferenceTimes()).hasSize(workoutScheduleRequest.preferenceTimes().size());
+
+                    for (int j = 0; j < workoutSchedule.getPreferenceTimes().size(); j++) {
+                        softly.assertThat(workoutSchedule.getPreferenceTimes().get(j)).isEqualTo(workoutScheduleRequest.preferenceTimes().get(j));
+                    }
+                }
+
+                TokenEntity token = tokenJpaRepository.findByPersonalDetail_PersonalDetailId(personalDetail.getPersonalDetailId()).orElseThrow();
+                softly.assertThat(response.data().refreshToken()).isEqualTo(token.getRefreshToken());
             });
         }
 
