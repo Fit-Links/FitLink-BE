@@ -22,9 +22,6 @@ public class WorkoutSchedule {
     private List<LocalTime> preferenceTimes;
 
     public Long getMemberId() {
-        if (member == null) {
-            return null;
-        }
         return member.getMemberId();
     }
 }
