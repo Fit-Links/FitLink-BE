@@ -16,15 +16,14 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class ReservationFacade {
 
-    private final ReservationService reservationService;
     private final MemberService memberService;
+    private final ReservationService reservationService;
 
     public ReservationResult.Reservations getReservations(LocalDate date, SecurityUser user) {
 
         return ReservationResult.Reservations.from(reservationService
                 .getReservations(date, user.getUserRole(), user.getUserId()));
     }
-
 
     @Transactional(readOnly = true)
     public ReservationResult.ReservationDetail getReservation(Long reservationId) {

@@ -12,6 +12,8 @@ import spring.fitlinkbe.domain.reservation.ReservationRepository;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
 
+import java.util.UUID;
+
 @Component
 @Transactional
 public class TestDataHandler {
@@ -37,6 +39,19 @@ public class TestDataHandler {
         this.sessionInfoRepository = sessionInfoRepository;
     }
 
+    public PersonalDetail createPersonalDetail(
+            PersonalDetail.Status status
+    ) {
+        PersonalDetail personalDetail = PersonalDetail.builder()
+                .name("홍길동")
+                .email("test@testcode.co.kr")
+                .status(status)
+                .oauthProvider(PersonalDetail.OauthProvider.GOOGLE)
+                .providerId(UUID.randomUUID().toString())
+                .build();
+
+        return personalDetailRepository.savePersonalDetail(personalDetail).orElseThrow();
+    }
 
     public void settingUserInfo() {
 

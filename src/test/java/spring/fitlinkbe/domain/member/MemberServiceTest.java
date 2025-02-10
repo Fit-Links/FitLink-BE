@@ -21,9 +21,6 @@ import static spring.fitlinkbe.domain.common.exception.ErrorCode.MEMBER_DETAIL_N
 class MemberServiceTest {
 
     @Mock
-    private MemberRepository memberRepository;
-
-    @Mock
     private PersonalDetailRepository personalDetailRepository;
 
     @InjectMocks

@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
+import java.time.LocalDate;
+
 @Builder(toBuilder = true)
 @Getter
 @NoArgsConstructor
@@ -29,7 +31,7 @@ public class PersonalDetail {
 
     private Gender gender;
 
-    private String birthDate;
+    private LocalDate birthDate;
 
     private PhoneNumber phoneNumber;
 
@@ -47,6 +49,27 @@ public class PersonalDetail {
             return null;
         }
         return phoneNumber.getPhoneNumber();
+    }
+
+    public void registerMember(String name, LocalDate birthDate, PhoneNumber phoneNumber,
+                               String profileUrl, Gender gender, Member member) {
+        register(name, birthDate, phoneNumber, profileUrl, gender);
+        this.member = member;
+    }
+
+    public void registerTrainer(String name, LocalDate birthDate, PhoneNumber phoneNumber,
+                                String profileUrl, Gender gender, Trainer trainer) {
+        register(name, birthDate, phoneNumber, profileUrl, gender);
+        this.trainer = trainer;
+    }
+
+    private void register(String name, LocalDate birthDate, PhoneNumber phoneNumber, String profileUrl, Gender gender) {
+        this.name = name;
+        this.birthDate = birthDate;
+        this.phoneNumber = phoneNumber;
+        this.profilePictureUrl = profileUrl;
+        this.gender = gender;
+        this.status = Status.NORMAL;
     }
 
     public enum Gender {
