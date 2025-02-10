@@ -10,15 +10,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import spring.fitlinkbe.domain.common.PersonalDetailRepository;
+import spring.fitlinkbe.domain.common.TokenRepository;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
-import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailEntity;
-import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailJpaRepository;
-import spring.fitlinkbe.infra.common.token.TokenEntity;
-import spring.fitlinkbe.infra.common.token.TokenJpaRepository;
-import spring.fitlinkbe.infra.member.MemberEntity;
-import spring.fitlinkbe.infra.member.MemberJpaRepository;
-import spring.fitlinkbe.infra.member.WorkoutScheduleEntity;
-import spring.fitlinkbe.infra.member.WorkoutScheduleJpaRepository;
+import spring.fitlinkbe.domain.common.model.Token;
+import spring.fitlinkbe.domain.member.Member;
+import spring.fitlinkbe.domain.member.MemberRepository;
+import spring.fitlinkbe.domain.member.WorkoutSchedule;
+import spring.fitlinkbe.domain.member.WorkoutScheduleRepository;
 import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
 import spring.fitlinkbe.interfaces.controller.auth.dto.AuthDto;
@@ -42,16 +41,16 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
     AuthTokenProvider authTokenProvider;
 
     @Autowired
-    PersonalDetailJpaRepository personalDetailJpaRepository;
+    PersonalDetailRepository personalDetailRepository;
 
     @Autowired
-    WorkoutScheduleJpaRepository workoutScheduleJpaRepository;
+    MemberRepository memberRepository;
 
     @Autowired
-    MemberJpaRepository memberJpaRepository;
+    WorkoutScheduleRepository workoutScheduleRepository;
 
     @Autowired
-    TokenJpaRepository tokenJpaRepository;
+    TokenRepository tokenRepository;
 
 
     @Nested
@@ -84,7 +83,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.data().accessToken()).isNotNull();
                 softly.assertThat(response.data().accessToken()).isNotNull();
 
-                PersonalDetailEntity updatedPersonalDetail = personalDetailJpaRepository.findById(personalDetail.getPersonalDetailId()).orElseThrow();
+                PersonalDetail updatedPersonalDetail = personalDetailRepository.getById(personalDetail.getPersonalDetailId());
                 softly.assertThat(updatedPersonalDetail.getStatus()).isEqualTo(PersonalDetail.Status.NORMAL);
                 softly.assertThat(updatedPersonalDetail.getName()).isEqualTo(request.name());
                 softly.assertThat(updatedPersonalDetail.getBirthDate()).isEqualTo(request.birthDate());
@@ -92,14 +91,14 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(updatedPersonalDetail.getProfilePictureUrl()).isEqualTo(request.profileUrl());
                 softly.assertThat(updatedPersonalDetail.getGender()).isEqualTo(request.gender());
 
-                MemberEntity member = memberJpaRepository.findById(updatedPersonalDetail.getMember().getMemberId()).orElseThrow();
+                Member member = memberRepository.getMember(updatedPersonalDetail.getMemberId()).orElseThrow();
                 softly.assertThat(member).isNotNull();
                 softly.assertThat(member.getName()).isEqualTo(request.name());
                 softly.assertThat(member.getBirthDate()).isEqualTo(request.birthDate());
                 softly.assertThat(member.getPhoneNumber()).isEqualTo(request.phoneNumber());
 
-                List<WorkoutScheduleEntity> workoutSchedules = workoutScheduleJpaRepository.findAllByMember_MemberId(member.getMemberId());
-                workoutSchedules.sort(Comparator.comparing(WorkoutScheduleEntity::getDayOfWeek));
+                List<WorkoutSchedule> workoutSchedules = new ArrayList<>(workoutScheduleRepository.findAllByMemberId(member.getMemberId()));
+                workoutSchedules.sort(Comparator.comparing(WorkoutSchedule::getDayOfWeek));
 
                 List<AuthDto.WorkoutScheduleRequest> workoutScheduleRequests = new ArrayList<>(request.workoutSchedule());
                 workoutScheduleRequests.sort(Comparator.comparing(AuthDto.WorkoutScheduleRequest::dayOfWeek));
@@ -107,7 +106,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(workoutSchedules).hasSize(workoutScheduleRequests.size());
 
                 for (int i = 0; i < workoutSchedules.size(); i++) {
-                    WorkoutScheduleEntity workoutSchedule = workoutSchedules.get(i);
+                    WorkoutSchedule workoutSchedule = workoutSchedules.get(i);
                     AuthDto.WorkoutScheduleRequest workoutScheduleRequest = workoutScheduleRequests.get(i);
 
                     softly.assertThat(workoutSchedule.getDayOfWeek()).isEqualTo(workoutScheduleRequest.dayOfWeek());
@@ -118,7 +117,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     }
                 }
 
-                TokenEntity token = tokenJpaRepository.findByPersonalDetail_PersonalDetailId(personalDetail.getPersonalDetailId()).orElseThrow();
+                Token token = tokenRepository.getByPersonalDetailId(personalDetail.getPersonalDetailId());
                 softly.assertThat(response.data().refreshToken()).isEqualTo(token.getRefreshToken());
             });
         }

@@ -41,4 +41,13 @@ public class WorkoutScheduleEntity {
                 .preferenceTimes(workoutSchedule.getPreferenceTimes())
                 .build();
     }
+
+    public WorkoutSchedule toDomain() {
+        return WorkoutSchedule.builder()
+                .workoutScheduleId(workoutScheduleId)
+                .dayOfWeek(dayOfWeek)
+                .member(member.toDomain())
+                .preferenceTimes(preferenceTimes)
+                .build();
+    }
 }

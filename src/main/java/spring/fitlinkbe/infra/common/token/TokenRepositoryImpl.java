@@ -3,6 +3,8 @@ package spring.fitlinkbe.infra.common.token;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import spring.fitlinkbe.domain.common.TokenRepository;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailEntity;
 import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailJpaRepository;
@@ -34,5 +36,12 @@ public class TokenRepositoryImpl implements TokenRepository {
         }
 
         return result;
+    }
+
+    @Override
+    public Token getByPersonalDetailId(Long personalDetailId) {
+        Optional<TokenEntity> tokenEntity = tokenJpaRepository.findByPersonalDetail_PersonalDetailId(personalDetailId);
+
+        return tokenEntity.map(TokenEntity::toDomain).orElseThrow(() -> new CustomException(ErrorCode.TOKEN_NOT_FOUND));
     }
 }

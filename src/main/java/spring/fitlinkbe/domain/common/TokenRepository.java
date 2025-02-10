@@ -12,4 +12,6 @@ public interface TokenRepository {
      * @return
      */
     Token saveOrUpdate(Token token);
+
+    Token getByPersonalDetailId(Long personalDetailId);
 }

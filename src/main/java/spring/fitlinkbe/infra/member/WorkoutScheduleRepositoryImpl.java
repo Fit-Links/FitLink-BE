@@ -20,4 +20,10 @@ public class WorkoutScheduleRepositoryImpl implements WorkoutScheduleRepository 
 
         workoutScheduleJpaRepository.saveAll(workoutScheduleEntities);
     }
+
+    @Override
+    public List<WorkoutSchedule> findAllByMemberId(Long memberId) {
+        return workoutScheduleJpaRepository.findAllByMember_MemberId(memberId).stream()
+                .map(WorkoutScheduleEntity::toDomain).toList();
+    }
 }
