@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.auth.AuthService;
-import spring.fitlinkbe.domain.auth.so.AuthSo;
+import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.PersonalDetailService;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.Token;
@@ -22,18 +22,18 @@ public class AuthFacade {
     private final AuthService authService;
     private final AuthTokenProvider authTokenProvider;
 
-    public AuthSo.Response registerMember(Long personalDetailId, AuthSo.MemberRegisterRequest so) {
-        Member savedMember = memberService.saveMember(so.toMember());
+    public AuthCommand.Response registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command) {
+        Member savedMember = memberService.saveMember(command.toMember());
 
         // personalDetail 업데이트
-        PersonalDetail personalDetail = personalDetailService.registerMember(personalDetailId, so, savedMember);
+        PersonalDetail personalDetail = personalDetailService.registerMember(personalDetailId, command, savedMember);
 
         // 토큰 생성 또는 업데이트
         String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId);
         String refreshToken = authTokenProvider.createRefreshToken(personalDetailId);
 
         // workoutSchedule 업데이트
-        memberService.saveWorkoutSchedules(so.toWorkoutSchedules(savedMember));
+        memberService.saveWorkoutSchedules(command.toWorkoutSchedules(savedMember));
 
         Token token = Token.builder()
                 .personalDetailId(personalDetailId)
@@ -41,7 +41,7 @@ public class AuthFacade {
                 .build();
         authService.saveOrUpdateToken(token);
 
-        return AuthSo.Response.of(accessToken, refreshToken);
+        return AuthCommand.Response.of(accessToken, refreshToken);
     }
 
 

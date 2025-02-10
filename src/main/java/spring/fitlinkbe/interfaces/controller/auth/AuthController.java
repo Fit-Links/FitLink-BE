@@ -2,14 +2,12 @@ package spring.fitlinkbe.interfaces.controller.auth;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import spring.fitlinkbe.application.auth.AuthFacade;
-import spring.fitlinkbe.domain.auth.AuthService;
-import spring.fitlinkbe.domain.auth.so.AuthSo;
+import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
@@ -33,7 +31,7 @@ public class AuthController {
     public ApiResultResponse<Object> registerMember(@Login SecurityUser user,
                                                     @RequestBody @Valid AuthDto.MemberRegisterRequest requestBody) {
         checkUserStatusOrThrow(user);
-        AuthSo.Response result = authFacade.registerMember(user.getPersonalDetailId(), requestBody.toSo());
+        AuthCommand.Response result = authFacade.registerMember(user.getPersonalDetailId(), requestBody.toCommand());
 
         return ApiResultResponse.ok(AuthDto.Response.from(result));
     }

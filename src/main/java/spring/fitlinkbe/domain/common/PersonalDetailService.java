@@ -3,7 +3,7 @@ package spring.fitlinkbe.domain.common;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import spring.fitlinkbe.domain.auth.so.AuthSo;
+import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.member.Member;
@@ -17,7 +17,7 @@ public class PersonalDetailService {
 
     private final PersonalDetailRepository personalDetailRepository;
 
-    public PersonalDetail registerMember(Long personalDetailId, AuthSo.MemberRegisterRequest so, Member savedMember) {
+    public PersonalDetail registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest so, Member savedMember) {
         PersonalDetail personalDetail = personalDetailRepository.getById(personalDetailId);
         personalDetail.registerMember(so.name(), so.birthDate(), so.phoneNumber(), so.profileUrl(), so.gender(), savedMember);
         personalDetailRepository.savePersonalDetail(personalDetail);

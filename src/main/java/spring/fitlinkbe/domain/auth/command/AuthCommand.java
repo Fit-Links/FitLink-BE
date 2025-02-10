@@ -1,4 +1,4 @@
-package spring.fitlinkbe.domain.auth.so;
+package spring.fitlinkbe.domain.auth.command;
 
 import lombok.Builder;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-public class AuthSo {
+public class AuthCommand {
 
     @Builder
     public record Response(String accessToken, String refreshToken) {
