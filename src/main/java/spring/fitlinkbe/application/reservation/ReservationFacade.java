@@ -3,8 +3,8 @@ package spring.fitlinkbe.application.reservation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import spring.fitlinkbe.domain.common.PersonalDetailService;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.reservation.Session;
@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class ReservationFacade {
 
-    private final PersonalDetailService personalDetailService;
+    private final MemberService memberService;
     private final ReservationService reservationService;
 
     public ReservationResult.Reservations getReservations(LocalDate date, SecurityUser user) {
@@ -35,7 +35,7 @@ public class ReservationFacade {
                 reservationId);
 
         // 개인 정보 조회
-        PersonalDetail personalDetail = personalDetailService.getMemberDetail(reservation.getMember().getMemberId());
+        PersonalDetail personalDetail = memberService.getMemberDetail(reservation.getMember().getMemberId());
 
         // 조합해서 리턴
         return ReservationResult.ReservationDetail.from(reservation, session, personalDetail);
