@@ -18,6 +18,9 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.member.WorkoutScheduleRepository;
+import spring.fitlinkbe.domain.trainer.AvailableTime;
+import spring.fitlinkbe.domain.trainer.Trainer;
+import spring.fitlinkbe.domain.trainer.TrainerRepository;
 import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
 import spring.fitlinkbe.interfaces.controller.auth.dto.AuthDto;
@@ -45,6 +48,9 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     MemberRepository memberRepository;
+
+    @Autowired
+    TrainerRepository trainerRepository;
 
     @Autowired
     WorkoutScheduleRepository workoutScheduleRepository;
@@ -265,6 +271,221 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     PersonalDetail.Gender.MALE,
                     "http://test.com",
                     workoutSchedules
+            );
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Trainer Register API Integration Test")
+    class TrainerRegisterTest {
+        private static final String TRAINER_REGISTER_API = "/v1/auth/trainers/register";
+
+        @Test
+        @DisplayName("트레이너 등록 성공")
+        public void registerTrainerSuccess() throws Exception {
+            // given
+            // REQUIRED_SMS 상태의 유저가 있을 때
+
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+
+            // when
+            // 트레이너 등록 요청을 보낸다면
+            AuthDto.TrainerRegisterRequest request = getTrainerRequest();
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = post(TRAINER_REGISTER_API, requestBody, accessToken);
+
+            // then
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AuthDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.data().accessToken()).isNotNull();
+                softly.assertThat(response.data().accessToken()).isNotNull();
+
+                PersonalDetail updatedPersonalDetail = personalDetailRepository.getById(personalDetail.getPersonalDetailId());
+                softly.assertThat(updatedPersonalDetail.getStatus()).isEqualTo(PersonalDetail.Status.NORMAL);
+                softly.assertThat(updatedPersonalDetail.getName()).isEqualTo(request.name());
+                softly.assertThat(updatedPersonalDetail.getBirthDate()).isEqualTo(request.birthDate());
+                softly.assertThat(updatedPersonalDetail.getPhoneNumber()).isEqualTo(request.phoneNumber());
+                softly.assertThat(updatedPersonalDetail.getProfilePictureUrl()).isEqualTo(request.profileUrl());
+                softly.assertThat(updatedPersonalDetail.getGender()).isEqualTo(request.gender());
+
+                Trainer trainer = trainerRepository.getTrainerInfo(updatedPersonalDetail.getTrainerId()).orElseThrow();
+                softly.assertThat(trainer).isNotNull();
+                softly.assertThat(trainer.getTrainerCode()).isNotNull();
+
+                List<AvailableTime> availableTimes = trainerRepository.getTrainerAvailableTimes(trainer.getTrainerId());
+                softly.assertThat(availableTimes).hasSize(request.availableTimes().size());
+
+                Token token = tokenRepository.getByPersonalDetailId(personalDetail.getPersonalDetailId());
+                softly.assertThat(response.data().refreshToken()).isEqualTo(token.getRefreshToken());
+            });
+
+        }
+
+        @Test
+        @DisplayName("멤버 등록 실패 - 멤버 상태 REQUIRED_SMS 가 아닌 경우")
+        public void registerMemberFailBecauseOfNotRequiredSmsStatus() throws Exception {
+            // given
+            // NORMAL 상태의 유저가 있을 때
+
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.NORMAL);
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+
+            // when
+            // 트레이너 등록 요청을 보낸다면
+            AuthDto.TrainerRegisterRequest request = getTrainerRequest();
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = post(TRAINER_REGISTER_API, requestBody, accessToken);
+
+            // then
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AuthDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.status()).isEqualTo(403);
+                softly.assertThat(response.success()).isFalse();
+            });
+        }
+
+        @ParameterizedTest
+        @MethodSource("invalidRequests")
+        @DisplayName("멤버 등록 실패 - 필수값 누락")
+        public void registerMemberFailBecauseOfMissingRequiredValue(AuthDto.MemberRegisterRequest request) throws Exception {
+            // given
+            // REQUIRED_SMS 상태의 유저가 있을 때
+
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+
+            // when
+            // 필수값이 누락된 멤버 등록 요청을 보낸다면
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = post(TRAINER_REGISTER_API, requestBody, accessToken);
+
+            // then
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AuthDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.success()).isFalse();
+            });
+        }
+
+        private static Stream<AuthDto.TrainerRegisterRequest> invalidRequests() {
+            List<AuthDto.AvailableTimeRequest> availableTimeRequest1 = List.of(
+                    new AuthDto.AvailableTimeRequest(
+                            null,
+                            false,
+                            LocalTime.of(10, 0),
+                            LocalTime.of(12, 0)
+                    ),
+                    new AuthDto.AvailableTimeRequest(
+                            DayOfWeek.MONDAY,
+                            null,
+                            LocalTime.of(10, 0),
+                            LocalTime.of(12, 0)
+                    )
+            );
+
+            List<AuthDto.AvailableTimeRequest> availableTimeRequest2 = List.of(
+                    new AuthDto.AvailableTimeRequest(
+                            DayOfWeek.MONDAY,
+                            false,
+                            null,
+                            LocalTime.of(12, 0)
+                    ),
+                    new AuthDto.AvailableTimeRequest(
+                            DayOfWeek.MONDAY,
+                            false,
+                            LocalTime.of(10, 0),
+                            null
+                    )
+            );
+
+            return Stream.of(
+                    new AuthDto.TrainerRegisterRequest(
+                            null,
+                            LocalDate.of(1990, 1, 1),
+                            "01012345678",
+                            PersonalDetail.Gender.MALE,
+                            "http://test.com",
+                            null
+                    ),
+                    new AuthDto.TrainerRegisterRequest(
+                            "홍길동",
+                            null,
+                            "01012345678",
+                            PersonalDetail.Gender.MALE,
+                            "http://test.com",
+                            null
+                    ),
+                    new AuthDto.TrainerRegisterRequest(
+                            "홍길동",
+                            LocalDate.of(1990, 1, 1),
+                            null,
+                            PersonalDetail.Gender.MALE,
+                            "http://test.com",
+                            null
+                    ),
+                    new AuthDto.TrainerRegisterRequest(
+                            "홍길동",
+                            LocalDate.of(1990, 1, 1),
+                            "01012345678",
+                            null,
+                            "http://test.com",
+                            null
+                    ),
+                    new AuthDto.TrainerRegisterRequest(
+                            "홍길동",
+                            LocalDate.of(1990, 1, 1),
+                            "01012345678",
+                            PersonalDetail.Gender.MALE,
+                            "http://test.com",
+                            availableTimeRequest1
+                    ),
+                    new AuthDto.TrainerRegisterRequest(
+                            "홍길동",
+                            LocalDate.of(1990, 1, 1),
+                            "01012345678",
+                            PersonalDetail.Gender.MALE,
+                            "http://test.com",
+                            availableTimeRequest2
+                    )
+            );
+        }
+
+
+        private AuthDto.TrainerRegisterRequest getTrainerRequest() {
+            List<AuthDto.AvailableTimeRequest> availableTimes = List.of(
+                    new AuthDto.AvailableTimeRequest(
+                            DayOfWeek.MONDAY,
+                            false,
+                            LocalTime.of(10, 0),
+                            LocalTime.of(12, 0)
+                    ),
+                    new AuthDto.AvailableTimeRequest(
+                            DayOfWeek.TUESDAY,
+                            false,
+                            LocalTime.of(10, 0),
+                            LocalTime.of(12, 0)
+                    )
+            );
+
+            return new AuthDto.TrainerRegisterRequest(
+                    "홍길동",
+                    LocalDate.of(1990, 1, 1),
+                    "01012345678",
+                    PersonalDetail.Gender.MALE,
+                    "http://test.com",
+                    availableTimes
             );
         }
 

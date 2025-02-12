@@ -27,6 +27,25 @@ public class AuthDto {
 
     }
 
+    public record TrainerRegisterRequest(
+            @NotNull String name,
+            @NotNull LocalDate birthDate,
+            @NotNull String phoneNumber,
+            @NotNull Gender gender,
+            String profileUrl,
+            @Valid List<AvailableTimeRequest> availableTimes
+    ) {
+    }
+
+    public record AvailableTimeRequest(
+            @NotNull DayOfWeek dayOfWeek,
+            @NotNull Boolean isHoliday,
+            @NotNull LocalTime startTime,
+            @NotNull LocalTime endTime
+    ) {
+    }
+
+
     public record MemberRegisterRequest(
             @NotNull String name,
             @NotNull LocalDate birthDate,

@@ -2,6 +2,7 @@ package spring.fitlinkbe.infra.trainer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.DayOff;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
@@ -15,6 +16,7 @@ public class TrainerRepositoryImpl implements TrainerRepository {
 
     private final TrainerJpaRepository trainerJpaRepository;
     private final DayOffJpaRepository dayOffJpaRepository;
+    private final AvailableTimeJpaRepository availableTimeJpaRepository;
 
     @Override
     public Optional<Trainer> getTrainerInfo(Long trainerId) {
@@ -25,6 +27,14 @@ public class TrainerRepositoryImpl implements TrainerRepository {
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public List<AvailableTime> getTrainerAvailableTimes(Long trainerId) {
+        return availableTimeJpaRepository.findAllByTrainer_TrainerId(trainerId)
+                .stream()
+                .map(AvailableTimeEntity::toDomain)
+                .toList();
     }
 
     @Override

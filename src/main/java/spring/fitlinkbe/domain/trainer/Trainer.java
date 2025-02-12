@@ -27,5 +27,4 @@ public class Trainer {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-
 }

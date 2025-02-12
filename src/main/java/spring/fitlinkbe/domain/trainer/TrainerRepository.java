@@ -7,6 +7,8 @@ public interface TrainerRepository {
 
     Optional<Trainer> getTrainerInfo(Long trainerId);
 
+    List<AvailableTime> getTrainerAvailableTimes(Long trainerId);
+
     List<Trainer> getTrainers();
 
     List<DayOff> getTrainerDayOffs(Long trainerId);
