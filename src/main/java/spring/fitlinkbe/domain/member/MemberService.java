@@ -21,9 +21,9 @@ public class MemberService {
     private final WorkoutScheduleRepository workoutScheduleRepository;
     private final PersonalDetailRepository personalDetailRepository;
 
-    public PersonalDetail registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest so, Member savedMember) {
+    public PersonalDetail registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command, Member savedMember) {
         PersonalDetail personalDetail = personalDetailRepository.getById(personalDetailId);
-        personalDetail.registerMember(so.name(), so.birthDate(), so.phoneNumber(), so.profileUrl(), so.gender(), savedMember);
+        personalDetail.registerMember(command.name(), command.birthDate(), command.phoneNumber(), command.profileUrl(), command.gender(), savedMember);
         personalDetailRepository.savePersonalDetail(personalDetail);
 
         return personalDetail;

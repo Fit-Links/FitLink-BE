@@ -5,6 +5,7 @@ import lombok.*;
 import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 @Entity
@@ -22,6 +23,9 @@ public class AvailableTimeEntity extends BaseTimeEntity {
     @JoinColumn(name = "trainer_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private TrainerEntity trainer;
 
+    @Enumerated(EnumType.STRING)
+    private DayOfWeek dayOfWeek;
+
     private Boolean isHoliday;
 
     private Boolean unavailable;
@@ -34,6 +38,7 @@ public class AvailableTimeEntity extends BaseTimeEntity {
         return AvailableTimeEntity.builder()
                 .availableTimeId(availableTime.getAvailableTimeId())
                 .trainer(TrainerEntity.from(availableTime.getTrainer()))
+                .dayOfWeek(availableTime.getDayOfWeek())
                 .isHoliday(availableTime.getIsHoliday())
                 .unavailable(availableTime.getUnavailable())
                 .startTime(availableTime.getStartTime())
@@ -45,6 +50,7 @@ public class AvailableTimeEntity extends BaseTimeEntity {
         return AvailableTime.builder()
                 .availableTimeId(availableTimeId)
                 .trainer(trainer.toDomain())
+                .dayOfWeek(dayOfWeek)
                 .isHoliday(isHoliday)
                 .unavailable(unavailable)
                 .startTime(startTime)

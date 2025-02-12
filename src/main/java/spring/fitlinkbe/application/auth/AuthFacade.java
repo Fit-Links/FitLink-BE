@@ -9,7 +9,11 @@ import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberService;
+import spring.fitlinkbe.domain.trainer.Trainer;
+import spring.fitlinkbe.domain.trainer.TrainerService;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
+
+import static spring.fitlinkbe.support.utils.RandomStringGenerator.generateRandomString;
 
 @Component
 @RequiredArgsConstructor
@@ -17,8 +21,31 @@ import spring.fitlinkbe.support.security.AuthTokenProvider;
 public class AuthFacade {
 
     private final MemberService memberService;
+    private final TrainerService trainerService;
     private final AuthService authService;
     private final AuthTokenProvider authTokenProvider;
+
+    public AuthCommand.Response registerTrainer(Long personalDetailId, AuthCommand.TrainerRegisterRequest command) {
+        // trainer 저장
+        Trainer savedTrainer = trainerService.saveTrainer(new Trainer(generateRandomString(6)));
+
+        // personalDetail 업데이트
+        PersonalDetail personalDetail = trainerService.registerTrainer(personalDetailId, command, savedTrainer);
+
+        // 토큰 생성 또는 업데이트
+        String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId);
+        String refreshToken = authTokenProvider.createRefreshToken(personalDetailId);
+
+        trainerService.saveAvailableTimes(command.toAvailableTimes(savedTrainer));
+
+        Token token = Token.builder()
+                .personalDetailId(personalDetailId)
+                .refreshToken(refreshToken)
+                .build();
+        authService.saveOrUpdateToken(token);
+
+        return AuthCommand.Response.of(accessToken, refreshToken);
+    }
 
     public AuthCommand.Response registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command) {
         Member savedMember = memberService.saveMember(command.toMember());
@@ -41,6 +68,4 @@ public class AuthFacade {
 
         return AuthCommand.Response.of(accessToken, refreshToken);
     }
-
-
 }

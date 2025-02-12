@@ -5,6 +5,8 @@ import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.PhoneNumber;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
+import spring.fitlinkbe.domain.trainer.AvailableTime;
+import spring.fitlinkbe.domain.trainer.Trainer;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -23,6 +25,41 @@ public class AuthCommand {
                     .build();
         }
     }
+
+
+    @Builder
+    public record TrainerRegisterRequest(
+            String name,
+            LocalDate birthDate,
+            PhoneNumber phoneNumber,
+            PersonalDetail.Gender gender,
+            String profileUrl,
+            List<AuthCommand.AvailableTimeRequest> availableTimes
+    ) {
+        public List<AvailableTime> toAvailableTimes(Trainer savedTrainer) {
+            return availableTimes.stream()
+                    .map(availableTimeRequest ->
+                            AvailableTime.builder()
+                                    .trainer(savedTrainer)
+                                    .dayOfWeek(availableTimeRequest.dayOfWeek())
+                                    .isHoliday(availableTimeRequest.isHoliday())
+                                    .startTime(availableTimeRequest.startTime())
+                                    .endTime(availableTimeRequest.endTime())
+                                    .build()
+                    )
+                    .toList();
+        }
+    }
+
+    @Builder
+    public record AvailableTimeRequest(
+            DayOfWeek dayOfWeek,
+            Boolean isHoliday,
+            LocalTime startTime,
+            LocalTime endTime
+    ) {
+    }
+
 
     @Builder
     public record MemberRegisterRequest(String name, LocalDate birthDate, PhoneNumber phoneNumber,

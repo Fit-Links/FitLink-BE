@@ -67,4 +67,11 @@ public class TrainerRepositoryImpl implements TrainerRepository {
 
         return Optional.of(savedEntity.toDomain());
     }
+
+    @Override
+    public void saveAvailableTimes(List<AvailableTime> availableTimes) {
+        availableTimeJpaRepository.saveAll(availableTimes.stream()
+                .map(AvailableTimeEntity::from)
+                .toList());
+    }
 }

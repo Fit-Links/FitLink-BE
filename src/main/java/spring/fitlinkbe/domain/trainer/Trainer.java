@@ -27,4 +27,8 @@ public class Trainer {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    public Trainer(String trainerCode) {
+        this.trainerCode = trainerCode;
+    }
 }

@@ -35,6 +35,16 @@ public class AuthDto {
             String profileUrl,
             @Valid List<AvailableTimeRequest> availableTimes
     ) {
+        public AuthCommand.TrainerRegisterRequest toCommand() {
+            return AuthCommand.TrainerRegisterRequest.builder()
+                    .name(name)
+                    .birthDate(birthDate)
+                    .phoneNumber(new PhoneNumber(phoneNumber))
+                    .gender(gender)
+                    .profileUrl(profileUrl)
+                    .availableTimes(availableTimes.stream().map(AvailableTimeRequest::toCommand).toList())
+                    .build();
+        }
     }
 
     public record AvailableTimeRequest(
@@ -43,6 +53,14 @@ public class AuthDto {
             @NotNull LocalTime startTime,
             @NotNull LocalTime endTime
     ) {
+        public AuthCommand.AvailableTimeRequest toCommand() {
+            return AuthCommand.AvailableTimeRequest.builder()
+                    .dayOfWeek(dayOfWeek)
+                    .isHoliday(isHoliday)
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .build();
+        }
     }
 
 

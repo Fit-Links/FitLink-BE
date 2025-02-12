@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -17,6 +18,8 @@ public class AvailableTime {
     private Long availableTimeId;
 
     private Trainer trainer;
+
+    private DayOfWeek dayOfWeek;
 
     private Boolean isHoliday;
 
