@@ -129,6 +129,33 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
+        @DisplayName("멤버 등록 실패 - 운동 희망일의 요일이 중복되는 경우")
+        public void registerMemberFailBecauseOfDuplicateDayOfWeek() throws Exception {
+            // given
+            // REQUIRED_SMS 상태의 유저가 있을 때
+
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+
+            // when
+            // 운동 희망일의 요일이 중복되는 요청이 온다면
+            AuthDto.MemberRegisterRequest request = getDuplicateDayOfWeekRequest();
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = post(MEMBER_REGISTER_API, requestBody, accessToken);
+
+            // then
+            // 에러를 반환한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AuthDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.success()).isFalse();
+            });
+        }
+
+        @Test
         @DisplayName("멤버 등록 실패 - 멤버 상태 REQUIRED_SMS 가 아닌 경우")
         public void registerMemberFailBecauseOfNotRequiredSmsStatus() throws Exception {
             // given
@@ -178,6 +205,32 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.status()).isEqualTo(400);
                 softly.assertThat(response.success()).isFalse();
             });
+        }
+
+        private AuthDto.MemberRegisterRequest getDuplicateDayOfWeekRequest() {
+            List<AuthDto.WorkoutScheduleRequest> workoutScheduleRequests = List.of(
+                    new AuthDto.WorkoutScheduleRequest(
+                            DayOfWeek.MONDAY,
+                            List.of(
+                                    LocalTime.of(10, 0)
+                            )
+                    ),
+                    new AuthDto.WorkoutScheduleRequest(
+                            DayOfWeek.MONDAY,
+                            List.of(
+                                    LocalTime.of(12, 0)
+                            )
+                    )
+            );
+
+            return new AuthDto.MemberRegisterRequest(
+                    "홍길동",
+                    LocalDate.of(1990, 1, 1),
+                    "01012345678",
+                    PersonalDetail.Gender.MALE,
+                    "http://test.com",
+                    workoutScheduleRequests
+            );
         }
 
         private static Stream<AuthDto.MemberRegisterRequest> invalidRequests() {
@@ -328,7 +381,35 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("멤버 등록 실패 - 멤버 상태 REQUIRED_SMS 가 아닌 경우")
+        @DisplayName("트레이너 등록 성공 - 수업 가능 시간이 holiday 인 경우 시작 시간과 종료 시간은 null 가능")
+        public void registerTrainerSuccessWithHoliday() throws Exception {
+            // given
+            // REQUIRED_SMS 상태의 유저가 있을 때
+
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+
+            // when
+            // 수업 가능 시간이 holiday, 시작 시간과 종료 시간이 null 인 트레이너 등록 요청을 보낸다면
+            AuthDto.TrainerRegisterRequest request = getTrainerRequestWithHoliday();
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = post(TRAINER_REGISTER_API, requestBody, accessToken);
+
+            // then
+            // 요청에 성공해야 한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AuthDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.data().accessToken()).isNotNull();
+                softly.assertThat(response.data().accessToken()).isNotNull();
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너 등록 실패 - 유저의 상태가 REQUIRED_SMS 가 아닌 경우")
         public void registerMemberFailBecauseOfNotRequiredSmsStatus() throws Exception {
             // given
             // NORMAL 상태의 유저가 있을 때
@@ -353,10 +434,131 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             });
         }
 
+        @Test
+        @DisplayName("트레이너 등록 실패 - 수업 가능 시작 시간이 종료 시간보다 늦은 경우")
+        public void registerTrainerFailBecauseOfInvalidTime() throws Exception {
+            // given
+            // REQUIRED_SMS 상태의 유저가 있을 때
+
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+
+            // when
+            // 수업 가능 시작 시간이 종료 시간보다 늦은 요청이 온다면
+            AuthDto.TrainerRegisterRequest request = getTimeInvalidRequest();
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = post(TRAINER_REGISTER_API, requestBody, accessToken);
+
+            // then
+            // 에러를 반환한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AuthDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.success()).isFalse();
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너 등록 실패 - 수업 가능 시간 요일이 중복되는 경우")
+        public void registerTrainerFailBecauseOfDuplicateDayOfWeek() throws Exception {
+            // given
+            // REQUIRED_SMS 상태의 유저가 있을 때
+
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+
+            // when
+            // 수업 가능 시간의 요일이 중복되는 요청이 온다면
+            AuthDto.TrainerRegisterRequest request = getDuplicateAvailableTimeRequest();
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = post(TRAINER_REGISTER_API, requestBody, accessToken);
+
+            // then
+            // 에러를 반환한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AuthDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.success()).isFalse();
+            });
+        }
+
+
+        private AuthDto.TrainerRegisterRequest getTimeInvalidRequest() {
+            List<AuthDto.AvailableTimeRequest> availableTimes = List.of(
+                    new AuthDto.AvailableTimeRequest(
+                            DayOfWeek.MONDAY,
+                            true,
+                            LocalTime.of(12, 0),
+                            LocalTime.of(10, 0)
+                    )
+            );
+
+            return new AuthDto.TrainerRegisterRequest(
+                    "홍길동",
+                    LocalDate.of(1990, 1, 1),
+                    "01012345678",
+                    PersonalDetail.Gender.MALE,
+                    "http://test.com",
+                    availableTimes
+            );
+        }
+
+        private AuthDto.TrainerRegisterRequest getTrainerRequestWithHoliday() {
+            List<AuthDto.AvailableTimeRequest> availableTimes = List.of(
+                    new AuthDto.AvailableTimeRequest(
+                            DayOfWeek.MONDAY,
+                            true,
+                            null,
+                            null
+                    )
+            );
+
+            return new AuthDto.TrainerRegisterRequest(
+                    "홍길동",
+                    LocalDate.of(1990, 1, 1),
+                    "01012345678",
+                    PersonalDetail.Gender.MALE,
+                    "http://test.com",
+                    availableTimes
+            );
+        }
+
+        private AuthDto.TrainerRegisterRequest getDuplicateAvailableTimeRequest() {
+            List<AuthDto.AvailableTimeRequest> availableTimes = List.of(
+                    new AuthDto.AvailableTimeRequest(
+                            DayOfWeek.MONDAY,
+                            false,
+                            LocalTime.of(10, 0),
+                            LocalTime.of(12, 0)
+                    ),
+                    new AuthDto.AvailableTimeRequest(
+                            DayOfWeek.MONDAY,
+                            false,
+                            LocalTime.of(10, 0),
+                            LocalTime.of(12, 0)
+                    )
+            );
+
+            return new AuthDto.TrainerRegisterRequest(
+                    "홍길동",
+                    LocalDate.of(1990, 1, 1),
+                    "01012345678",
+                    PersonalDetail.Gender.MALE,
+                    "http://test.com",
+                    availableTimes
+            );
+        }
+
         @ParameterizedTest
         @MethodSource("invalidRequests")
         @DisplayName("멤버 등록 실패 - 필수값 누락")
-        public void registerMemberFailBecauseOfMissingRequiredValue(AuthDto.MemberRegisterRequest request) throws Exception {
+        public void registerMemberFailBecauseOfMissingRequiredValue(AuthDto.TrainerRegisterRequest request) throws Exception {
             // given
             // REQUIRED_SMS 상태의 유저가 있을 때
 
@@ -403,7 +605,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                             LocalTime.of(12, 0)
                     ),
                     new AuthDto.AvailableTimeRequest(
-                            DayOfWeek.MONDAY,
+                            DayOfWeek.TUESDAY,
                             false,
                             LocalTime.of(10, 0),
                             null
