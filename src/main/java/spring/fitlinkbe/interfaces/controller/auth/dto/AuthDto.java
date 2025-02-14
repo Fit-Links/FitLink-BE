@@ -1,6 +1,8 @@
 package spring.fitlinkbe.interfaces.controller.auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
@@ -27,6 +29,79 @@ public class AuthDto {
 
     }
 
+    public record TrainerRegisterRequest(
+            @NotNull String name,
+            @NotNull LocalDate birthDate,
+            @NotNull String phoneNumber,
+            @NotNull Gender gender,
+            String profileUrl,
+            @Valid List<AvailableTimeRequest> availableTimes
+    ) {
+        public AuthCommand.TrainerRegisterRequest toCommand() {
+            return AuthCommand.TrainerRegisterRequest.builder()
+                    .name(name)
+                    .birthDate(birthDate)
+                    .phoneNumber(new PhoneNumber(phoneNumber))
+                    .gender(gender)
+                    .profileUrl(profileUrl)
+                    .availableTimes(availableTimes.stream().map(AvailableTimeRequest::toCommand).toList())
+                    .build();
+        }
+
+        @JsonIgnore
+        @AssertTrue(message = "수업 가능 시간의 요일은 겹치면 안됩니다.")
+        public boolean isAvailableTimeDayOfWeekUnique() {
+            if (availableTimes == null) {
+                return true;
+            }
+            return availableTimes.stream()
+                    .map(AvailableTimeRequest::dayOfWeek)
+                    .distinct()
+                    .count() == availableTimes.size();
+        }
+    }
+
+    public record AvailableTimeRequest(
+            @NotNull DayOfWeek dayOfWeek,
+            @NotNull Boolean isHoliday,
+            LocalTime startTime,
+            LocalTime endTime
+    ) {
+        public AuthCommand.AvailableTimeRequest toCommand() {
+            return AuthCommand.AvailableTimeRequest.builder()
+                    .dayOfWeek(dayOfWeek)
+                    .isHoliday(isHoliday)
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .build();
+        }
+
+        @JsonIgnore
+        @AssertTrue(message = "시작 시간과 종료 시간은 둘 다 선택하던지 둘 다 선택하지 않아야 합니다.")
+        public boolean isTimeValid() {
+            return (startTime == null && endTime == null) || (startTime != null && endTime != null);
+        }
+
+        @JsonIgnore
+        @AssertTrue(message = "시작 시간은 종료 시간보다 빨라야 합니다.")
+        public boolean isStartTimeBeforeEndTime() {
+            if (startTime == null || endTime == null) {
+                return true;
+            }
+            return startTime.isBefore(endTime);
+        }
+
+        @JsonIgnore
+        @AssertTrue(message = "휴일인 경우에만 시작 시간과 종료 시간은 선택 입니다.")
+        public boolean isHolidayTimeValid() {
+            if (isHoliday == null) {
+                return true;
+            }
+            return isHoliday || (startTime != null && endTime != null);
+        }
+    }
+
+
     public record MemberRegisterRequest(
             @NotNull String name,
             @NotNull LocalDate birthDate,
@@ -45,6 +120,18 @@ public class AuthDto {
                     .profileUrl(profileUrl)
                     .workoutSchedule(workoutSchedule.stream().map(WorkoutScheduleRequest::toCommand).toList())
                     .build();
+        }
+
+        @JsonIgnore
+        @AssertTrue(message = "운동 희망일의 요일은 겹치면 안됩니다.")
+        public boolean isWorkoutScheduleDayOfWeekUnique() {
+            if (workoutSchedule == null) {
+                return true;
+            }
+            return workoutSchedule.stream()
+                    .map(WorkoutScheduleRequest::dayOfWeek)
+                    .distinct()
+                    .count() == workoutSchedule.size();
         }
     }
 

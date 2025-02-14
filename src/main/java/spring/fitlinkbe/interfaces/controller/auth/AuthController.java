@@ -24,6 +24,19 @@ public class AuthController {
     private final AuthFacade authFacade;
 
     /**
+     * Trainer 등록 API </br>
+     * 소셜 로그인 진행 후 REQUIRED_SMS 상태의 Trainer 를 휴대폰 인증 및 회원가입 진행
+     */
+    @PostMapping("/trainers/register")
+    public ApiResultResponse<Object> registerTrainer(@Login SecurityUser user,
+                                                     @RequestBody @Valid AuthDto.TrainerRegisterRequest requestBody) {
+        checkUserStatusOrThrow(user);
+        AuthCommand.Response result = authFacade.registerTrainer(user.getPersonalDetailId(), requestBody.toCommand());
+
+        return ApiResultResponse.ok(AuthDto.Response.from(result));
+    }
+
+    /**
      * Member 등록 API </br>
      * 소셜 로그인 진행 후 REQUIRED_SMS 상태의 Member 를 휴대폰 인증 및 회원가입 진행
      */
