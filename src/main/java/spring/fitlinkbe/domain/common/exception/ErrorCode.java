@@ -16,10 +16,15 @@ public enum ErrorCode {
 
     // Reservation 관련 ErrorCode
     RESERVATION_IS_FAILED("예약에 실패하였습니다.", 400),
+    SET_DISABLE_DATE_FAILED("예약 불가 설정에 실패하였습니다.", 400),
+    RESERVATION_IS_ALREADY_CANCEL("이미 예약이 취소되었습니다.",400),
+    RESERVATION_CANCEL_NOT_ALLOWED("예약 취소를 할 수 없는 상태입니다.",400),
     RESERVATION_NOT_FOUND("예약 정보를 찾지 못하였습니다.", 404),
 
     // Session 관련 ErrorCode
     SESSION_NOT_FOUND("세션 정보를 찾지 못하였습니다.", 404),
+    SESSION_IS_ALREADY_CANCEL("이미 세션이 취소되었습니다.",400),
+    SESSION_IS_ALREADY_COMPLETED("이미 끝난 세션은 취소할 수 없습니다.",400),
 
     // Notification 관련 ErrorCode
 
