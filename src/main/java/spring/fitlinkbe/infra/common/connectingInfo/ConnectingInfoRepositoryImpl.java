@@ -7,6 +7,8 @@ import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 
+import java.util.Optional;
+
 
 @Repository
 @RequiredArgsConstructor
@@ -22,7 +24,13 @@ public class ConnectingInfoRepositoryImpl implements ConnectingInfoRepository {
     }
 
     @Override
-    public void save(ConnectingInfo connectingInfo) {
-        connectingInfoJpaRepository.save(ConnectingInfoEntity.from(connectingInfo));
+    public ConnectingInfo save(ConnectingInfo connectingInfo) {
+        return connectingInfoJpaRepository.save(ConnectingInfoEntity.from(connectingInfo)).toDomain();
+    }
+
+    @Override
+    public Optional<ConnectingInfo> getExistConnectingInfo(Long memberId) {
+        return connectingInfoJpaRepository.findExistMemberConnectingInfo(memberId)
+                .map(ConnectingInfoEntity::toDomain);
     }
 }

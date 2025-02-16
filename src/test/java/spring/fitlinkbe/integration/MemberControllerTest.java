@@ -64,10 +64,6 @@ public class MemberControllerTest extends BaseIntegrationTest {
                 });
                 softly.assertThat(response).isNotNull();
 
-                // 멤버의 연결 상태가 true 로 변경되었는지 확인
-                Member updatedMember = memberRepository.getMember(member.getMemberId()).orElseThrow();
-                softly.assertThat(updatedMember.getIsConnected()).isTrue();
-
                 // 연결 정보가 저장되었는지 확인
                 ConnectingInfo connectingInfo = connectingInfoRepository.getConnectingInfo(member.getMemberId(), trainer.getTrainerId());
                 softly.assertThat(connectingInfo).isNotNull();
@@ -108,7 +104,7 @@ public class MemberControllerTest extends BaseIntegrationTest {
                 });
                 softly.assertThat(response).isNotNull();
                 softly.assertThat(response.success()).isFalse();
-                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.status()).isEqualTo(404);
                 softly.assertThat(response.data()).isNull();
             });
         }

@@ -19,4 +19,9 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                 .map(NotificationEntity::toDomain)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
     }
+
+    @Override
+    public void save(Notification notification) {
+        notificationJpaRepository.save(NotificationEntity.from(notification));
+    }
 }

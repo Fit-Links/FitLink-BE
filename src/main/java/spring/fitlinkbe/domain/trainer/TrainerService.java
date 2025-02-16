@@ -43,4 +43,14 @@ public class TrainerService {
     public void saveAvailableTimes(List<AvailableTime> availableTimes) {
         trainerRepository.saveAvailableTimes(availableTimes);
     }
+
+    public Trainer getTrainerByCode(String trainerCode) {
+        return trainerRepository.getTrainerByCode(trainerCode);
+    }
+
+    public PersonalDetail getTrainerDetail(Long trainerId) {
+        return personalDetailRepository.getTrainerDetail(trainerId)
+                .orElseThrow(() -> new CustomException(TRAINER_IS_NOT_FOUND,
+                        "트레이너 상세 정보를 찾을 수 없습니다. [trainerId: %d]".formatted(trainerId)));
+    }
 }
