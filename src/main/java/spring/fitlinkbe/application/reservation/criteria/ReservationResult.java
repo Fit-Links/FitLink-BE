@@ -1,4 +1,4 @@
-package spring.fitlinkbe.application.reservation;
+package spring.fitlinkbe.application.reservation.criteria;
 
 import lombok.Builder;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
