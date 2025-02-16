@@ -12,6 +12,8 @@ import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 
 import java.net.BindException;
 
+import static spring.fitlinkbe.support.utils.MessageConvertUtils.getErrorCustomMessage;
+
 @RestControllerAdvice
 @Slf4j(topic = "ExceptionLogger")
 public class ApiControllerAdvice {
@@ -41,7 +43,8 @@ public class ApiControllerAdvice {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ApiResultResponse<Object> handlerMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error("MethodArgumentNotValidException is occurred! {}", e.getMessage());
-        return ApiResultResponse.of(HttpStatus.BAD_REQUEST, false, e.getMessage(), null);
+        return ApiResultResponse.of(HttpStatus.BAD_REQUEST, false, getErrorCustomMessage(e),
+                null);
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
