@@ -42,6 +42,7 @@ public class Notification {
     @Getter
     public enum NotificationType {
         CONNECT("트레이너 연동 요청", "트레이너와 연동 요청이 왔습니다."),
+        DISCONNECT("트레이너 연동 해제", "회원과 연동이 해제되었습니다."),
         ;
 
         private final String description;

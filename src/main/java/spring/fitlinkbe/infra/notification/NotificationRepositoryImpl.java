@@ -21,6 +21,13 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     @Override
+    public Notification getNotification(Long personalDetailId, Notification.NotificationType notificationType) {
+        return notificationJpaRepository.findByPersonalDetail_PersonalDetailIdAndRefType(personalDetailId, notificationType)
+                .map(NotificationEntity::toDomain)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
+    }
+
+    @Override
     public void save(Notification notification) {
         notificationJpaRepository.save(NotificationEntity.from(notification));
     }

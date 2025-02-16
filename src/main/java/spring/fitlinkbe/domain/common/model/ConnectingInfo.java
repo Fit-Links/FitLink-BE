@@ -24,6 +24,6 @@ public class ConnectingInfo {
     private LocalDateTime updatedAt;
 
     public enum ConnectingStatus {
-        REQUESTED, CONNECTED, REJECTED
+        REQUESTED, CONNECTED, REJECTED, DISCONNECTED
     }
 }
