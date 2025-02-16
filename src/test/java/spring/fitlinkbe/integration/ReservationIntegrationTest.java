@@ -20,8 +20,8 @@ import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
 import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
-import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationDetailDto;
-import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationDto;
+import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationRequestDto;
+import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationResponseDto;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
 
 import java.time.LocalDate;
@@ -105,8 +105,8 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(result.statusCode()).isEqualTo(200);
-            List<ReservationDto.Response> content = result.body().jsonPath()
-                    .getList("data", ReservationDto.Response.class);
+            List<ReservationResponseDto.GetList> content = result.body().jsonPath()
+                    .getList("data", ReservationResponseDto.GetList.class);
             softly.assertThat(content.size()).isEqualTo(1);
         });
     }
@@ -149,8 +149,8 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(result.statusCode()).isEqualTo(200);
-            List<ReservationDto.Response> content = result.body().jsonPath()
-                    .getList("data", ReservationDto.Response.class);
+            List<ReservationResponseDto.GetList> content = result.body().jsonPath()
+                    .getList("data", ReservationResponseDto.GetList.class);
             softly.assertThat(content.size()).isEqualTo(1);
             softly.assertThat(content.get(0).isDayOff()).isTrue();
 
@@ -196,8 +196,8 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(result.statusCode()).isEqualTo(200);
-            List<ReservationDto.Response> content = result.body().jsonPath()
-                    .getList("data", ReservationDto.Response.class);
+            List<ReservationResponseDto.GetList> content = result.body().jsonPath()
+                    .getList("data", ReservationResponseDto.GetList.class);
             softly.assertThat(content.size()).isSameAs(0);
         });
     }
@@ -241,8 +241,8 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(result.statusCode()).isEqualTo(200);
-            List<ReservationDto.Response> content = result.body().jsonPath()
-                    .getList("data", ReservationDto.Response.class);
+            List<ReservationResponseDto.GetList> content = result.body().jsonPath()
+                    .getList("data", ReservationResponseDto.GetList.class);
             softly.assertThat(content.size()).isEqualTo(1);
         });
     }
@@ -286,8 +286,8 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(result.statusCode()).isEqualTo(200);
-            List<ReservationDto.Response> content = result.body().jsonPath()
-                    .getList("data", ReservationDto.Response.class);
+            List<ReservationResponseDto.GetList> content = result.body().jsonPath()
+                    .getList("data", ReservationResponseDto.GetList.class);
             softly.assertThat(content.size()).isEqualTo(0);
         });
     }
@@ -330,7 +330,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(result.statusCode()).isEqualTo(200);
-            softly.assertThat(result.body().jsonPath().getObject("data", ReservationDetailDto.Response.class)
+            softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.GetDetail.class)
                             .reservationId())
                     .isEqualTo(1L);
         });
@@ -374,7 +374,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(result.statusCode()).isEqualTo(200);
-            softly.assertThat(result.body().jsonPath().getObject("data", ReservationDetailDto.Response.class)
+            softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.GetDetail.class)
                             .reservationId())
                     .isEqualTo(1L);
         });
@@ -406,7 +406,6 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 .name(member.getName())
                 .dayOfWeek(reqeustDate.getDayOfWeek())
                 .status(RESERVATION_APPROVED)
-                .isApproved(true)
                 .priority(0)
                 .build();
 
@@ -425,9 +424,144 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(result.statusCode()).isEqualTo(200);
-            softly.assertThat(result.body().jsonPath().getObject("data", ReservationDetailDto.Response.class)
+            softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.GetDetail.class)
                             .sessionId())
                     .isEqualTo(1L);
+        });
+    }
+
+    @Test
+    @DisplayName("예약 불가 설정을 하면 이전의 있던 예약들은 취소되며, 예약 불가 설정한 예약은 저장됩니다.")
+    void setDisabledReservation() {
+        // given
+        PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+                .orElseThrow();
+
+        String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                personalDetails.getPersonalDetailId());
+
+        Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
+        Member member = memberRepository.getMember(1L).orElseThrow();
+
+        LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+
+        Reservation reservation = Reservation.builder()
+                .reservationDate(reservationDate)
+                .trainer(trainer)
+                .member(member)
+                .name(member.getName())
+                .dayOfWeek(reservationDate.getDayOfWeek())
+                .status(RESERVATION_WAITING)
+                .priority(0)
+                .build();
+
+        reservationRepository.saveReservation(reservation).orElseThrow();
+
+        LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
+
+        ReservationRequestDto.SetDisabledTime request = ReservationRequestDto.SetDisabledTime
+                .builder()
+                .date(requestDate)
+                .build();
+
+        // when
+        ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/availability/disable",
+                request,
+                accessToken);
+
+        // then
+        assertSoftly(softly -> {
+            softly.assertThat(result.statusCode()).isEqualTo(200);
+            softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)
+                    .reservationId()).isEqualTo(2L);
+        });
+    }
+
+    @Test
+    @DisplayName("예약 불가 설정을 하면 이전의 확정된 예약들과 함께 세션도 취소되며, 예약 불가 설정한 예약은 저장됩니다.")
+    void setDisabledReservationWithCancelSession() {
+        // given
+        PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+                .orElseThrow();
+
+        String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                personalDetails.getPersonalDetailId());
+
+        Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
+        Member member = memberRepository.getMember(1L).orElseThrow();
+
+        SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+
+        LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+
+        Reservation reservation = Reservation.builder()
+                .reservationDate(reservationDate)
+                .trainer(trainer)
+                .member(member)
+                .sessionInfo(sessionInfo)
+                .name(member.getName())
+                .dayOfWeek(reservationDate.getDayOfWeek())
+                .status(RESERVATION_WAITING)
+                .priority(0)
+                .build();
+
+        Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+        Session session = Session.builder()
+                .reservation(savedReservation)
+                .build();
+
+        reservationRepository.saveSession(session);
+
+        LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
+
+        ReservationRequestDto.SetDisabledTime request = ReservationRequestDto.SetDisabledTime
+                .builder()
+                .date(requestDate)
+                .build();
+
+        // when
+        ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/availability/disable",
+                request,
+                accessToken);
+
+        // then
+        assertSoftly(softly -> {
+            softly.assertThat(result.statusCode()).isEqualTo(200);
+            softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)
+                    .reservationId()).isEqualTo(2L);
+        });
+    }
+
+    @Test
+    @DisplayName("예약 불가 설정한 시간에 취소할 예약이 없으면 예약 불가 설정한 예약만 저장됩니다.")
+    void setOnlyDisabledReservation() {
+        // given
+        PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+                .orElseThrow();
+
+        String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                personalDetails.getPersonalDetailId());
+
+        LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
+
+        ReservationRequestDto.SetDisabledTime request = ReservationRequestDto.SetDisabledTime
+                .builder()
+                .date(requestDate)
+                .build();
+
+        // when
+        ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/availability/disable",
+                request,
+                accessToken);
+
+        // then
+        assertSoftly(softly -> {
+            softly.assertThat(result.statusCode()).isEqualTo(200);
+            softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)
+                    .reservationId()).isEqualTo(1L);
         });
     }
 }
