@@ -29,4 +29,8 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             "LEFT JOIN FETCH r.trainer " +
             "WHERE r.reservationId = :reservationId")
     Optional<ReservationEntity> findByIdJoinFetch(Long reservationId);
+
+    @Query("SELECT r FROM ReservationEntity r " +
+            "WHERE r.reservationDate > :nowDate")
+    List<ReservationEntity> findAllReservation(@Param("nowDate") LocalDateTime nowDate);
 }

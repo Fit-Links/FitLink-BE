@@ -51,12 +51,6 @@ public class ReservationEntity extends BaseTimeEntity {
 
     private int priority;
 
-    private boolean isApproved;
-
-    private boolean isFixed;
-
-    private boolean isDisabled;
-
     private boolean isDayOff;
 
     public static ReservationEntity from(Reservation reservation) {
@@ -75,20 +69,17 @@ public class ReservationEntity extends BaseTimeEntity {
                 .dayOfWeek(reservation.getDayOfWeek())
                 .status(reservation.getStatus())
                 .cancelReason(reservation.getCancelReason())
-                .isApproved(reservation.isApproved())
                 .priority(reservation.getPriority())
-                .isFixed(reservation.isFixed())
                 .isDayOff(reservation.isDayOff())
-                .isDisabled(reservation.isDisabled())
                 .build();
     }
 
     public Reservation toDomain() {
         return Reservation.builder()
                 .reservationId(reservationId)
-                .member((isDayOff || isDisabled) ? null : member.toDomain())
+                .member(isReservationNotAllowed() ? null : member.toDomain())
                 .trainer(trainer.toDomain())
-                .sessionInfo((isDayOff || isDisabled) ? null : sessionInfo.toDomain())
+                .sessionInfo((sessionInfo == null || isReservationNotAllowed()) ? null : sessionInfo.toDomain())
                 .name(name)
                 .reservationDate(reservationDate)
                 .changeDate(changeDate)
@@ -96,12 +87,13 @@ public class ReservationEntity extends BaseTimeEntity {
                 .status(status)
                 .cancelReason(cancelReason)
                 .priority(priority)
-                .isApproved(isApproved)
-                .isFixed(isFixed)
                 .isDayOff(isDayOff)
-                .isDisabled(isDisabled)
                 .createdAt(getCreatedAt())
                 .updatedAt(getUpdatedAt())
                 .build();
+    }
+
+    private boolean isReservationNotAllowed() {
+        return (isDayOff || (status == Reservation.Status.DISABLED_TIME_RESERVATION));
     }
 }

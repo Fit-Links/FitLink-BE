@@ -33,8 +33,12 @@ public class SessionInfoEntity extends BaseTimeEntity {
 
     public static SessionInfoEntity from(SessionInfo sessionInfo) {
 
+        if (sessionInfo == null) {
+            return null;
+        }
+
         return SessionInfoEntity.builder()
-                .sessionInfoId(sessionInfo.getSessionInfoId() != null ? sessionInfo.getSessionInfoId() : null)
+                .sessionInfoId(sessionInfo.getSessionInfoId())
                 .trainer(TrainerEntity.from(sessionInfo.getTrainer()))
                 .member(MemberEntity.from(sessionInfo.getMember()))
                 .totalCount(sessionInfo.getTotalCount())
