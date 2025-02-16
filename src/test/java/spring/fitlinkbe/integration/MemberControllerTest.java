@@ -12,7 +12,6 @@ import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.member.Member;
-import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.domain.notification.NotificationRepository;
 import spring.fitlinkbe.domain.trainer.Trainer;
@@ -25,9 +24,6 @@ public class MemberControllerTest extends BaseIntegrationTest {
 
     @Autowired
     TestDataHandler testDataHandler;
-
-    @Autowired
-    MemberRepository memberRepository;
 
     @Autowired
     ConnectingInfoRepository connectingInfoRepository;
