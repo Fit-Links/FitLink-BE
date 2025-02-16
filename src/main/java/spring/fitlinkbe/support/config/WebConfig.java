@@ -13,11 +13,11 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
-	private final AuthTokenProvider tokenProvider;
-	private final PersonalDetailRepository personalDetailRepository;
+    private final AuthTokenProvider tokenProvider;
+    private final PersonalDetailRepository personalDetailRepository;
 
-	@Override
-	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-		resolvers.add(new LoginMemberArgumentResolver(tokenProvider, personalDetailRepository));
-	}
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(new LoginMemberArgumentResolver(tokenProvider, personalDetailRepository));
+    }
 }
