@@ -13,6 +13,8 @@ public enum ErrorCode {
     // Member 관련 ErrorCode
     MEMBER_DETAIL_NOT_FOUND("멤버 상세 정보를 찾지 못하였습니다", 404),
     MEMBER_NOT_FOUND("멤버 정보를 찾지 못하였습니다.", 404),
+    MEMBER_NOT_CONNECTED_TRAINER("연결된 트레이너가 존재하지 않습니다.", 400),
+    DISCONNECT_AVAILABLE_AFTER_ACCEPTED("트래이너 연동 수락 이후에만 연결을 해제할 수 있습니다.", 400),
 
 
     // Reservation 관련 ErrorCode

@@ -3,6 +3,7 @@ package spring.fitlinkbe.domain.notification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 
 @Service
@@ -13,6 +14,11 @@ public class NotificationService {
 
     public void sendConnectRequestNotification(PersonalDetail trainerDetail, String memberName, Long connectingInfoId) {
         Notification notification = Notification.connectRequestNotification(trainerDetail, memberName, connectingInfoId);
+        notificationRepository.save(notification);
+    }
+
+    public void sendDisconnectNotification(String name, Long trainerId) {
+        Notification notification = Notification.disconnectNotification(name, trainerId);
         notificationRepository.save(notification);
     }
 }

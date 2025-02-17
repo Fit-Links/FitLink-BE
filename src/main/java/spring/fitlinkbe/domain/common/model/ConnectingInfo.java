@@ -23,6 +23,10 @@ public class ConnectingInfo {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public void disconnect() {
+        this.status = ConnectingStatus.DISCONNECTED;
+    }
+
     public enum ConnectingStatus {
         REQUESTED, CONNECTED, REJECTED, DISCONNECTED
     }

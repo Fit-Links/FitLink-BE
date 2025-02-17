@@ -57,7 +57,7 @@ public class MemberService {
      * @throws CustomException 이미 연결되어 있을 경우
      */
     public void checkMemberAlreadyConnected(Long memberId) {
-        Optional<ConnectingInfo> existsConnectingInfo = connectingInfoRepository.getExistConnectingInfo(memberId);
+        Optional<ConnectingInfo> existsConnectingInfo = connectingInfoRepository.getConnectedInfo(memberId);
         if (existsConnectingInfo.isPresent()) {
             throw new CustomException(ErrorCode.MEMBER_CONNECTED_TRAINER_ALREADY);
         }
@@ -76,5 +76,16 @@ public class MemberService {
                 .build();
 
         return connectingInfoRepository.save(connectingInfo);
+    }
+
+    /**
+     * 해당 회원의 트레이너 연결 정보 조회 </br>
+     * 요청 상태거나 연결된 상태만 조회
+     * @param memberId
+     * @return
+     */
+    public ConnectingInfo getConnectedInfo(Long memberId) {
+        return connectingInfoRepository.getConnectedInfo(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_CONNECTED_TRAINER));
     }
 }

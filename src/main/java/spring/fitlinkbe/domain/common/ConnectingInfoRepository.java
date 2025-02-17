@@ -9,5 +9,12 @@ public interface ConnectingInfoRepository {
 
     ConnectingInfo save(ConnectingInfo connectingInfo);
 
-    Optional<ConnectingInfo> getExistConnectingInfo(Long memberId);
+    /**
+     * 해당 회원의 연결된 또는, 연결 요청중인 트레이너 연결 정보를 가져온다.
+     *
+     * @param memberId
+     * @return
+     */
+    Optional<ConnectingInfo> getConnectedInfo(Long memberId);
+
 }

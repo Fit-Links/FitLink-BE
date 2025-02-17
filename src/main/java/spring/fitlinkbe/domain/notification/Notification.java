@@ -38,6 +38,21 @@ public class Notification {
                 .build();
     }
 
+    public static Notification disconnectNotification(String memberName, Long trainerId) {
+        String content = memberName + " 님과의 연동이 해제되었습니다.";
+
+        return Notification.builder()
+                .refId(trainerId)
+                .refType(NotificationType.DISCONNECT)
+                .name(NotificationType.DISCONNECT.getName())
+                .content(content)
+                .isSent(true)
+                .isRead(false)
+                .isProcessed(false)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
     @RequiredArgsConstructor
     @Getter
     public enum NotificationType {
