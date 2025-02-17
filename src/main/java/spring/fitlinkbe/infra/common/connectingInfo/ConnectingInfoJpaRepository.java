@@ -19,6 +19,6 @@ public interface ConnectingInfoJpaRepository extends JpaRepository<ConnectingInf
      * @return
      */
     @Query("select c from ConnectingInfoEntity c join fetch c.member m " +
-            "where m.memberId = :memberId and c.status == 'CONNECTED' or c.status == 'REQUESTED'")
+            "where m.memberId = :memberId and (c.status = 'CONNECTED' or c.status = 'REQUESTED')")
     Optional<ConnectingInfoEntity> findExistMemberConnectingInfo(Long memberId);
 }
