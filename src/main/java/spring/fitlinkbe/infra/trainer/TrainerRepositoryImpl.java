@@ -2,6 +2,8 @@ package spring.fitlinkbe.infra.trainer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.DayOff;
 import spring.fitlinkbe.domain.trainer.Trainer;
@@ -73,5 +75,11 @@ public class TrainerRepositoryImpl implements TrainerRepository {
         availableTimeJpaRepository.saveAll(availableTimes.stream()
                 .map(AvailableTimeEntity::from)
                 .toList());
+    }
+
+    @Override
+    public Trainer getTrainerByCode(String trainerCode) {
+        return trainerJpaRepository.findByTrainerCode(trainerCode)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRAINER_IS_NOT_FOUND)).toDomain();
     }
 }

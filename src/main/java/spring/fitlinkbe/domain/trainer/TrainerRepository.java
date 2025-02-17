@@ -18,4 +18,6 @@ public interface TrainerRepository {
     Optional<DayOff> saveDayOff(DayOff dayOff);
 
     void saveAvailableTimes(List<AvailableTime> availableTimes);
+
+    Trainer getTrainerByCode(String trainerCode);
 }
