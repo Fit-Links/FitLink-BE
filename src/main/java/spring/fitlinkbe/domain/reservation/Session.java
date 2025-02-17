@@ -5,6 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+
+import static spring.fitlinkbe.domain.common.exception.ErrorCode.SESSION_IS_ALREADY_CANCEL;
+import static spring.fitlinkbe.domain.common.exception.ErrorCode.SESSION_IS_ALREADY_COMPLETED;
 
 @Builder(toBuilder = true)
 @Getter
@@ -22,4 +26,17 @@ public class Session {
         SESSION_PROCESSING, // 세션 진행
         SESSION_COMPLETED, // 세션 완료
     }
+
+    public void cancel(String message) {
+        if (status == Status.SESSION_CANCELLED) {
+            throw new CustomException(SESSION_IS_ALREADY_CANCEL);
+        }
+        if (status == Status.SESSION_COMPLETED) {
+            throw new CustomException(SESSION_IS_ALREADY_COMPLETED);
+        }
+        cancelReason = message;
+        status = Status.SESSION_CANCELLED;
+    }
+
+
 }

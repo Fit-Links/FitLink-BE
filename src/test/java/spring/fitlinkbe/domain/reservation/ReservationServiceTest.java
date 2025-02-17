@@ -1,6 +1,5 @@
 package spring.fitlinkbe.domain.reservation;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
+import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.support.utils.DateUtils;
 
 import java.time.LocalDate;
@@ -16,10 +17,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_IS_ALREADY_CANCEL;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_NOT_FOUND;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
 
 class ReservationServiceTest {
 
@@ -55,7 +59,7 @@ class ReservationServiceTest {
         List<Reservation> result = reservationService.getReservations(startDdate, UserRole.TRAINER, 1L);
 
         //then
-        Assertions.assertThat(result).hasSize(1);
+        assertThat(result).hasSize(1);
     }
 
     @Test
@@ -78,7 +82,7 @@ class ReservationServiceTest {
         List<Reservation> result = reservationService.getReservations(startDdate, UserRole.MEMBER, 1L);
 
         //then
-        Assertions.assertThat(result).hasSize(1);
+        assertThat(result).hasSize(1);
     }
 
     @Test
@@ -96,7 +100,7 @@ class ReservationServiceTest {
         List<Reservation> result = reservationService.getReservations(startDdate, UserRole.TRAINER, 1L);
 
         //then
-        Assertions.assertThat(result).hasSize(0);
+        assertThat(result).hasSize(0);
     }
 
     @Test
@@ -115,7 +119,7 @@ class ReservationServiceTest {
         Reservation result = reservationService.getReservation(reservation.getReservationId());
 
         //then
-        Assertions.assertThat(result.getReservationId()).isEqualTo(1L);
+        assertThat(result.getReservationId()).isEqualTo(1L);
     }
 
     @Test
@@ -141,7 +145,9 @@ class ReservationServiceTest {
     void getSession() {
         //given
         Session session = Session.builder()
-                .reservation(Reservation.builder().reservationId(10L).build())
+                .reservation(Reservation.builder().reservationId(10L)
+                        .status(RESERVATION_APPROVED)
+                        .build())
                 .sessionId(1L)
                 .build();
 
@@ -149,10 +155,11 @@ class ReservationServiceTest {
                 .thenReturn(Optional.of(session));
 
         //when
-        Session result = reservationService.getSession(true, session.getReservation().getReservationId());
+        Session result = reservationService.getSession(
+                RESERVATION_APPROVED, session.getReservation().getReservationId());
 
         //then
-        Assertions.assertThat(result.getSessionId()).isEqualTo(1L);
+        assertThat(result.getSessionId()).isEqualTo(1L);
     }
 
     @Test
@@ -165,10 +172,104 @@ class ReservationServiceTest {
                 .thenReturn(Optional.empty());
 
         //when
-        Session result = reservationService.getSession(false, reservationId);
+        Session result = reservationService.getSession(RESERVATION_WAITING, reservationId);
 
         //then
-        Assertions.assertThat(result).isNull();
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("예약을 취소하면 RESERVATION_CANCELLED 상태가 됩니다.")
+    void cancelReservations() {
+        //given
+        Reservation reservation = Reservation
+                .builder()
+                .status(RESERVATION_APPROVED)
+                .build();
+
+        Reservation canceledReservation = Reservation.builder()
+                .status(RESERVATION_CANCELLED)
+                .build();
+
+        String message = "예약 불가 설정";
+
+        when(reservationRepository.cancelReservations(List.of(reservation))).thenReturn(List.of(canceledReservation));
+
+        //when
+        reservationService.cancelReservations(List.of(reservation), message);
+
+        //then
+        assertThat(reservation.getStatus()).isEqualTo(RESERVATION_CANCELLED);
+    }
+
+    @Test
+    @DisplayName("확정된 예약을 취소하면 RESERVATION_CANCELLED 상태가 되고, 세션도 같이 취소됩니다.")
+    void cancelReservationWithSession() {
+        //given
+        Reservation reservation = Reservation
+                .builder()
+                .status(RESERVATION_APPROVED)
+                .build();
+
+        Reservation canceledReservation = Reservation.builder()
+                .status(RESERVATION_CANCELLED)
+                .build();
+
+        String message = "예약 불가 설정";
+
+        when(reservationRepository.cancelReservations(List.of(reservation))).thenReturn(List.of(canceledReservation));
+
+        //when
+        reservationService.cancelReservations(List.of(reservation), message);
+
+        //then
+        assertThat(reservation.getStatus()).isEqualTo(RESERVATION_CANCELLED);
+    }
+
+    @Test
+    @DisplayName("이미 예약이 취소되었다면 RESERVATION_IS_ALREADY_CANCEL 예외를 반환합니다.")
+    void cancelReservationsWithAlreadyCancelled() {
+        //given
+        Reservation reservation = Reservation
+                .builder()
+                .status(RESERVATION_CANCELLED)
+                .build();
+
+        String message = "예약 불가 설정";
+
+        //when & then
+        assertThatThrownBy(() -> reservationService.cancelReservations(List.of(reservation), message))
+                .isInstanceOf(CustomException.class)
+                .extracting("errorCode")
+                .isEqualTo(RESERVATION_IS_ALREADY_CANCEL);
+    }
+
+
+    @Test
+    @DisplayName("예약 불가 시간을 설정합니다.")
+    void setDisabledTime() {
+        //given
+        ReservationCommand.SetDisabledTime command = ReservationCommand
+                .SetDisabledTime.builder()
+                .date(LocalDateTime.parse("2024-10-14T10:00"))
+                .trainerId(1L)
+                .build();
+
+        Trainer trainer = Trainer.builder().trainerId(1L).build();
+
+        Reservation savedReservation = Reservation.builder()
+                .trainer(trainer)
+                .status(DISABLED_TIME_RESERVATION)
+                .build();
+
+        when(reservationRepository.saveReservation(any(Reservation.class)))
+                .thenReturn(Optional.ofNullable(savedReservation));
+
+        //when
+        Reservation result = reservationService.setDisabledTime(command, trainer);
+
+        //then
+        assertThat(result.getStatus()).isEqualTo(DISABLED_TIME_RESERVATION);
     }
 
 }

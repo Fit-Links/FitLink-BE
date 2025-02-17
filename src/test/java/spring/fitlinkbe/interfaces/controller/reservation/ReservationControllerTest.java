@@ -1,13 +1,15 @@
 package spring.fitlinkbe.interfaces.controller.reservation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import spring.fitlinkbe.application.reservation.ReservationFacade;
-import spring.fitlinkbe.application.reservation.ReservationResult;
+import spring.fitlinkbe.application.reservation.criteria.ReservationResult;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
@@ -16,6 +18,7 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.domain.trainer.Trainer;
+import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationRequestDto;
 import spring.fitlinkbe.support.argumentresolver.LoginMemberArgumentResolver;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
 import spring.fitlinkbe.support.security.SecurityUser;
@@ -26,8 +29,10 @@ import java.util.List;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,6 +43,9 @@ class ReservationControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private ReservationFacade reservationFacade;
@@ -380,6 +388,131 @@ class ReservationControllerTest {
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
+    @Test
+    @DisplayName("예약 불가능한 날짜를 설정한다.")
+    void setDisabledDate() throws Exception {
+        //given
+        ReservationRequestDto.SetDisabledTime request = ReservationRequestDto.SetDisabledTime.builder()
+                .date(LocalDateTime.now().plusSeconds(1))
+                .build();
+
+        PersonalDetail personalDetail = PersonalDetail.builder()
+                .personalDetailId(1L)
+                .name("강산")
+                .memberId(null)
+                .trainerId(1L)
+                .build();
+
+        SecurityUser user = new SecurityUser(personalDetail);
+
+        String accessToken = getAccessToken(personalDetail);
+
+        Reservation reservation = Reservation.builder()
+                .reservationId(1L)
+                .build();
+
+        when(reservationFacade.setDisabledReservation(request.toCriteria(user.getTrainerId()))).thenReturn(reservation);
+
+        //when & then
+        mockMvc.perform(post("/v1/reservations/availability/disable")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .with(oauth2Login().oauth2User(user))
+                        .with(csrf())
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))  // OAuth2 인증
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.msg").value("OK"))
+                .andExpect(jsonPath("$.data.reservationId").value(1L));
+
+    }
+
+    @Test
+    @DisplayName("잘못된 형태의 날짜로 설정하면 예외를 반환한다.")
+    void setDisabledDateWithStrangeForm() throws Exception {
+        //given
+        ReservationRequestDto.SetDisabledTime request = ReservationRequestDto.SetDisabledTime.builder()
+                .date(null)
+                .build();
+
+        PersonalDetail personalDetail = PersonalDetail.builder()
+                .personalDetailId(1L)
+                .name("강산")
+                .memberId(null)
+                .trainerId(1L)
+                .build();
+
+        SecurityUser user = new SecurityUser(personalDetail);
+
+        String accessToken = getAccessToken(personalDetail);
+
+        Reservation reservation = Reservation.builder()
+                .reservationId(1L)
+                .build();
+
+        when(reservationFacade.setDisabledReservation(request.toCriteria(user.getTrainerId()))).thenReturn(reservation);
+
+        //when & then
+        mockMvc.perform(post("/v1/reservations/availability/disable")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .with(oauth2Login().oauth2User(user))
+                        .with(csrf())
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))  // OAuth2 인증
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.msg").value("현재 날짜보다 이전 날짜는 설정이 불가능 합니다."))
+                .andExpect(jsonPath("$.data").doesNotExist());
+
+    }
+
+
+    @Test
+    @DisplayName("현재보다 이전 날짜를 예약 불가능한 날짜로 설정하면 예외를 반환한다.")
+    void setDisabledDateBeforeNow() throws Exception {
+        //given
+        ReservationRequestDto.SetDisabledTime request = ReservationRequestDto.SetDisabledTime.builder()
+                .date(LocalDateTime.now().minusDays(1))
+                .build();
+
+        PersonalDetail personalDetail = PersonalDetail.builder()
+                .personalDetailId(1L)
+                .name("강산")
+                .memberId(null)
+                .trainerId(1L)
+                .build();
+
+        SecurityUser user = new SecurityUser(personalDetail);
+
+        String accessToken = getAccessToken(personalDetail);
+
+        Reservation reservation = Reservation.builder()
+                .reservationId(1L)
+                .build();
+
+        when(reservationFacade.setDisabledReservation(request.toCriteria(user.getTrainerId()))).thenReturn(reservation);
+
+        //when & then
+        mockMvc.perform(post("/v1/reservations/availability/disable")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .with(oauth2Login().oauth2User(user))
+                        .with(csrf())
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))  // OAuth2 인증
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.msg").value("현재 날짜보다 이전 날짜는 설정이 불가능 합니다."))
+                .andExpect(jsonPath("$.data").doesNotExist());
+
+    }
+
+
     private String getAccessToken(PersonalDetail personalDetail) {
 
         String accessToken = "mockedAccessToken";
@@ -394,4 +527,6 @@ class ReservationControllerTest {
 
         return accessToken;
     }
+
+
 }

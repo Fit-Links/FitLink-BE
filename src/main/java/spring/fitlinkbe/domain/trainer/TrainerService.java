@@ -7,7 +7,6 @@ import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
-import spring.fitlinkbe.domain.member.Member;
 
 import java.util.List;
 

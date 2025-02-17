@@ -21,6 +21,15 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     private final SessionJpaRepository sessionJpaRepository;
 
     @Override
+    public List<Reservation> getReservations() {
+
+        return reservationJpaRepository.findAllReservation(LocalDateTime.now())
+                .stream()
+                .map(ReservationEntity::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<Reservation> getReservations(LocalDateTime startDate, LocalDateTime endDate,
                                              UserRole role, Long userId) {
 
@@ -35,6 +44,19 @@ public class ReservationRepositoryImpl implements ReservationRepository {
         return reservationJpaRepository.findByTrainerAndDateRange(userId,
                         startDate, endDate)
                 .stream()
+                .map(ReservationEntity::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<Reservation> cancelReservations(List<Reservation> canceledReservations) {
+        List<ReservationEntity> entities = canceledReservations.stream()
+                .map(ReservationEntity::from)
+                .toList();
+
+        List<ReservationEntity> savedEntities = reservationJpaRepository.saveAll(entities);
+
+        return savedEntities.stream()
                 .map(ReservationEntity::toDomain)
                 .toList();
     }
@@ -70,4 +92,18 @@ public class ReservationRepositoryImpl implements ReservationRepository {
 
         return Optional.of(savedEntity.toDomain());
     }
+
+    @Override
+    public List<Session> cancelSessions(List<Session> sessions) {
+        List<SessionEntity> entities = sessions.stream()
+                .map(SessionEntity::from)
+                .toList();
+
+        List<SessionEntity> savedEntities = sessionJpaRepository.saveAll(entities);
+
+        return savedEntities.stream()
+                .map(SessionEntity::toDomain)
+                .toList();
+    }
+
 }
