@@ -32,7 +32,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
     NotificationRepository notificationRepository;
 
     @Nested
-    @DisplayName("멤버 트레이너 연결 요청 성공")
+    @DisplayName("멤버 트레이너 연결 요청 테스트")
     public class MemberConnectTest {
         private static final String MEMBER_CONNECT_API = "/v1/members/connect";
 
@@ -136,7 +136,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
     }
 
     @Nested
-    @DisplayName("멤버 트레이너 연결 해제 요청 성공")
+    @DisplayName("멤버 트레이너 연결 해제 요청 테스트")
     public class MemberDisconnectTest {
         private static final String MEMBER_DISCONNECT_API = "/v1/members/disconnect";
 
