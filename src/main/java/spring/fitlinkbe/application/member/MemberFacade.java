@@ -13,12 +13,12 @@ import spring.fitlinkbe.domain.trainer.TrainerService;
 
 @Component
 @RequiredArgsConstructor
-@Transactional
 public class MemberFacade {
     private final MemberService memberService;
     private final TrainerService trainerService;
     private final NotificationService notificationService;
 
+    @Transactional
     public void connectTrainer(Long memberId, String trainerCode) {
         memberService.checkMemberAlreadyConnected(memberId);
 

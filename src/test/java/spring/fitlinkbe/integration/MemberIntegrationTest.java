@@ -20,7 +20,7 @@ import spring.fitlinkbe.integration.common.TestDataHandler;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.member.dto.MemberDto;
 
-public class MemberControllerTest extends BaseIntegrationTest {
+public class MemberIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     TestDataHandler testDataHandler;
