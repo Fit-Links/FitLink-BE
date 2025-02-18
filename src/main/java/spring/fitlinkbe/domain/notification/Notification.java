@@ -38,12 +38,13 @@ public class Notification {
                 .build();
     }
 
-    public static Notification disconnectNotification(String memberName, Long trainerId) {
+    public static Notification disconnectNotification(String memberName, PersonalDetail trainerDetail) {
         String content = memberName + " 님과의 연동이 해제되었습니다.";
 
         return Notification.builder()
-                .refId(trainerId)
+                .refId(null)
                 .refType(NotificationType.DISCONNECT)
+                .personalDetail(trainerDetail)
                 .name(NotificationType.DISCONNECT.getName())
                 .content(content)
                 .isSent(true)

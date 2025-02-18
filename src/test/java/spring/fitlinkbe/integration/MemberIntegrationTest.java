@@ -152,7 +152,8 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
             // when
             // 멤버가 트레이너와 연결 해제 요청을 보낸다면
-            ExtractableResponse<Response> result = post(MEMBER_DISCONNECT_API, null, token);
+
+            ExtractableResponse<Response> result = post(MEMBER_DISCONNECT_API, token);
 
             // then
             SoftAssertions.assertSoftly(softly -> {
@@ -168,7 +169,9 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
 
                 // 알림 정보가 생성되었는지 확인
-                Notification notification = notificationRepository.getNotification(trainer.getTrainerId(), Notification.NotificationType.DISCONNECT);
+                PersonalDetail trainerPersonalDetail = testDataHandler.getPersonalDetail(trainer.getTrainerId());
+                Notification notification = notificationRepository.getNotification(trainerPersonalDetail.getPersonalDetailId(),
+                        Notification.NotificationType.DISCONNECT);
                 softly.assertThat(notification).isNotNull();
             });
         }
@@ -184,7 +187,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
             // when
             // 회원이 트레이너와 연결 해제 요청을 보낸다면
-            ExtractableResponse<Response> result = post(MEMBER_DISCONNECT_API, null, token);
+            ExtractableResponse<Response> result = post(MEMBER_DISCONNECT_API, token);
 
             // then
             // 연결 정보가 없다는 응답을 받는다
@@ -194,7 +197,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 });
                 softly.assertThat(response).isNotNull();
                 softly.assertThat(response.success()).isFalse();
-                softly.assertThat(response.status()).isEqualTo(404);
+                softly.assertThat(response.status()).isEqualTo(400);
                 softly.assertThat(response.data()).isNull();
             });
         }

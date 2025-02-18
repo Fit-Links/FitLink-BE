@@ -88,4 +88,8 @@ public class MemberService {
         return connectingInfoRepository.getConnectedInfo(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_CONNECTED_TRAINER));
     }
+
+    public void saveConnectingInfo(ConnectingInfo connectingInfo) {
+        connectingInfoRepository.save(connectingInfo);
+    }
 }

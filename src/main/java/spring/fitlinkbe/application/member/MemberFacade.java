@@ -40,8 +40,10 @@ public class MemberFacade {
         }
 
         Member member = memberService.getMember(memberId);
-        notificationService.sendDisconnectNotification(member.getName(), connectingInfo.getTrainer().getTrainerId());
+        PersonalDetail trainerDetail = trainerService.getTrainerDetail(connectingInfo.getTrainer().getTrainerId());
+        notificationService.sendDisconnectNotification(member.getName(), trainerDetail);
 
         connectingInfo.disconnect();
+        memberService.saveConnectingInfo(connectingInfo);
     }
 }
