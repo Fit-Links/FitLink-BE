@@ -167,4 +167,13 @@ public class TestDataHandler {
                 .build();
         connectingInfoRepository.save(connectingInfo);
     }
+
+    public void requestConnectTrainer(Member member, Trainer trainer) {
+        ConnectingInfo connectingInfo = ConnectingInfo.builder()
+                .member(member)
+                .trainer(trainer)
+                .status(ConnectingInfo.ConnectingStatus.REQUESTED)
+                .build();
+        connectingInfoRepository.save(connectingInfo);
+    }
 }
