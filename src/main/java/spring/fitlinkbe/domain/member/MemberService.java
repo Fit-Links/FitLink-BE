@@ -59,7 +59,7 @@ public class MemberService {
     public void checkMemberAlreadyConnected(Long memberId) {
         Optional<ConnectingInfo> existsConnectingInfo = connectingInfoRepository.getConnectedInfo(memberId);
         if (existsConnectingInfo.isPresent()) {
-            throw new CustomException(ErrorCode.MEMBER_CONNECTED_TRAINER_ALREADY);
+            throw new CustomException(ErrorCode.CONNECT_AVAILABLE_AFTER_DISCONNECTED);
         }
     }
 
