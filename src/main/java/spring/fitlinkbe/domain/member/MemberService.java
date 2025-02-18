@@ -50,11 +50,10 @@ public class MemberService {
     }
 
     /**
-     * 멤버가 이미 연결되어 있는지 확인 </br>
-     * 해당 회원의 이미 존재하는, REJECTED 되지 않은 ConnectingInfo 가 있는지 확인
+     * 이미 연결된, 연결 시도중인 트레이너가 있는지 확인
      *
      * @param memberId
-     * @throws CustomException 이미 연결되어 있을 경우
+     * @throws CustomException 이미 연결된, 연결 시도중인 트레이너가 있을 경우
      */
     public void checkMemberAlreadyConnected(Long memberId) {
         Optional<ConnectingInfo> existsConnectingInfo = connectingInfoRepository.getConnectedInfo(memberId);
