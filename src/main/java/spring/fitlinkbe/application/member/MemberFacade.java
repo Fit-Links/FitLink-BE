@@ -35,7 +35,7 @@ public class MemberFacade {
     @Transactional
     public void disconnectTrainer(Long memberId) {
         ConnectingInfo connectingInfo = memberService.getConnectedInfo(memberId);
-        if (connectingInfo.getStatus() == ConnectingInfo.ConnectingStatus.REQUESTED) {
+        if (connectingInfo.isPending()) {
             throw new CustomException(ErrorCode.DISCONNECT_AVAILABLE_AFTER_ACCEPTED);
         }
 
