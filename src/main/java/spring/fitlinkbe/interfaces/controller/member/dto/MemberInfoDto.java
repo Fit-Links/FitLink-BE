@@ -4,6 +4,7 @@ public class MemberInfoDto {
 
     public record Response(
             Long memberId,
+            String name,
             Long trainerId,
             String trainerName,
             String profilePictureUrl,

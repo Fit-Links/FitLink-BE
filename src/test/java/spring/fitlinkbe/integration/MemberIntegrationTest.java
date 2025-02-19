@@ -264,6 +264,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.success()).isTrue();
                 softly.assertThat(response.status()).isEqualTo(200);
                 softly.assertThat(data.memberId()).isEqualTo(member.getMemberId());
+                softly.assertThat(data.name()).isEqualTo(member.getName());
                 softly.assertThat(data.trainerId()).isEqualTo(trainer.getTrainerId());
                 softly.assertThat(data.sessionInfo().sessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
                 softly.assertThat(data.sessionInfo().remainingCount()).isEqualTo(sessionInfo.getRemainCount());
