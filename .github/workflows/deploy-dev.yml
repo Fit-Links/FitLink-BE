@@ -4,8 +4,11 @@ on:
   pull_request:
     branches:
       - dev
-    types: [closed] # PR 머지될 때 실행
-
+    types:
+      - closed
+  push:
+    branches:
+      - dev
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
