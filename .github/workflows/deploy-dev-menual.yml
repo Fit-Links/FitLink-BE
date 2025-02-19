@@ -69,26 +69,39 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
+            # EC2에서 환경 변수 설정
+            export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
+            export AWS_REGION="${{ secrets.AWS_REGION }}"
+            export ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY }}"
+            export IMAGE_TAG="${{ github.sha }}"
+            export CONTAINER_NAME="spring-app"
+      
+            # 나머지 배포 명령어들
             echo "${{ secrets.APP_SECRET_YML }}" | base64 --decode > /home/ec2-user/application-secret.yml
             chmod 600 /home/ec2-user/application-secret.yml
-            
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
             
             docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
             docker stop $CONTAINER_NAME || true
             docker rm $CONTAINER_NAME || true
-            
-            echo "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG"
-            
             docker run -d --name $CONTAINER_NAME -p 8080:8080 \
               -e "SPRING_PROFILES_ACTIVE=dev" \
               -v /home/ec2-user/application-secret.yml:/app/config/application-secret.yml \
               $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+
+      # - name: Deploy to EC2
+      #   uses: appleboy/ssh-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USER }}
+      #     key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+      #     script: |
+      #       echo "${{ secrets.APP_SECRET_YML }}" | base64 --decode > /home/ec2-user/application-secret.yml
+      #       chmod 600 /home/ec2-user/application-secret.yml
             
-            # docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
-            # docker stop $CONTAINER_NAME || true
-            # docker rm $CONTAINER_NAME || true
-            # docker run -d --name $CONTAINER_NAME -p 8080:8080 \
-            #   -e "SPRING_PROFILES_ACTIVE=dev" \
-            #   -v /home/ec2-user/application-secret.yml:/app/config/application-secret.yml \
-            #   $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+      #       docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+      #       docker stop $CONTAINER_NAME || true
+      #       docker rm $CONTAINER_NAME || true
+      #       docker run -d --name $CONTAINER_NAME -p 8080:8080 \
+      #         -e "SPRING_PROFILES_ACTIVE=dev" \
+      #         -v /home/ec2-user/application-secret.yml:/app/config/application-secret.yml \
+      #         $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
