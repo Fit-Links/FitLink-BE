@@ -56,16 +56,8 @@ jobs:
       - name: Build & Push Docker Image
         run: |
           docker build --build-arg PROFILE=dev -t $ECR_REPOSITORY:$IMAGE_TAG .
-          # docker build --build-arg PROFILE=dev -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
-
-      - name: Print Environment Variables
-        run: |
-          echo $AWS_ACCOUNT_ID
-          echo $AWS_REGION
-          echo $ECR_REPOSITORY
-          echo $IMAGE_TAG
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.7
@@ -80,7 +72,7 @@ jobs:
             docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
             docker stop $CONTAINER_NAME || true
             docker rm $CONTAINER_NAME || true
-            # docker run -d --name $CONTAINER_NAME -p 8080:8080 \
-            #   -e "SPRING_PROFILES_ACTIVE=dev" \
-            #   -v /home/ec2-user/application-secret.yml:/app/config/application-secret.yml \
-            #   $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+            docker run -d --name $CONTAINER_NAME -p 8080:8080 \
+              -e "SPRING_PROFILES_ACTIVE=dev" \
+              -v /home/ec2-user/application-secret.yml:/app/config/application-secret.yml \
+              $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
