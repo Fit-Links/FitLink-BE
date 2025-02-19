@@ -71,7 +71,8 @@ jobs:
           script: |
             echo "${{ secrets.APP_SECRET_YML }}" | base64 --decode > /home/ec2-user/application-secret.yml
             chmod 600 /home/ec2-user/application-secret.yml
-
+            
+            docker login -u AWS -p $(aws ecr get-login-password --region $AWS_REGION) $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
             docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
             docker stop $CONTAINER_NAME || true
             docker rm $CONTAINER_NAME || true
@@ -79,3 +80,11 @@ jobs:
               -e "SPRING_PROFILES_ACTIVE=dev" \
               -v /home/ec2-user/application-secret.yml:/app/config/application-secret.yml \
               $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+            
+            # docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+            # docker stop $CONTAINER_NAME || true
+            # docker rm $CONTAINER_NAME || true
+            # docker run -d --name $CONTAINER_NAME -p 8080:8080 \
+            #   -e "SPRING_PROFILES_ACTIVE=dev" \
+            #   -v /home/ec2-user/application-secret.yml:/app/config/application-secret.yml \
+            #   $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
