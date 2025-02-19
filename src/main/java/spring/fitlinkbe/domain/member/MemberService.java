@@ -50,16 +50,15 @@ public class MemberService {
     }
 
     /**
-     * 멤버가 이미 연결되어 있는지 확인 </br>
-     * 해당 회원의 이미 존재하는, REJECTED 되지 않은 ConnectingInfo 가 있는지 확인
+     * 이미 연결된, 연결 시도중인 트레이너가 있는지 확인
      *
      * @param memberId
-     * @throws CustomException 이미 연결되어 있을 경우
+     * @throws CustomException 이미 연결된, 연결 시도중인 트레이너가 있을 경우
      */
     public void checkMemberAlreadyConnected(Long memberId) {
-        Optional<ConnectingInfo> existsConnectingInfo = connectingInfoRepository.getExistConnectingInfo(memberId);
+        Optional<ConnectingInfo> existsConnectingInfo = connectingInfoRepository.getConnectedInfo(memberId);
         if (existsConnectingInfo.isPresent()) {
-            throw new CustomException(ErrorCode.MEMBER_CONNECTED_TRAINER_ALREADY);
+            throw new CustomException(ErrorCode.CONNECT_AVAILABLE_AFTER_DISCONNECTED);
         }
     }
 
@@ -76,5 +75,20 @@ public class MemberService {
                 .build();
 
         return connectingInfoRepository.save(connectingInfo);
+    }
+
+    /**
+     * 해당 회원의 트레이너 연결 정보 조회 </br>
+     * 요청 상태거나 연결된 상태만 조회
+     * @param memberId
+     * @return
+     */
+    public ConnectingInfo getConnectedInfo(Long memberId) {
+        return connectingInfoRepository.getConnectedInfo(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_CONNECTED_TRAINER));
+    }
+
+    public void saveConnectingInfo(ConnectingInfo connectingInfo) {
+        connectingInfoRepository.save(connectingInfo);
     }
 }

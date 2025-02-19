@@ -13,7 +13,10 @@ public enum ErrorCode {
     // Member 관련 ErrorCode
     MEMBER_DETAIL_NOT_FOUND("멤버 상세 정보를 찾지 못하였습니다", 404),
     MEMBER_NOT_FOUND("멤버 정보를 찾지 못하였습니다.", 404),
+    MEMBER_NOT_CONNECTED_TRAINER("연결된 트레이너가 존재하지 않습니다.", 400),
+    DISCONNECT_AVAILABLE_AFTER_ACCEPTED("트래이너 연동 수락 이후에만 연결을 해제할 수 있습니다.", 409),
 
+    CONNECT_AVAILABLE_AFTER_DISCONNECTED("이미 연결 요청중 또는 연결된 트레이너가 존재합니다.", 409),
 
     // Reservation 관련 ErrorCode
     RESERVATION_IS_FAILED("예약에 실패하였습니다.", 400),
@@ -44,7 +47,7 @@ public enum ErrorCode {
     INVALID_PHONE_NUMBER_FORMAT("유효하지 않은 전화번호 형식입니다.", 400),
     PERSONAL_DETAIL_NOT_FOUND("Personal Detail 정보가 존재하지 않습니다.", 404),
     CONNECTING_INFO_NOT_FOUND("Connecting Info 정보가 존재하지 않습니다.", 404),
-    MEMBER_CONNECTED_TRAINER_ALREADY("이미 연결 요청중 또는 연결된 트레이너가 존재합니다.", 409),
+
     ;
 
     private final String msg;

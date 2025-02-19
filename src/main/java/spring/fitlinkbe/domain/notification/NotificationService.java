@@ -15,4 +15,9 @@ public class NotificationService {
         Notification notification = Notification.connectRequestNotification(trainerDetail, memberName, connectingInfoId);
         notificationRepository.save(notification);
     }
+
+    public void sendDisconnectNotification(String name, PersonalDetail trainerDetail) {
+        Notification notification = Notification.disconnectNotification(name, trainerDetail);
+        notificationRepository.save(notification);
+    }
 }

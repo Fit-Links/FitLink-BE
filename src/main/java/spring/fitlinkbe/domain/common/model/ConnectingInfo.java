@@ -23,7 +23,20 @@ public class ConnectingInfo {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    /**
+     * 연결 요청 상태인지 확인
+     *
+     * @return 연결 요청 상태인지 여부
+     */
+    public Boolean isPending() {
+        return this.status == ConnectingStatus.REQUESTED;
+    }
+
+    public void disconnect() {
+        this.status = ConnectingStatus.DISCONNECTED;
+    }
+
     public enum ConnectingStatus {
-        REQUESTED, CONNECTED, REJECTED
+        REQUESTED, CONNECTED, REJECTED, DISCONNECTED
     }
 }

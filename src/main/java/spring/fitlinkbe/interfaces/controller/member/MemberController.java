@@ -28,4 +28,11 @@ public class MemberController {
         return ApiResultResponse.ok(null);
     }
 
+    @PostMapping("/disconnect")
+    public ApiResultResponse<Object> disconnectTrainer(@Login SecurityUser user) {
+        memberFacade.disconnectTrainer(user.getMemberId());
+
+        return ApiResultResponse.ok(null);
+    }
+
 }

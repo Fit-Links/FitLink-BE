@@ -29,7 +29,7 @@ public class ConnectingInfoRepositoryImpl implements ConnectingInfoRepository {
     }
 
     @Override
-    public Optional<ConnectingInfo> getExistConnectingInfo(Long memberId) {
+    public Optional<ConnectingInfo> getConnectedInfo(Long memberId) {
         return connectingInfoJpaRepository.findExistMemberConnectingInfo(memberId)
                 .map(ConnectingInfoEntity::toDomain);
     }

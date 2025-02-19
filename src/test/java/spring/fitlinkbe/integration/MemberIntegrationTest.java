@@ -32,7 +32,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
     NotificationRepository notificationRepository;
 
     @Nested
-    @DisplayName("멤버 트레이너 연결 요청 성공")
+    @DisplayName("멤버 트레이너 연결 요청 테스트")
     public class MemberConnectTest {
         private static final String MEMBER_CONNECT_API = "/v1/members/connect";
 
@@ -133,7 +133,100 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.data()).isNull();
             });
         }
+    }
+
+    @Nested
+    @DisplayName("멤버 트레이너 연결 해제 요청 테스트")
+    public class MemberDisconnectTest {
+        private static final String MEMBER_DISCONNECT_API = "/v1/members/disconnect";
+
+        @Test
+        @DisplayName("멤버 트레이너 연결 해제 요청 성공")
+        public void memberDisconnectSuccess() throws Exception {
+            // given
+            // 멤버와 트레이너가 연결되어 있을 때
+            Member member = testDataHandler.createMember();
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+            testDataHandler.connectMemberAndTrainer(member, trainer);
+            String token = testDataHandler.createTokenFromMember(member);
+
+            // when
+            // 멤버가 트레이너와 연결 해제 요청을 보낸다면
+
+            ExtractableResponse<Response> result = post(MEMBER_DISCONNECT_API, token);
+
+            // then
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response).isNotNull();
+
+                // 연결 정보가 삭제되었는지 확인
+                ConnectingInfo deletedConnectingInfo = connectingInfoRepository.getConnectingInfo(member.getMemberId(), trainer.getTrainerId());
+                softly.assertThat(deletedConnectingInfo).isNotNull();
+                softly.assertThat(deletedConnectingInfo.getStatus()).isEqualTo(ConnectingInfo.ConnectingStatus.DISCONNECTED);
 
 
+                // 알림 정보가 생성되었는지 확인
+                PersonalDetail trainerPersonalDetail = testDataHandler.getPersonalDetail(trainer.getTrainerId());
+                Notification notification = notificationRepository.getNotification(trainerPersonalDetail.getPersonalDetailId(),
+                        Notification.NotificationType.DISCONNECT);
+                softly.assertThat(notification).isNotNull();
+            });
+        }
+
+        @Test
+        @DisplayName("멤버 트레이너 연결 해제 요청 실패 - 이미 연결 요청 중일 때")
+        public void memberDisconnectFailByRequested() throws Exception {
+            // given
+            // 멤버와 트레이너가 연결 요청 중일 때
+            Member member = testDataHandler.createMember();
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+            testDataHandler.requestConnectTrainer(member, trainer);
+            String token = testDataHandler.createTokenFromMember(member);
+
+            // when
+            // 멤버가 트레이너와 연결 해제 요청을 보낸다면
+            ExtractableResponse<Response> result = post(MEMBER_DISCONNECT_API, token);
+
+            // then
+            // 연결 요청 중이라는 응답을 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(409);
+                softly.assertThat(response.data()).isNull();
+            });
+        }
+
+        @Test
+        @DisplayName("멤버 트레이너 연결 해제 요청 실패 - 연결 정보가 없을 때")
+        public void memberDisconnectFailByNotConnected() throws Exception {
+            // given
+            // 트레이너와 연동된 회원이 있을 때
+            Member member = testDataHandler.createMember();
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+            String token = testDataHandler.createTokenFromMember(member);
+
+            // when
+            // 회원이 트레이너와 연결 해제 요청을 보낸다면
+            ExtractableResponse<Response> result = post(MEMBER_DISCONNECT_API, token);
+
+            // then
+            // 연결 정보가 없다는 응답을 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.data()).isNull();
+            });
+        }
     }
 }
