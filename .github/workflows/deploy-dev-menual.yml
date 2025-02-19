@@ -59,6 +59,9 @@ jobs:
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
+      - name: Check container name
+        run: echo "Container Name:$CONTAINER_NAME"
+        
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.7
         with:
