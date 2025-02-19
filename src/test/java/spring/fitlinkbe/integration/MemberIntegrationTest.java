@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.domain.notification.NotificationRepository;
@@ -19,6 +20,7 @@ import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.member.dto.MemberDto;
+import spring.fitlinkbe.interfaces.controller.member.dto.MemberInfoDto;
 
 public class MemberIntegrationTest extends BaseIntegrationTest {
 
@@ -226,6 +228,47 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.success()).isFalse();
                 softly.assertThat(response.status()).isEqualTo(400);
                 softly.assertThat(response.data()).isNull();
+            });
+        }
+    }
+
+    @Nested
+    @DisplayName("멤버 내 정보 조회 테스트")
+    public class MemberInfoTest {
+        private static final String MEMBER_INFO_API = "/v1/members/me";
+
+        @Test
+        @DisplayName("멤버 내 정보 조회 성공")
+        public void memberInfoSuccess() throws Exception {
+            // given
+            // NORMAL 상태의 멤버가 있을 때
+            Member member = testDataHandler.createMember();
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+            SessionInfo sessionInfo = testDataHandler.createSessionInfo(member, trainer);
+            String token = testDataHandler.createTokenFromMember(member);
+            testDataHandler.connectMemberAndTrainer(member, trainer);
+
+            // when
+            // 멤버가 자신의 정보를 조회한다면
+            ExtractableResponse<Response> result = get(MEMBER_INFO_API, token);
+
+            // then
+            // 자신의 정보를 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<MemberInfoDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                MemberInfoDto.Response data = response.data();
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(200);
+                softly.assertThat(data.memberId()).isEqualTo(member.getMemberId());
+                softly.assertThat(data.trainerId()).isEqualTo(trainer.getTrainerId());
+                softly.assertThat(data.sessionInfo().sessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
+                softly.assertThat(data.sessionInfo().remainingCount()).isEqualTo(sessionInfo.getRemainCount());
+                softly.assertThat(data.sessionInfo().totalCount()).isEqualTo(sessionInfo.getTotalCount());
+                // todo: trainer 에 name 추가, member 에 profilePictureUrl 추가
             });
         }
     }
