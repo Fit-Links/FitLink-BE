@@ -63,28 +63,33 @@ jobs:
         run: echo "Container Name:$CONTAINER_NAME"
         
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
-            # 환경변수 설정
-            export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
-            export AWS_REGION="${{ secrets.AWS_REGION }}"
-            export ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY }}"
-            export IMAGE_TAG="${{ github.sha }}"
-            export CONTAINER_NAME="spring-app"
-            
-            # 나머지 배포 명령어들
+            # 환경 변수 설정
+            echo "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}" >> ~/.bashrc
+            echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> ~/.bashrc
+            echo "ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }}" >> ~/.bashrc
+            echo "IMAGE_TAG=${{ github.sha }}" >> ~/.bashrc
+            echo "CONTAINER_NAME=spring-app" >> ~/.bashrc
+      
+            # 환경 변수 적용
+            source ~/.bashrc
+      
+            # secret 값에 따라서 필요한 파일 생성
             echo "${{ secrets.APP_SECRET_YML }}" | base64 --decode > /home/ec2-user/application-secret.yml
             chmod 600 /home/ec2-user/application-secret.yml
       
-            # Docker 로그인 및 이미지 풀
+            # ECR 로그인
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      
+            # Docker 이미지 풀
             docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
       
-            # 기존 컨테이너 중지 및 삭제
+            # 컨테이너 중지 및 삭제
             docker stop $CONTAINER_NAME || true
             docker rm $CONTAINER_NAME || true
       
@@ -93,6 +98,38 @@ jobs:
               -e "SPRING_PROFILES_ACTIVE=dev" \
               -v /home/ec2-user/application-secret.yml:/app/config/application-secret.yml \
               $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+        
+      # - name: Deploy to EC2
+      #   uses: appleboy/ssh-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USER }}
+      #     key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+      #     script: |
+      #       # 환경변수 설정
+      #       export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
+      #       export AWS_REGION="${{ secrets.AWS_REGION }}"
+      #       export ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY }}"
+      #       export IMAGE_TAG="${{ github.sha }}"
+      #       export CONTAINER_NAME="spring-app"
+            
+      #       # 나머지 배포 명령어들
+      #       echo "${{ secrets.APP_SECRET_YML }}" | base64 --decode > /home/ec2-user/application-secret.yml
+      #       chmod 600 /home/ec2-user/application-secret.yml
+      
+      #       # Docker 로그인 및 이미지 풀
+      #       aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      #       docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+      
+      #       # 기존 컨테이너 중지 및 삭제
+      #       docker stop $CONTAINER_NAME || true
+      #       docker rm $CONTAINER_NAME || true
+      
+      #       # 새로운 컨테이너 실행
+      #       docker run -d --name $CONTAINER_NAME -p 8080:8080 \
+      #         -e "SPRING_PROFILES_ACTIVE=dev" \
+      #         -v /home/ec2-user/application-secret.yml:/app/config/application-secret.yml \
+      #         $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
       # - name: Deploy to EC2
       #   uses: appleboy/ssh-action@v0.1.7
