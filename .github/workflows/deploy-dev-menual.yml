@@ -40,9 +40,13 @@ jobs:
                 username: ${{ secrets.DB_USERNAME }}
                 password: ${{ secrets.DB_PASSWORD }}
           EOF
-
+          
+      - name: List files in current directory
+        run: ls -alh
+        
       - name: Build & Push Docker Image
         run: |
+          docker build  -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker build --build-arg PROFILE=dev -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
