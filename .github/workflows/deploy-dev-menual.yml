@@ -59,83 +59,84 @@ jobs:
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
-        
-      # 환경 변수 설정
-      - name: Set Environment Variables
-        run: |
-          if [ "${{ inputs.env }}" == 'dev' ]; then
-              echo "springProfile=dev" >> $GITHUB_ENV
-              echo "serverHost=${{ vars.DEV_SERVER_HOST }}" >> $GITHUB_ENV
-              echo "awsAccessKeyId=${{ secrets.DEV_SERVER_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-              echo "awsSecretAccessKey=${{ secrets.DEV_SERVER_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          else
-              echo "springProfile=prod" >> $GITHUB_ENV
-              echo "serverHost=${{ vars.PROD_SERVER_HOST }}" >> $GITHUB_ENV
-              echo "awsAccessKeyId=${{ secrets.PROD_SERVER_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-              echo "awsSecretAccessKey=${{ secrets.PROD_SERVER_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          fi
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      # 서버에 SSH로 접속하고 배포 진행
-      - name: SSH and deploy
-        uses: appleboy/ssh-action@master
+      - name: Create deploy script
+        run: echo "${{ secrets.DEPLOY_SCRIPT }}" > deploy.sh
+
+      - name: Upload script to server
+        uses: appleboy/scp-action@master
         with:
-          host: ${{ env.serverHost }}
+          host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.GH_ACTIONS_USERNAME }}
           key: ${{ secrets.GH_ACTIONS_KEY }}
           passphrase: ${{ secrets.GH_ACTIONS_PASSPHRASE }}
-          port: ${{ vars.SSH_PORT }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "deploy.sh"
+          target: "~/"
+
+      - name: Run deploy script on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.GH_ACTIONS_USERNAME }}
+          key: ${{ secrets.GH_ACTIONS_KEY }}
+          passphrase: ${{ secrets.GH_ACTIONS_PASSPHRASE }}
+          port: ${{ secrets.SSH_PORT }}
           script: |
-            # ECR에 로그인
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-            
-            # Docker 이미지 풀
-            docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ inputs.imageTag }}
-            
-            # 기존 컨테이너 중지 및 제거
-            docker stop api-server || true
-            docker rm api-server || true
+            chmod +x ~/deploy.sh
+            ~/deploy.sh ${{ inputs.env }} ${{ inputs.imageTag }}
 
-            # 새로운 컨테이너 실행
-            docker run -d --name api-server -p 8080:8080 \
-              -e SPRING_PROFILES_ACTIVE=${{ env.springProfile }} \
-              -e AWS_ACCESS_KEY_ID=${{ env.awsAccessKeyId }} \
-              -e AWS_SECRET_ACCESS_KEY=${{ env.awsSecretAccessKey }} \
-              ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ inputs.imageTag }}
 
-            # 불필요한 Docker 이미지 제거
-            docker image prune -f
+
+
         
-      # - name: Deploy to EC2
-      #   uses: appleboy/ssh-action@v0.1.7
+      # # 환경 변수 설정
+      # - name: Set Environment Variables
+      #   run: |
+      #     if [ "${{ inputs.env }}" == 'dev' ]; then
+      #         echo "springProfile=dev" >> $GITHUB_ENV
+      #         echo "serverHost=${{ vars.DEV_SERVER_HOST }}" >> $GITHUB_ENV
+      #         echo "awsAccessKeyId=${{ secrets.DEV_SERVER_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+      #         echo "awsSecretAccessKey=${{ secrets.DEV_SERVER_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+      #     else
+      #         echo "springProfile=prod" >> $GITHUB_ENV
+      #         echo "serverHost=${{ vars.PROD_SERVER_HOST }}" >> $GITHUB_ENV
+      #         echo "awsAccessKeyId=${{ secrets.PROD_SERVER_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+      #         echo "awsSecretAccessKey=${{ secrets.PROD_SERVER_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+      #     fi
+
+      # # 서버에 SSH로 접속하고 배포 진행
+      # - name: SSH and deploy
+      #   uses: appleboy/ssh-action@master
       #   with:
-      #     host: ${{ secrets.EC2_HOST }}
-      #     username: ${{ secrets.EC2_USER }}
-      #     key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+      #     host: ${{ env.serverHost }}
+      #     username: ${{ secrets.GH_ACTIONS_USERNAME }}
+      #     key: ${{ secrets.GH_ACTIONS_KEY }}
+      #     passphrase: ${{ secrets.GH_ACTIONS_PASSPHRASE }}
+      #     port: ${{ vars.SSH_PORT }}
       #     script: |
-      #       # 환경변수 설정
-      #       export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
-      #       export AWS_REGION="${{ secrets.AWS_REGION }}"
-      #       export ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY }}"
-      #       export IMAGE_TAG="${{ github.sha }}"
-      #       export CONTAINER_NAME="spring-app"
+      #       # ECR에 로그인
+      #       aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
             
-      #       # 나머지 배포 명령어들
-      #       echo "${{ secrets.APP_SECRET_YML }}" | base64 --decode > /home/ec2-user/application-secret.yml
-      #       chmod 600 /home/ec2-user/application-secret.yml
-      
-      #       # Docker 로그인 및 이미지 풀
-      #       aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-      #       docker pull $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
-      
-      #       # 기존 컨테이너 중지 및 삭제
-      #       docker stop $CONTAINER_NAME || true
-      #       docker rm $CONTAINER_NAME || true
-      
+      #       # Docker 이미지 풀
+      #       docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ inputs.imageTag }}
+            
+      #       # 기존 컨테이너 중지 및 제거
+      #       docker stop api-server || true
+      #       docker rm api-server || true
+
       #       # 새로운 컨테이너 실행
-      #       docker run -d --name $CONTAINER_NAME -p 8080:8080 \
-      #         -e "SPRING_PROFILES_ACTIVE=dev" \
-      #         -v /home/ec2-user/application-secret.yml:/app/config/application-secret.yml \
-      #         $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+      #       docker run -d --name api-server -p 8080:8080 \
+      #         -e SPRING_PROFILES_ACTIVE=${{ env.springProfile }} \
+      #         -e AWS_ACCESS_KEY_ID=${{ env.awsAccessKeyId }} \
+      #         -e AWS_SECRET_ACCESS_KEY=${{ env.awsSecretAccessKey }} \
+      #         ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ inputs.imageTag }}
+
+      #       # 불필요한 Docker 이미지 제거
+      #       docker image prune -f
+        
 
       # - name: Deploy to EC2
       #   uses: appleboy/ssh-action@v0.1.7
