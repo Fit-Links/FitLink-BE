@@ -82,11 +82,21 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.GH_ACTIONS_USERNAME }}
           key: ${{ secrets.GH_ACTIONS_KEY }}
-          passphrase: ${{ secrets.GH_ACTIONS_PASSPHRASE }}
-          port: ${{ secrets.SSH_PORT }}
           script: |
             chmod +x ~/deploy.sh
-            ~/deploy.sh ${{ inputs.env }} ${{ inputs.imageTag }}
+            ~/deploy.sh dev ${{ github.sha }}
+            
+      # - name: Run deploy script on server
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.SERVER_HOST }}
+      #     username: ${{ secrets.GH_ACTIONS_USERNAME }}
+      #     key: ${{ secrets.GH_ACTIONS_KEY }}
+      #     passphrase: ${{ secrets.GH_ACTIONS_PASSPHRASE }}
+      #     port: ${{ secrets.SSH_PORT }}
+      #     script: |
+      #       chmod +x ~/deploy.sh
+      #       ~/deploy.sh ${{ inputs.env }} ${{ inputs.imageTag }}
 
 
 
