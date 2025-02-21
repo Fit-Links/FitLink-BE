@@ -30,7 +30,8 @@ public class Trainer {
 
     private LocalDateTime updatedAt;
 
-    public Trainer(String trainerCode) {
+    public Trainer(String trainerCode, String name) {
         this.trainerCode = trainerCode;
+        this.name = name;
     }
 }

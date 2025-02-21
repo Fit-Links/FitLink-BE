@@ -102,6 +102,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(member.getName()).isEqualTo(request.name());
                 softly.assertThat(member.getBirthDate()).isEqualTo(request.birthDate());
                 softly.assertThat(member.getPhoneNumber()).isEqualTo(request.phoneNumber());
+                softly.assertThat(member.getProfilePictureUrl()).isEqualTo(request.profileUrl());
 
                 List<WorkoutSchedule> workoutSchedules = new ArrayList<>(workoutScheduleRepository.findAllByMemberId(member.getMemberId()));
                 workoutSchedules.sort(Comparator.comparing(WorkoutSchedule::getDayOfWeek));
@@ -370,6 +371,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 Trainer trainer = trainerRepository.getTrainerInfo(updatedPersonalDetail.getTrainerId()).orElseThrow();
                 softly.assertThat(trainer).isNotNull();
                 softly.assertThat(trainer.getTrainerCode()).isNotNull();
+                softly.assertThat(trainer.getName()).isEqualTo(request.name());
 
                 List<AvailableTime> availableTimes = trainerRepository.getTrainerAvailableTimes(trainer.getTrainerId());
                 softly.assertThat(availableTimes).hasSize(request.availableTimes().size());

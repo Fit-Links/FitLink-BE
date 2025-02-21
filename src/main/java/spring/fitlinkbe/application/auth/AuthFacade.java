@@ -27,7 +27,7 @@ public class AuthFacade {
 
     public AuthCommand.Response registerTrainer(Long personalDetailId, AuthCommand.TrainerRegisterRequest command) {
         // trainer 저장
-        Trainer savedTrainer = trainerService.saveTrainer(new Trainer(generateRandomString(6)));
+        Trainer savedTrainer = trainerService.saveTrainer(new Trainer(generateRandomString(6), command.name()));
 
         // personalDetail 업데이트
         PersonalDetail personalDetail = trainerService.registerTrainer(personalDetailId, command, savedTrainer);
