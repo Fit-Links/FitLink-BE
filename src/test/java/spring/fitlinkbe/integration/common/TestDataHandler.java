@@ -181,7 +181,7 @@ public class TestDataHandler {
         SessionInfo sessionInfo = SessionInfo.builder()
                 .member(member)
                 .trainer(trainer)
-                .remainCount(10)
+                .remainingCount(10)
                 .totalCount(10)
                 .build();
 

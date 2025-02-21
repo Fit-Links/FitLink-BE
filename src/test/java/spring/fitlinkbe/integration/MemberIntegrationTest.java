@@ -241,7 +241,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
         @DisplayName("멤버 내 정보 조회 성공")
         public void memberInfoSuccess() throws Exception {
             // given
-            // NORMAL 상태의 멤버가 있을 때
+            // NORMAL 상태의 멤버, 트레이너, 세션 정보가 있을 때
             Member member = testDataHandler.createMember();
             Trainer trainer = testDataHandler.createTrainer("AB1423");
             SessionInfo sessionInfo = testDataHandler.createSessionInfo(member, trainer);
@@ -269,7 +269,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(data.trainerName()).isEqualTo(trainer.getName());
                 softly.assertThat(data.trainerId()).isEqualTo(trainer.getTrainerId());
                 softly.assertThat(data.sessionInfo().sessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
-                softly.assertThat(data.sessionInfo().remainingCount()).isEqualTo(sessionInfo.getRemainCount());
+                softly.assertThat(data.sessionInfo().remainingCount()).isEqualTo(sessionInfo.getRemainingCount());
                 softly.assertThat(data.sessionInfo().totalCount()).isEqualTo(sessionInfo.getTotalCount());
             });
         }
