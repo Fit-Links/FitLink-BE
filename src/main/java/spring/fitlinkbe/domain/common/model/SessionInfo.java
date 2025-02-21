@@ -18,5 +18,5 @@ public class SessionInfo {
     private Member member;
     private Trainer trainer;
     private int totalCount;
-    private int remainCount;
+    private int remainingCount;
 }

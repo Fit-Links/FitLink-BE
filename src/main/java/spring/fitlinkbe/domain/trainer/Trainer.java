@@ -18,6 +18,8 @@ public class Trainer {
 
     private Long trainerId;
 
+    private String name;
+
     private Long sessionInfoId;
 
     private SessionInfo sessionInfo;
@@ -28,7 +30,8 @@ public class Trainer {
 
     private LocalDateTime updatedAt;
 
-    public Trainer(String trainerCode) {
+    public Trainer(String trainerCode, String name) {
         this.trainerCode = trainerCode;
+        this.name = name;
     }
 }

@@ -19,10 +19,13 @@ public class TrainerEntity extends BaseTimeEntity {
 
     private String trainerCode;
 
+    private String name;
+
     public static TrainerEntity from(Trainer trainer) {
         return TrainerEntity.builder()
                 .trainerId(trainer.getTrainerId() != null ? trainer.getTrainerId() : null)
                 .trainerCode(trainer.getTrainerCode())
+                .name(trainer.getName())
                 .build();
     }
 
@@ -30,6 +33,7 @@ public class TrainerEntity extends BaseTimeEntity {
         return Trainer.builder()
                 .trainerId(trainerId)
                 .trainerCode(trainerCode)
+                .name(name)
                 .createdAt(getCreatedAt())
                 .updatedAt(getUpdatedAt())
                 .build();

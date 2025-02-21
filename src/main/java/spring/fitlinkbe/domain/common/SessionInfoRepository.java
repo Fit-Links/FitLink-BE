@@ -9,4 +9,6 @@ public interface SessionInfoRepository {
     Optional<SessionInfo> saveSessionInfo(SessionInfo sessionInfo);
 
     Optional<SessionInfo> getSessionInfo(long sessionInfoId);
+
+    Optional<SessionInfo> findSessionInfo(Long memberId);
 }

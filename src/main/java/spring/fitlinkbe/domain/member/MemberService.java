@@ -6,10 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
+import spring.fitlinkbe.domain.common.SessionInfoRepository;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
 import java.util.List;
@@ -26,6 +28,7 @@ public class MemberService {
     private final WorkoutScheduleRepository workoutScheduleRepository;
     private final PersonalDetailRepository personalDetailRepository;
     private final ConnectingInfoRepository connectingInfoRepository;
+    private final SessionInfoRepository sessionInfoRepository;
 
     public PersonalDetail registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command, Member savedMember) {
         PersonalDetail personalDetail = personalDetailRepository.getById(personalDetailId);
@@ -80,6 +83,7 @@ public class MemberService {
     /**
      * 해당 회원의 트레이너 연결 정보 조회 </br>
      * 요청 상태거나 연결된 상태만 조회
+     *
      * @param memberId
      * @return
      */
@@ -88,7 +92,15 @@ public class MemberService {
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_CONNECTED_TRAINER));
     }
 
+    public Optional<ConnectingInfo> findConnectedInfo(Long memberId) {
+        return connectingInfoRepository.getConnectedInfo(memberId);
+    }
+
     public void saveConnectingInfo(ConnectingInfo connectingInfo) {
         connectingInfoRepository.save(connectingInfo);
+    }
+
+    public Optional<SessionInfo> findSessionInfo(Long memberId) {
+        return sessionInfoRepository.getSessionInfo(memberId);
     }
 }

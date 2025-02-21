@@ -10,6 +10,12 @@ public interface SessionInfoJpaRepository extends JpaRepository<SessionInfoEntit
     @Query("SELECT si FROM SessionInfoEntity si " +
             "LEFT JOIN FETCH si.trainer " +
             "LEFT JOIN FETCH si.member " +
-            "WHERE si.sessionInfoId = :memberId")
-    Optional<SessionInfoEntity> findByIdJoinFetch(Long memberId);
+            "WHERE si.sessionInfoId = :sessionInfoId")
+    Optional<SessionInfoEntity> findByIdJoinFetch(Long sessionInfoId);
+
+    @Query("SELECT si FROM SessionInfoEntity si " +
+            "LEFT JOIN FETCH si.trainer " +
+            "LEFT JOIN FETCH si.member " +
+            "WHERE si.member.memberId = :memberId")
+    Optional<SessionInfoEntity> findByMemberIdJoinFetch(Long memberId);
 }

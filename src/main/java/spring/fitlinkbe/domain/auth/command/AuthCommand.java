@@ -77,6 +77,7 @@ public class AuthCommand {
                     .name(name)
                     .birthDate(birthDate)
                     .phoneNumber(phoneNumber)
+                    .profilePictureUrl(profileUrl)
                     .isRequest(false)
                     .isConnected(false)
                     .build();

@@ -176,4 +176,15 @@ public class TestDataHandler {
                 .build();
         connectingInfoRepository.save(connectingInfo);
     }
+
+    public SessionInfo createSessionInfo(Member member, Trainer trainer) {
+        SessionInfo sessionInfo = SessionInfo.builder()
+                .member(member)
+                .trainer(trainer)
+                .remainingCount(10)
+                .totalCount(10)
+                .build();
+
+        return sessionInfoRepository.saveSessionInfo(sessionInfo).orElseThrow();
+    }
 }
