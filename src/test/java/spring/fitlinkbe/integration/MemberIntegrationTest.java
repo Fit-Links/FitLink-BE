@@ -265,11 +265,12 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.status()).isEqualTo(200);
                 softly.assertThat(data.memberId()).isEqualTo(member.getMemberId());
                 softly.assertThat(data.name()).isEqualTo(member.getName());
+                softly.assertThat(data.profilePictureUrl()).isEqualTo(member.getProfilePictureUrl());
+                softly.assertThat(data.trainerName()).isEqualTo(trainer.getName());
                 softly.assertThat(data.trainerId()).isEqualTo(trainer.getTrainerId());
                 softly.assertThat(data.sessionInfo().sessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
                 softly.assertThat(data.sessionInfo().remainingCount()).isEqualTo(sessionInfo.getRemainCount());
                 softly.assertThat(data.sessionInfo().totalCount()).isEqualTo(sessionInfo.getTotalCount());
-                // todo: trainer 에 name 추가, member 에 profilePictureUrl 추가
             });
         }
     }

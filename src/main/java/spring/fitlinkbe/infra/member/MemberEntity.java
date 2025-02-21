@@ -28,6 +28,8 @@ public class MemberEntity extends BaseTimeEntity {
 
     private LocalDate birthDate;
 
+    private String profilePictureUrl;
+
     private String phoneNumber;
 
     private Boolean isRequest;
@@ -41,6 +43,7 @@ public class MemberEntity extends BaseTimeEntity {
                 .trainer(member.getTrainer() != null ? TrainerEntity.from(member.getTrainer()) : null)
                 .name(member.getName())
                 .birthDate(member.getBirthDate())
+                .profilePictureUrl(member.getProfilePictureUrl())
                 .phoneNumber(member.getPhoneNumber())
                 .isRequest(member.getIsRequest())
                 .isConnected(member.getIsConnected())
@@ -53,6 +56,7 @@ public class MemberEntity extends BaseTimeEntity {
                 .trainer(trainer != null ? trainer.toDomain() : null)
                 .name(name)
                 .birthDate(birthDate)
+                .profilePictureUrl(profilePictureUrl)
                 .phoneNumber(new PhoneNumber(phoneNumber))
                 .isRequest(isRequest)
                 .isConnected(isConnected)

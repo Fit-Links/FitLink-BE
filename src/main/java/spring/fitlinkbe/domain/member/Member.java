@@ -27,6 +27,8 @@ public class Member {
 
     private LocalDate birthDate;
 
+    private String profilePictureUrl;
+
     private PhoneNumber phoneNumber;
 
     private Boolean isRequest;

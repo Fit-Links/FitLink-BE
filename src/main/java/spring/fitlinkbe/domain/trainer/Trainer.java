@@ -18,6 +18,8 @@ public class Trainer {
 
     private Long trainerId;
 
+    private String name;
+
     private Long sessionInfoId;
 
     private SessionInfo sessionInfo;
