@@ -21,7 +21,7 @@ public class ReservationRequestDto {
 
         @JsonIgnore
         @AssertTrue(message = "현재 날짜보다 이전 날짜는 설정이 불가능 합니다.")
-        public boolean isNotAllowedBeforeDate() {
+        private boolean isNotAllowedBeforeDate() {
             if (date == null) {
                 return false;
             }

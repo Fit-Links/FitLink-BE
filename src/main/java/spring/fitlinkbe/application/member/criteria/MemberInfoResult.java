@@ -5,6 +5,8 @@ import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
+import java.time.LocalDate;
+
 public class MemberInfoResult {
 
     @Builder
@@ -55,6 +57,24 @@ public class MemberInfoResult {
                     .name(me.getName())
                     .phoneNumber(me.getPhoneNumber())
                     .build();
+        }
+    }
+
+    public record DetailResponse(
+            Long memberId,
+            String profilePictureUrl,
+            String name,
+            LocalDate birthDate,
+            String phoneNumber
+    ) {
+        public static DetailResponse from(Member me) {
+            return new DetailResponse(
+                    me.getMemberId(),
+                    me.getProfilePictureUrl(),
+                    me.getName(),
+                    me.getBirthDate(),
+                    me.getPhoneNumber()
+            );
         }
     }
 }
