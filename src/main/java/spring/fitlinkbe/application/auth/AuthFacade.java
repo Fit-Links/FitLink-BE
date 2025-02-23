@@ -17,7 +17,6 @@ import static spring.fitlinkbe.support.utils.RandomStringGenerator.generateRando
 
 @Component
 @RequiredArgsConstructor
-@Transactional
 public class AuthFacade {
 
     private final MemberService memberService;
@@ -25,9 +24,10 @@ public class AuthFacade {
     private final AuthService authService;
     private final AuthTokenProvider authTokenProvider;
 
+    @Transactional
     public AuthCommand.Response registerTrainer(Long personalDetailId, AuthCommand.TrainerRegisterRequest command) {
         // trainer 저장
-        Trainer savedTrainer = trainerService.saveTrainer(new Trainer(generateRandomString(6)));
+        Trainer savedTrainer = trainerService.saveTrainer(new Trainer(generateRandomString(6), command.name()));
 
         // personalDetail 업데이트
         PersonalDetail personalDetail = trainerService.registerTrainer(personalDetailId, command, savedTrainer);
@@ -47,6 +47,7 @@ public class AuthFacade {
         return AuthCommand.Response.of(accessToken, refreshToken);
     }
 
+    @Transactional
     public AuthCommand.Response registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command) {
         Member savedMember = memberService.saveMember(command.toMember());
 

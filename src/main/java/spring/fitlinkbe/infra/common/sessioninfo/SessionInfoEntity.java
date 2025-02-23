@@ -19,7 +19,7 @@ public class SessionInfoEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long sessionInfoId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trainer_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private TrainerEntity trainer;
 
@@ -29,7 +29,7 @@ public class SessionInfoEntity extends BaseTimeEntity {
 
     private int totalCount;
 
-    private int remainCount;
+    private int remainingCount;
 
     public static SessionInfoEntity from(SessionInfo sessionInfo) {
 
@@ -42,7 +42,7 @@ public class SessionInfoEntity extends BaseTimeEntity {
                 .trainer(TrainerEntity.from(sessionInfo.getTrainer()))
                 .member(MemberEntity.from(sessionInfo.getMember()))
                 .totalCount(sessionInfo.getTotalCount())
-                .remainCount(sessionInfo.getRemainCount())
+                .remainingCount(sessionInfo.getRemainingCount())
                 .build();
     }
 
@@ -52,7 +52,7 @@ public class SessionInfoEntity extends BaseTimeEntity {
                 .trainer(trainer.toDomain())
                 .member(member.toDomain())
                 .totalCount(totalCount)
-                .remainCount(remainCount)
+                .remainingCount(remainingCount)
                 .build();
     }
 }

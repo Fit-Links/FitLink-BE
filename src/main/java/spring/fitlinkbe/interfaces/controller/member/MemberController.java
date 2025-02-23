@@ -2,13 +2,12 @@ package spring.fitlinkbe.interfaces.controller.member;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.member.MemberFacade;
+import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.member.dto.MemberDto;
+import spring.fitlinkbe.interfaces.controller.member.dto.MemberInfoDto;
 import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
 
@@ -33,6 +32,13 @@ public class MemberController {
         memberFacade.disconnectTrainer(user.getMemberId());
 
         return ApiResultResponse.ok(null);
+    }
+
+    @GetMapping("/me")
+    public ApiResultResponse<MemberInfoDto.Response> getMyInfo(@Login SecurityUser user) {
+        MemberInfoResult.Response result = memberFacade.getMyInfo(user.getMemberId());
+
+        return ApiResultResponse.ok(MemberInfoDto.Response.from(result));
     }
 
 }
