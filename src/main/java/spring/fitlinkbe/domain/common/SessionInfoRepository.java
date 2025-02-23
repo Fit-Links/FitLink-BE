@@ -10,5 +10,7 @@ public interface SessionInfoRepository {
 
     Optional<SessionInfo> getSessionInfo(long sessionInfoId);
 
+    Optional<SessionInfo> getSessionInfo(Long trainerId, Long memberId);
+
     Optional<SessionInfo> findSessionInfo(Long memberId);
 }

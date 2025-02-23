@@ -92,4 +92,22 @@ public class ReservationService {
                 new CustomException(ErrorCode.SET_DISABLE_DATE_FAILED,
                         "예약 불가 설정을 할 수 없습니다."));
     }
+
+    @Transactional
+    public List<Reservation> reserveSession(List<Reservation> reservations) {
+        return reservationRepository.reserveSession(reservations);
+    }
+
+    @Transactional
+    public List<Session> createSessions(List<Reservation> savedReservation) {
+
+        List<Session> sessions = savedReservation
+                .stream().map(reservation -> Session.builder()
+                        .reservationId(reservation.getReservationId())
+                        .status(Session.Status.SESSION_WAITING)
+                        .build())
+                .toList();
+
+        return reservationRepository.createSessions(sessions);
+    }
 }

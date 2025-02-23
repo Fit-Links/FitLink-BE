@@ -19,10 +19,15 @@ public interface ReservationRepository {
 
     Optional<Reservation> saveReservation(Reservation reservation);
 
+    List<Reservation> reserveSession(List<Reservation> reservations);
+
 
     Optional<Session> getSession(Long reservationId);
 
     Optional<Session> saveSession(Session session);
 
     List<Session> cancelSessions(List<Session> sessions);
+
+    List<Session> createSessions(List<Session> sessions);
+
 }

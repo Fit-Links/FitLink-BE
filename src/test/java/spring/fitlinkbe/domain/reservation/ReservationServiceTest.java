@@ -21,6 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_IS_ALREADY_CANCEL;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_NOT_FOUND;
@@ -154,18 +155,16 @@ class ReservationServiceTest {
         void getSession() {
             //given
             Session session = Session.builder()
-                    .reservation(Reservation.builder().reservationId(10L)
-                            .status(RESERVATION_APPROVED)
-                            .build())
+                    .reservationId(1L)
                     .sessionId(1L)
                     .build();
 
-            when(reservationRepository.getSession(session.getReservation().getReservationId()))
+            when(reservationRepository.getSession(session.getReservationId()))
                     .thenReturn(Optional.of(session));
 
             //when
             Session result = reservationService.getSession(
-                    RESERVATION_APPROVED, session.getReservation().getReservationId());
+                    RESERVATION_APPROVED, session.getReservationId());
 
             //then
             assertThat(result.getSessionId()).isEqualTo(1L);
@@ -284,6 +283,95 @@ class ReservationServiceTest {
             assertThat(result.getStatus()).isEqualTo(DISABLED_TIME_RESERVATION);
         }
 
+    }
+
+    @Nested
+    @DisplayName("세션 예약 Service TEST")
+    class ReserveSessionServiceTest {
+
+        @Test
+        @DisplayName("세션 예약 성공")
+        void reserveSession() {
+            //given
+            Reservation reservation = Reservation.builder()
+                    .status(RESERVATION_WAITING)
+                    .build();
+
+            Reservation savedReservation = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_WAITING)
+                    .build();
+
+            when(reservationRepository.reserveSession(anyList()))
+                    .thenReturn(List.of(savedReservation));
+
+            //when
+            List<Reservation> result = reservationService.reserveSession(List.of(reservation));
+
+            //then
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getReservationId()).isEqualTo(1L);
+        }
+
+        @Test
+        @DisplayName("세션 예약 실패 - 예약 정보가 안넘어 왔을 때")
+        void reserveSessionNoReservationInfo() {
+            //given
+            when(reservationRepository.reserveSession(anyList())).thenThrow(
+                    new CustomException(RESERVATION_NOT_FOUND,
+                            RESERVATION_NOT_FOUND.getMsg()));
+
+            //when & then
+            assertThatThrownBy(() -> reservationService.reserveSession(List.of()))
+                    .isInstanceOf(CustomException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(RESERVATION_NOT_FOUND);
+        }
+
+    }
+
+    @Nested
+    @DisplayName("세션 생성 Service TEST")
+    class CreateSessionServiceTest {
+
+        @Test
+        @DisplayName("세션 생성 성공")
+        void createSession() {
+            //given
+            Reservation reservation = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_WAITING)
+                    .build();
+
+            Session session = Session.builder()
+                    .sessionId(1L)
+                    .build();
+
+            when(reservationRepository.createSessions(anyList()))
+                    .thenReturn(List.of(session));
+
+            //when
+            List<Session> result = reservationService.createSessions(List.of(reservation));
+
+            //then
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getSessionId()).isEqualTo(1L);
+        }
+
+        @Test
+        @DisplayName("세션 생성 실패 - 예약 정보가 안넘어 왔을 때")
+        void createSessionNoReservationInfo() {
+            //given
+            when(reservationRepository.createSessions(anyList())).thenThrow(
+                    new CustomException(RESERVATION_NOT_FOUND,
+                            RESERVATION_NOT_FOUND.getMsg()));
+
+            //when & then
+            assertThatThrownBy(() -> reservationService.createSessions(List.of()))
+                    .isInstanceOf(CustomException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(RESERVATION_NOT_FOUND);
+        }
     }
 
 }
