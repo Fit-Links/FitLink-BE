@@ -46,7 +46,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             String trainerCode = "AB1423";
             Member member = testDataHandler.createMember();
             Trainer trainer = testDataHandler.createTrainer(trainerCode);
-            PersonalDetail trainerPersonalDetail = testDataHandler.getPersonalDetail(trainer.getTrainerId());
+            PersonalDetail trainerPersonalDetail = testDataHandler.getTrainerPersonalDetail(trainer.getTrainerId());
             String token = testDataHandler.createTokenFromMember(member);
 
             // when
@@ -171,7 +171,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
 
                 // 알림 정보가 생성되었는지 확인
-                PersonalDetail trainerPersonalDetail = testDataHandler.getPersonalDetail(trainer.getTrainerId());
+                PersonalDetail trainerPersonalDetail = testDataHandler.getTrainerPersonalDetail(trainer.getTrainerId());
                 Notification notification = notificationRepository.getNotification(trainerPersonalDetail.getPersonalDetailId(),
                         Notification.NotificationType.DISCONNECT);
                 softly.assertThat(notification).isNotNull();
@@ -311,6 +311,10 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(data.memberId()).isEqualTo(member.getMemberId());
                 softly.assertThat(data.name()).isEqualTo(newName);
                 softly.assertThat(data.phoneNumber()).isEqualTo(newPhoneNumber);
+
+                PersonalDetail personalDetail = testDataHandler.getMemberPersonalDetail(member.getMemberId());
+                softly.assertThat(personalDetail.getName()).isEqualTo(newName);
+                softly.assertThat(personalDetail.getPhoneNumber()).isEqualTo(newPhoneNumber);
             });
         }
 
