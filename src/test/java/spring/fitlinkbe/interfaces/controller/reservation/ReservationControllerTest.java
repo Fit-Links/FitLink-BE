@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -424,7 +425,9 @@ class ReservationControllerTest {
                     .reservationId(1L)
                     .build();
 
-            when(reservationFacade.setDisabledReservation(request.toCriteria(user.getTrainerId()))).thenReturn(reservation);
+            when(reservationFacade.setDisabledReservation(any(ReservationCriteria.SetDisabledTime.class)
+                    , any(SecurityUser.class)))
+                    .thenReturn(reservation);
 
             //when & then
             mockMvc.perform(post("/v1/reservations/availability/disable")
@@ -465,7 +468,7 @@ class ReservationControllerTest {
                     .reservationId(1L)
                     .build();
 
-            when(reservationFacade.setDisabledReservation(request.toCriteria(user.getTrainerId()))).thenReturn(reservation);
+            when(reservationFacade.setDisabledReservation(request.toCriteria(), user)).thenReturn(reservation);
 
             //when & then
             mockMvc.perform(post("/v1/reservations/availability/disable")
@@ -506,7 +509,7 @@ class ReservationControllerTest {
                     .reservationId(1L)
                     .build();
 
-            when(reservationFacade.setDisabledReservation(request.toCriteria(user.getTrainerId()))).thenReturn(reservation);
+            when(reservationFacade.setDisabledReservation(request.toCriteria(), user)).thenReturn(reservation);
 
             //when & then
             mockMvc.perform(post("/v1/reservations/availability/disable")
@@ -533,12 +536,15 @@ class ReservationControllerTest {
         @DisplayName("트레이너가 세션 예약 성공")
         void reserveSessionWithTrainer() throws Exception {
             //given
-            ReservationRequestDto.ReserveSession
-                    request = ReservationRequestDto.ReserveSession.builder()
-                    .memberId(1L)
-                    .name("멤버1")
-                    .date(LocalDateTime.now().plusSeconds(2))
-                    .priority(0)
+            ReservationRequestDto.ReserveSessions
+                    request = ReservationRequestDto.ReserveSessions.builder()
+                    .reserveSessions(List.of((ReservationRequestDto.ReserveSessions.ReserveSession.builder()
+                            .trainerId(1L)
+                            .memberId(1L)
+                            .name("멤버1")
+                            .date(LocalDateTime.now().plusSeconds(2))
+                            .priority(0)
+                            .build())))
                     .build();
 
             Reservation reservation = Reservation.builder().reservationId(1L).build();
@@ -554,8 +560,9 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.reserveSession(any(ReservationCriteria.ReserveSession.class),
-                    any(SecurityUser.class))).thenReturn(List.of(reservation));
+            when(reservationFacade.reserveSession(anyList(), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(List.of(reservation)));
+//            when(reservationFacade.reserveSession(anyList(),
+//                    any(SecurityUser.class))).thenReturn(List.of(reservation));
 
             //when & then
             mockMvc.perform(post("/v1/reservations")
@@ -577,12 +584,15 @@ class ReservationControllerTest {
         @DisplayName("멤버가 세션 예약 성공")
         void reserveSessionWithMember() throws Exception {
             //given
-            ReservationRequestDto.ReserveSession
-                    request = ReservationRequestDto.ReserveSession.builder()
-                    .memberId(1L)
-                    .name("멤버1")
-                    .date(LocalDateTime.now().plusSeconds(2))
-                    .priority(0)
+            ReservationRequestDto.ReserveSessions
+                    request = ReservationRequestDto.ReserveSessions.builder()
+                    .reserveSessions(List.of((ReservationRequestDto.ReserveSessions.ReserveSession.builder()
+                            .trainerId(1L)
+                            .memberId(1L)
+                            .name("멤버1")
+                            .date(LocalDateTime.now().plusSeconds(2))
+                            .priority(0)
+                            .build())))
                     .build();
 
             Reservation reservation = Reservation.builder().reservationId(1L).build();
@@ -598,8 +608,9 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.reserveSession(any(ReservationCriteria.ReserveSession.class),
-                    any(SecurityUser.class))).thenReturn(List.of(reservation));
+            when(reservationFacade.reserveSession(anyList(), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(List.of(reservation)));
+//            when(reservationFacade.reserveSession(anyList(),
+//                    any(SecurityUser.class))).thenReturn(List.of(reservation));
 
             //when & then
             mockMvc.perform(post("/v1/reservations")
@@ -621,12 +632,16 @@ class ReservationControllerTest {
         @DisplayName("세션 예약 실패 - memberId 누락")
         void reserveSessionWithNoMemberId() throws Exception {
             //given
-            ReservationRequestDto.ReserveSession
-                    request = ReservationRequestDto.ReserveSession.builder()
-                    .name("멤버1")
-                    .date(LocalDateTime.now().plusSeconds(2))
-                    .priority(0)
+            ReservationRequestDto.ReserveSessions
+                    request = ReservationRequestDto.ReserveSessions.builder()
+                    .reserveSessions(List.of((ReservationRequestDto.ReserveSessions.ReserveSession.builder()
+                            .trainerId(1L)
+                            .name("멤버1")
+                            .date(LocalDateTime.now().plusSeconds(2))
+                            .priority(0)
+                            .build())))
                     .build();
+
 
             Reservation reservation = Reservation.builder().reservationId(1L).build();
 
@@ -642,8 +657,9 @@ class ReservationControllerTest {
             String accessToken = getAccessToken(personalDetail);
 
             //when
-            when(reservationFacade.reserveSession(any(ReservationCriteria.ReserveSession.class),
-                    any(SecurityUser.class))).thenReturn(List.of(reservation));
+            when(reservationFacade.reserveSession(anyList(), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(List.of(reservation)));
+//            when(reservationFacade.reserveSession(anyList(),
+//                    any(SecurityUser.class))).thenReturn(List.of(reservation));
 
             //then
             mockMvc.perform(post("/v1/reservations")
@@ -664,11 +680,14 @@ class ReservationControllerTest {
         @DisplayName("세션 예약 실패 - date 정보 누락")
         void reserveSessionWithNoDate() throws Exception {
             //given
-            ReservationRequestDto.ReserveSession
-                    request = ReservationRequestDto.ReserveSession.builder()
-                    .memberId(1L)
-                    .name("멤버1")
-                    .priority(0)
+            ReservationRequestDto.ReserveSessions
+                    request = ReservationRequestDto.ReserveSessions.builder()
+                    .reserveSessions(List.of((ReservationRequestDto.ReserveSessions.ReserveSession.builder()
+                            .trainerId(1L)
+                            .memberId(1L)
+                            .name("멤버1")
+                            .priority(0)
+                            .build())))
                     .build();
 
             Reservation reservation = Reservation.builder().reservationId(1L).build();
@@ -685,8 +704,9 @@ class ReservationControllerTest {
             String accessToken = getAccessToken(personalDetail);
 
             //when
-            when(reservationFacade.reserveSession(any(ReservationCriteria.ReserveSession.class),
-                    any(SecurityUser.class))).thenReturn(List.of(reservation));
+            when(reservationFacade.reserveSession(anyList(), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(List.of(reservation)));
+//            when(reservationFacade.reserveSession(anyList(),
+//                    any(SecurityUser.class))).thenReturn(List.of(reservation));
 
             //then
             mockMvc.perform(post("/v1/reservations")
@@ -707,11 +727,14 @@ class ReservationControllerTest {
         @DisplayName("세션 예약 실패 - name 정보 누락")
         void reserveSessionWithNoName() throws Exception {
             //given
-            ReservationRequestDto.ReserveSession
-                    request = ReservationRequestDto.ReserveSession.builder()
-                    .memberId(1L)
-                    .date(LocalDateTime.now().plusSeconds(2))
-                    .priority(0)
+            ReservationRequestDto.ReserveSessions
+                    request = ReservationRequestDto.ReserveSessions.builder()
+                    .reserveSessions(List.of((ReservationRequestDto.ReserveSessions.ReserveSession.builder()
+                            .trainerId(1L)
+                            .memberId(1L)
+                            .date(LocalDateTime.now().plusSeconds(2))
+                            .priority(0)
+                            .build())))
                     .build();
 
             Reservation reservation = Reservation.builder().reservationId(1L).build();
@@ -728,8 +751,9 @@ class ReservationControllerTest {
             String accessToken = getAccessToken(personalDetail);
 
             //when
-            when(reservationFacade.reserveSession(any(ReservationCriteria.ReserveSession.class),
-                    any(SecurityUser.class))).thenReturn(List.of(reservation));
+            when(reservationFacade.reserveSession(anyList(), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(List.of(reservation)));
+//            when(reservationFacade.reserveSession(anyList(),
+//                    any(SecurityUser.class))).thenReturn(List.of(reservation));
 
             //then
             mockMvc.perform(post("/v1/reservations")

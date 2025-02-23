@@ -68,7 +68,7 @@ public class ReservationController {
                                                                              @Login SecurityUser user) {
 
         return ApiResultResponse.ok(ReservationResponseDto.Success.of(
-                reservationFacade.setDisabledReservation(request.toCriteria(user.getTrainerId()))));
+                reservationFacade.setDisabledReservation(request.toCriteria(), user)));
     }
 
     /**
@@ -79,13 +79,15 @@ public class ReservationController {
      */
     @PostMapping
     public ApiResultResponse<List<ReservationResponseDto.Success>> reserveSession(@RequestBody @Valid
-                                                                                  ReservationRequestDto.ReserveSession
+                                                                                  ReservationRequestDto.ReserveSessions
                                                                                           request,
                                                                                   @Login SecurityUser user
     ) {
 
-        return ApiResultResponse.ok(reservationFacade.reserveSession(request.toCriteria(), user)
-                .stream().map(ReservationResponseDto.Success::of).toList());
+        return ApiResultResponse.ok(reservationFacade.reserveSession(request.reserveSessions()
+                        .stream().map(ReservationRequestDto.ReserveSessions.ReserveSession::toCriteria).toList(), user)
+                .reservations().stream().map(ReservationResponseDto.Success::of).toList());
+
 
     }
 }
