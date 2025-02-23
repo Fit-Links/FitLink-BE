@@ -103,4 +103,8 @@ public class MemberService {
     public Optional<SessionInfo> findSessionInfo(Long memberId) {
         return sessionInfoRepository.getSessionInfo(memberId);
     }
+
+    public void savePersonalDetail(PersonalDetail personalDetail) {
+        personalDetailRepository.savePersonalDetail(personalDetail);
+    }
 }

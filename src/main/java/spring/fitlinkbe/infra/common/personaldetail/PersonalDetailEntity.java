@@ -69,13 +69,12 @@ public class PersonalDetailEntity {
                 .build();
     }
 
-    public static PersonalDetailEntity from(PersonalDetail personalDetail) {
+    public static PersonalDetailEntity of(PersonalDetail personalDetail, EntityManager em) {
         return PersonalDetailEntity.builder()
                 .personalDetailId(personalDetail.getPersonalDetailId() != null ? personalDetail.getPersonalDetailId() : null)
                 .name(personalDetail.getName())
-                .trainer(personalDetail.getTrainer() != null ? TrainerEntity.from(personalDetail.getTrainer()) : null)
-                .member(personalDetail.getMember() != null ? MemberEntity.from(personalDetail.getMember())
-                        : null)
+                .trainer(personalDetail.getTrainerId() != null ? em.getReference(TrainerEntity.class, personalDetail.getTrainerId()) : null)
+                .member(personalDetail.getMemberId() != null ? em.getReference(MemberEntity.class, personalDetail.getMemberId()) : null)
                 .profilePictureUrl(personalDetail.getProfilePictureUrl())
                 .gender(personalDetail.getGender())
                 .birthDate(personalDetail.getBirthDate())
@@ -85,5 +84,10 @@ public class PersonalDetailEntity {
                 .providerId(personalDetail.getProviderId())
                 .status(personalDetail.getStatus())
                 .build();
+    }
+
+    public void assignMemberAndTrainer(MemberEntity member, TrainerEntity trainer) {
+        this.member = member;
+        this.trainer = trainer;
     }
 }

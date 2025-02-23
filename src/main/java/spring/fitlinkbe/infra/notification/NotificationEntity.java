@@ -39,12 +39,12 @@ public class NotificationEntity {
 
     private LocalDateTime sendDate;
 
-    public static NotificationEntity from(Notification notification) {
+    public static NotificationEntity of(Notification notification, EntityManager em) {
         return NotificationEntity.builder()
                 .notificationId(notification.getNotificationId())
                 .refId(notification.getRefId())
                 .refType(notification.getRefType())
-                .personalDetail(PersonalDetailEntity.from(notification.getPersonalDetail()))
+                .personalDetail(PersonalDetailEntity.of(notification.getPersonalDetail(), em))
                 .name(notification.getName())
                 .content(notification.getContent())
                 .isSent(notification.getIsSent())

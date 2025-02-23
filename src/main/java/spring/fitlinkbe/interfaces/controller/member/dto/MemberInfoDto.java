@@ -1,5 +1,6 @@
 package spring.fitlinkbe.interfaces.controller.member.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.AssertTrue;
 import lombok.Builder;
 import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
@@ -48,16 +49,25 @@ public class MemberInfoDto {
     ) {
 
         @AssertTrue(message = "이름, 전화번호 중 하나는 반드시 입력해야 합니다.")
+        @JsonIgnore
         public boolean isValid() {
             return name != null || phoneNumber != null;
         }
     }
 
+    @Builder
     public record MemberUpdateResponse(
             Long memberId,
             String name,
             String phoneNumber
     ) {
+        public static MemberUpdateResponse from(MemberInfoResult.MemberUpdateResponse result) {
+            return MemberUpdateResponse.builder()
+                    .memberId(result.memberId())
+                    .name(result.name())
+                    .phoneNumber(result.phoneNumber())
+                    .build();
+        }
     }
 }
 
