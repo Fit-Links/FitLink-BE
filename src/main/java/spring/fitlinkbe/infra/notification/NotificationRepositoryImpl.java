@@ -1,5 +1,6 @@
 package spring.fitlinkbe.infra.notification;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import spring.fitlinkbe.domain.common.exception.CustomException;
@@ -12,6 +13,7 @@ import spring.fitlinkbe.domain.notification.NotificationRepository;
 public class NotificationRepositoryImpl implements NotificationRepository {
 
     private final NotificationJpaRepository notificationJpaRepository;
+    private final EntityManager em;
 
     @Override
     public Notification getNotification(Long personalDetailId) {
@@ -29,6 +31,6 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Override
     public void save(Notification notification) {
-        notificationJpaRepository.save(NotificationEntity.from(notification));
+        notificationJpaRepository.save(NotificationEntity.of(notification, em));
     }
 }

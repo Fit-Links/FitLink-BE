@@ -41,4 +41,13 @@ public class MemberController {
         return ApiResultResponse.ok(MemberInfoDto.Response.from(result));
     }
 
+    @PatchMapping("/me")
+    public ApiResultResponse<MemberInfoDto.MemberUpdateResponse> updateMyInfo(
+            @Login SecurityUser user,
+            @RequestBody @Valid MemberInfoDto.MemberUpdateRequest requestBody) {
+        MemberInfoResult.MemberUpdateResponse result = memberFacade
+                .updateMyInfo(user.getMemberId(), requestBody.name(), requestBody.phoneNumber());
+
+        return ApiResultResponse.ok(MemberInfoDto.MemberUpdateResponse.from(result));
+    }
 }
