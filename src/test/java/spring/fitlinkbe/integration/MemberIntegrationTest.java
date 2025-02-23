@@ -274,4 +274,72 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             });
         }
     }
+
+    @Nested
+    @DisplayName("회원 정보 수정 (PATCH) API 테스트")
+    public class MemberUpdateTest {
+        private static final String MEMBER_UPDATE_API = "/v1/members/me";
+
+        @Test
+        @DisplayName("회원 정보 수정 성공")
+        public void memberUpdateSuccess() throws Exception {
+            // given
+            // 회원이 있을 때
+            Member member = testDataHandler.createMember();
+            String token = testDataHandler.createTokenFromMember(member);
+
+            // when
+            // 회원이 정보를 수정할 때
+            String newName = "newName";
+            String newPhoneNumber = "01092831232";
+            MemberInfoDto.MemberUpdateRequest request = new MemberInfoDto.MemberUpdateRequest(newName, newPhoneNumber);
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = patch(MEMBER_UPDATE_API, requestBody, token);
+
+            // then
+            // 수정된 정보를 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<MemberInfoDto.MemberUpdateResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(200);
+
+                MemberInfoDto.MemberUpdateResponse data = response.data();
+                softly.assertThat(data.memberId()).isEqualTo(member.getMemberId());
+                softly.assertThat(data.name()).isEqualTo(newName);
+                softly.assertThat(data.phoneNumber()).isEqualTo(newPhoneNumber);
+            });
+        }
+
+        @Test
+        @DisplayName("회원 정보 수정 실패 - 이름, 전화번호 둘 다 입력하지 않았을 때")
+        public void memberUpdateFailByEmptyNameAndPhoneNumber() throws Exception {
+            // given
+            // 회원이 있을 때
+            Member member = testDataHandler.createMember();
+            String token = testDataHandler.createTokenFromMember(member);
+
+            // when
+            // 회원이 정보를 수정할 때 이름, 전화번호 둘 다 입력하지 않았을 때
+            MemberInfoDto.MemberUpdateRequest request = new MemberInfoDto.MemberUpdateRequest(null, null);
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = patch(MEMBER_UPDATE_API, requestBody, token);
+
+            // then
+            // 이름, 전화번호 중 하나는 반드시 입력해야 한다는 응답을 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<MemberInfoDto.MemberUpdateResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.data()).isNull();
+            });
+        }
+    }
 }
