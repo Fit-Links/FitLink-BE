@@ -70,4 +70,22 @@ public class ReservationController {
         return ApiResultResponse.ok(ReservationResponseDto.Success.of(
                 reservationFacade.setDisabledReservation(request.toCriteria(user.getTrainerId()))));
     }
+
+    /**
+     * 직접 예약
+     *
+     * @param request memberId, name, date, priority 정보
+     * @return ApiResultResponse 예약이 된 reservationId 목록 정보를 반환한다.
+     */
+    @PostMapping
+    public ApiResultResponse<List<ReservationResponseDto.Success>> reserveSession(@RequestBody @Valid
+                                                                                  ReservationRequestDto.ReserveSession
+                                                                                          request,
+                                                                                  @Login SecurityUser user
+    ) {
+
+        return ApiResultResponse.ok(reservationFacade.reserveSession(request.toCriteria(), user)
+                .stream().map(ReservationResponseDto.Success::of).toList());
+
+    }
 }
