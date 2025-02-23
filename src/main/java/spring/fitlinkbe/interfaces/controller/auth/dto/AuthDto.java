@@ -50,7 +50,7 @@ public class AuthDto {
 
         @JsonIgnore
         @AssertTrue(message = "수업 가능 시간의 요일은 겹치면 안됩니다.")
-        public boolean isAvailableTimeDayOfWeekUnique() {
+        private boolean isAvailableTimeDayOfWeekUnique() {
             if (availableTimes == null) {
                 return true;
             }
@@ -78,13 +78,13 @@ public class AuthDto {
 
         @JsonIgnore
         @AssertTrue(message = "시작 시간과 종료 시간은 둘 다 선택하던지 둘 다 선택하지 않아야 합니다.")
-        public boolean isTimeValid() {
+        private boolean isTimeValid() {
             return (startTime == null && endTime == null) || (startTime != null && endTime != null);
         }
 
         @JsonIgnore
         @AssertTrue(message = "시작 시간은 종료 시간보다 빨라야 합니다.")
-        public boolean isStartTimeBeforeEndTime() {
+        private boolean isStartTimeBeforeEndTime() {
             if (startTime == null || endTime == null) {
                 return true;
             }
@@ -93,7 +93,7 @@ public class AuthDto {
 
         @JsonIgnore
         @AssertTrue(message = "휴일인 경우에만 시작 시간과 종료 시간은 선택 입니다.")
-        public boolean isHolidayTimeValid() {
+        private boolean isHolidayTimeValid() {
             if (isHoliday == null) {
                 return true;
             }
@@ -124,7 +124,7 @@ public class AuthDto {
 
         @JsonIgnore
         @AssertTrue(message = "운동 희망일의 요일은 겹치면 안됩니다.")
-        public boolean isWorkoutScheduleDayOfWeekUnique() {
+        private boolean isWorkoutScheduleDayOfWeekUnique() {
             if (workoutSchedule == null) {
                 return true;
             }

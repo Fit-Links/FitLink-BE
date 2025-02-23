@@ -69,9 +69,9 @@ public class MemberInfoDto {
             String phoneNumber
     ) {
 
-        @AssertTrue(message = "이름, 전화번호 중 하나는 반드시 입력해야 합니다.")
         @JsonIgnore
-        public boolean isValid() {
+        @AssertTrue(message = "이름, 전화번호 중 하나는 반드시 입력해야 합니다.")
+        private boolean isValid() {
             return name != null || phoneNumber != null;
         }
     }
