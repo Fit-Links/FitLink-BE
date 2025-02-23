@@ -1,5 +1,6 @@
 package spring.fitlinkbe.infra.reservation;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import spring.fitlinkbe.domain.common.enums.UserRole;
@@ -19,6 +20,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
 
     private final ReservationJpaRepository reservationJpaRepository;
     private final SessionJpaRepository sessionJpaRepository;
+    private final EntityManager em;
 
     @Override
     public List<Reservation> getReservations() {
@@ -78,6 +80,19 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
+    public List<Reservation> reserveSession(List<Reservation> reservations) {
+        List<ReservationEntity> entities = reservations.stream()
+                .map(reservation -> ReservationEntity.fromWithId(reservation, em))
+                .toList();
+
+        List<ReservationEntity> savedEntities = reservationJpaRepository.saveAll(entities);
+
+        return savedEntities.stream()
+                .map(ReservationEntity::toDomain)
+                .toList();
+    }
+
+    @Override
     public Optional<Session> getSession(Long reservationId) {
         Optional<SessionEntity> findEntity = sessionJpaRepository.findByReservation_ReservationId(reservationId);
         if (findEntity.isPresent()) {
@@ -88,7 +103,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
 
     @Override
     public Optional<Session> saveSession(Session session) {
-        SessionEntity savedEntity = sessionJpaRepository.save(SessionEntity.from(session));
+        SessionEntity savedEntity = sessionJpaRepository.save(SessionEntity.from(session, em));
 
         return Optional.of(savedEntity.toDomain());
     }
@@ -96,7 +111,21 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public List<Session> cancelSessions(List<Session> sessions) {
         List<SessionEntity> entities = sessions.stream()
-                .map(SessionEntity::from)
+                .map(session -> SessionEntity.from(session, em))
+                .toList();
+
+        List<SessionEntity> savedEntities = sessionJpaRepository.saveAll(entities);
+
+        return savedEntities.stream()
+                .map(SessionEntity::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<Session> createSessions(List<Session> sessions) {
+
+        List<SessionEntity> entities = sessions.stream()
+                .map(session -> SessionEntity.from(session, em))
                 .toList();
 
         List<SessionEntity> savedEntities = sessionJpaRepository.saveAll(entities);

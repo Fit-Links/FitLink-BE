@@ -29,12 +29,14 @@ public class SessionEntity extends BaseTimeEntity {
 
     private boolean isCompleted;
 
-    public static SessionEntity from(Session session) {
+    public static SessionEntity from(Session session, EntityManager em) {
 
         return SessionEntity.builder()
                 .sessionId(session.getSessionId() != null
                         ? session.getSessionId() : null)
-                .reservation(ReservationEntity.from(session.getReservation()))
+
+                .reservation(session.getReservationId() != null ?
+                        em.getReference(ReservationEntity.class, session.getReservationId()) : null)
                 .status(session.getStatus())
                 .cancelReason(session.getCancelReason())
                 .isCompleted(session.isCompleted())
@@ -44,7 +46,7 @@ public class SessionEntity extends BaseTimeEntity {
     public Session toDomain() {
         return Session.builder()
                 .sessionId(sessionId)
-                .reservation(reservation.toDomain())
+                .reservationId(reservation.getReservationId())
                 .status(status)
                 .cancelReason(cancelReason)
                 .isCompleted(isCompleted)
