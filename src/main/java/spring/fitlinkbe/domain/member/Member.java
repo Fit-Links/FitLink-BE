@@ -45,4 +45,13 @@ public class Member {
         }
         return phoneNumber.getPhoneNumber();
     }
+
+    public void update(String name, String phoneNumber) {
+        if (name != null) {
+            this.name = name;
+        }
+        if (phoneNumber != null) {
+            this.phoneNumber = new PhoneNumber(phoneNumber);
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package spring.fitlinkbe.infra.common.personaldetail;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
@@ -14,12 +15,13 @@ import java.util.Optional;
 public class PersonalDetailRepositoryImpl implements PersonalDetailRepository {
 
     private final PersonalDetailJpaRepository personalDetailJpaRepository;
+    private final EntityManager em;
 
     @Override
     public Optional<PersonalDetail> savePersonalDetail(PersonalDetail personalDetail) {
-        PersonalDetailEntity entity = personalDetailJpaRepository.save(PersonalDetailEntity.from(personalDetail));
+        PersonalDetailEntity personalDetailEntity = PersonalDetailEntity.of(personalDetail, em);
 
-        return Optional.of(entity.toDomain());
+        return Optional.of(personalDetailJpaRepository.save(personalDetailEntity).toDomain());
 
     }
 
@@ -31,7 +33,7 @@ public class PersonalDetailRepositoryImpl implements PersonalDetailRepository {
         if (optionalEntity.isPresent()) {
             return optionalEntity.get().toDomain();
         } else {
-            PersonalDetailEntity entity = personalDetailJpaRepository.save(PersonalDetailEntity.from(personalDetail));
+            PersonalDetailEntity entity = personalDetailJpaRepository.save(PersonalDetailEntity.of(personalDetail, em));
             return entity.toDomain();
         }
     }

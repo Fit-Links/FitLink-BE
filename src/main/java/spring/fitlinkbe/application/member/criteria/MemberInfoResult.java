@@ -42,5 +42,19 @@ public class MemberInfoResult {
                     .build();
         }
     }
-}
 
+    @Builder
+    public record MemberUpdateResponse(
+            Long memberId,
+            String name,
+            String phoneNumber
+    ) {
+        public static MemberUpdateResponse from(Member me) {
+            return MemberUpdateResponse.builder()
+                    .memberId(me.getMemberId())
+                    .name(me.getName())
+                    .phoneNumber(me.getPhoneNumber())
+                    .build();
+        }
+    }
+}

@@ -75,7 +75,7 @@ public class TestDataHandler {
                 .name("홍길동")
                 .email("test@testcode.co.kr")
                 .status(PersonalDetail.Status.NORMAL)
-                .trainer(trainer)
+                .trainerId(trainer.getTrainerId())
                 .oauthProvider(PersonalDetail.OauthProvider.GOOGLE)
                 .providerId(UUID.randomUUID().toString())
                 .build();
@@ -87,7 +87,7 @@ public class TestDataHandler {
                 .name("홍길동")
                 .email("test@testcode.co.kr")
                 .status(PersonalDetail.Status.NORMAL)
-                .member(member)
+                .memberId(member.getMemberId())
                 .oauthProvider(PersonalDetail.OauthProvider.GOOGLE)
                 .providerId(UUID.randomUUID().toString())
                 .build();
@@ -125,13 +125,13 @@ public class TestDataHandler {
         personalDetailRepository.savePersonalDetail(PersonalDetail.builder()
                 .providerId("1")
                 .oauthProvider(PersonalDetail.OauthProvider.GOOGLE)
-                .trainer(savedTrainer)
-                .member(null)
+                .trainerId(savedTrainer.getTrainerId())
+                .memberId(null)
                 .build());
 
         personalDetailRepository.savePersonalDetail(PersonalDetail.builder()
-                .member(savedMember1)
-                .trainer(null)
+                .memberId(savedMember1.getMemberId())
+                .trainerId(null)
                 .providerId("1")
                 .oauthProvider(PersonalDetail.OauthProvider.GOOGLE)
                 .build());
@@ -155,8 +155,12 @@ public class TestDataHandler {
         return authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
     }
 
-    public PersonalDetail getPersonalDetail(Long trainerId) {
+    public PersonalDetail getTrainerPersonalDetail(Long trainerId) {
         return personalDetailRepository.getTrainerDetail(trainerId).orElseThrow();
+    }
+
+    public PersonalDetail getMemberPersonalDetail(Long memberId) {
+        return personalDetailRepository.getMemberDetail(memberId).orElseThrow();
     }
 
     public void connectMemberAndTrainer(Member member, Trainer trainer) {

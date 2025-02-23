@@ -61,4 +61,18 @@ public class MemberFacade {
 
         return MemberInfoResult.Response.of(me, trainer, sessionInfo.orElse(null));
     }
+
+    @Transactional
+    public MemberInfoResult.MemberUpdateResponse updateMyInfo(Long memberId, String name, String phoneNumber) {
+        Member me = memberService.getMember(memberId);
+        me.update(name, phoneNumber);
+
+        PersonalDetail personalDetail = memberService.getMemberDetail(memberId);
+        personalDetail.update(name, phoneNumber);
+
+        memberService.saveMember(me);
+        memberService.savePersonalDetail(personalDetail);
+
+        return MemberInfoResult.MemberUpdateResponse.from(me);
+    }
 }

@@ -19,13 +19,9 @@ public class PersonalDetail {
 
     private String name;
 
-    private Trainer trainer;
-
-    private Member member;
+    private Long memberId;
 
     private Long trainerId;
-
-    private Long memberId;
 
     private String profilePictureUrl;
 
@@ -54,13 +50,13 @@ public class PersonalDetail {
     public void registerMember(String name, LocalDate birthDate, PhoneNumber phoneNumber,
                                String profileUrl, Gender gender, Member member) {
         register(name, birthDate, phoneNumber, profileUrl, gender);
-        this.member = member;
+        this.memberId = member.getMemberId();
     }
 
     public void registerTrainer(String name, LocalDate birthDate, PhoneNumber phoneNumber,
                                 String profileUrl, Gender gender, Trainer trainer) {
         register(name, birthDate, phoneNumber, profileUrl, gender);
-        this.trainer = trainer;
+        this.trainerId = trainer.getTrainerId();
     }
 
     private void register(String name, LocalDate birthDate, PhoneNumber phoneNumber, String profileUrl, Gender gender) {
@@ -70,6 +66,15 @@ public class PersonalDetail {
         this.profilePictureUrl = profileUrl;
         this.gender = gender;
         this.status = Status.NORMAL;
+    }
+
+    public void update(String name, String phoneNumber) {
+        if (name != null) {
+            this.name = name;
+        }
+        if (phoneNumber != null) {
+            this.phoneNumber = new PhoneNumber(phoneNumber);
+        }
     }
 
     public enum Gender {
