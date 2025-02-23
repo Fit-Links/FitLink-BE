@@ -126,11 +126,13 @@ public class TestDataHandler {
                 .providerId("1")
                 .oauthProvider(PersonalDetail.OauthProvider.GOOGLE)
                 .trainerId(savedTrainer.getTrainerId())
+                .name(savedTrainer.getName())
                 .memberId(null)
                 .build());
 
         personalDetailRepository.savePersonalDetail(PersonalDetail.builder()
                 .memberId(savedMember1.getMemberId())
+                .name(savedMember1.getName())
                 .trainerId(null)
                 .providerId("1")
                 .oauthProvider(PersonalDetail.OauthProvider.GOOGLE)
