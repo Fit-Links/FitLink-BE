@@ -346,4 +346,42 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             });
         }
     }
+
+    @Nested
+    @DisplayName("회원 정보 상세 조회 테스트")
+    public class MemberDetailTest {
+        private static final String MEMBER_DETAIL_API = "/v1/members/detail";
+
+        @Test
+        @DisplayName("회원 정보 상세 조회 성공")
+        public void memberDetailSuccess() throws Exception {
+            // given
+            // 회원이 있을 때
+            Member member = testDataHandler.createMember();
+            String token = testDataHandler.createTokenFromMember(member);
+
+            // when
+            // 회원이 정보를 조회할 때
+            ExtractableResponse<Response> result = get(MEMBER_DETAIL_API, token);
+
+            // then
+            // 회원의 상세 정보를 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<MemberInfoDto.DetailResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                MemberInfoDto.DetailResponse data = response.data();
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(200);
+
+                softly.assertThat(data.memberId()).isEqualTo(member.getMemberId());
+                softly.assertThat(data.profilePictureUrl()).isEqualTo(member.getProfilePictureUrl());
+                softly.assertThat(data.name()).isEqualTo(member.getName());
+                softly.assertThat(data.birthDate()).isEqualTo(member.getBirthDate());
+                softly.assertThat(data.phoneNumber()).isEqualTo(member.getPhoneNumber());
+            });
+        }
+    }
 }

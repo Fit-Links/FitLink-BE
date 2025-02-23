@@ -5,6 +5,8 @@ import jakarta.validation.constraints.AssertTrue;
 import lombok.Builder;
 import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
 
+import java.time.LocalDate;
+
 public class MemberInfoDto {
 
     @Builder
@@ -26,6 +28,15 @@ public class MemberInfoDto {
                     .sessionInfo(result.sessionInfo() != null ? SessionInfoResponse.from(result.sessionInfo()) : null)
                     .build();
         }
+    }
+
+    public record DetailResponse(
+            Long memberId,
+            String profilePictureUrl,
+            String name,
+            LocalDate birthDate,
+            String phoneNumber
+    ) {
     }
 
     public record SessionInfoResponse(
