@@ -50,4 +50,11 @@ public class MemberController {
 
         return ApiResultResponse.ok(MemberInfoDto.MemberUpdateResponse.from(result));
     }
+
+    @GetMapping("/me/detail")
+    public ApiResultResponse<MemberInfoDto.DetailResponse> getMyDetail(@Login SecurityUser user) {
+        MemberInfoResult.DetailResponse result = memberFacade.getMyDetail(user.getMemberId());
+
+        return ApiResultResponse.ok(MemberInfoDto.DetailResponse.from(result));
+    }
 }

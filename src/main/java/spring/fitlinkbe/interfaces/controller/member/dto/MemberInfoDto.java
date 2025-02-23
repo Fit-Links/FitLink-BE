@@ -30,6 +30,7 @@ public class MemberInfoDto {
         }
     }
 
+    @Builder
     public record DetailResponse(
             Long memberId,
             String profilePictureUrl,
@@ -37,6 +38,15 @@ public class MemberInfoDto {
             LocalDate birthDate,
             String phoneNumber
     ) {
+        public static DetailResponse from(MemberInfoResult.DetailResponse result) {
+            return DetailResponse.builder()
+                    .memberId(result.memberId())
+                    .profilePictureUrl(result.profilePictureUrl())
+                    .name(result.name())
+                    .birthDate(result.birthDate())
+                    .phoneNumber(result.phoneNumber())
+                    .build();
+        }
     }
 
     public record SessionInfoResponse(

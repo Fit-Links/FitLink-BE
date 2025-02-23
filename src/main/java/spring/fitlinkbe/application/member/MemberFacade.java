@@ -75,4 +75,9 @@ public class MemberFacade {
 
         return MemberInfoResult.MemberUpdateResponse.from(me);
     }
+
+    public MemberInfoResult.DetailResponse getMyDetail(Long memberId) {
+        Member me = memberService.getMember(memberId);
+        return MemberInfoResult.DetailResponse.from(me);
+    }
 }

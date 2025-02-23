@@ -350,7 +350,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
     @Nested
     @DisplayName("회원 정보 상세 조회 테스트")
     public class MemberDetailTest {
-        private static final String MEMBER_DETAIL_API = "/v1/members/detail";
+        private static final String MEMBER_DETAIL_API = "/v1/members/me/detail";
 
         @Test
         @DisplayName("회원 정보 상세 조회 성공")

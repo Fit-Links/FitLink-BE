@@ -65,6 +65,7 @@ public class MemberService {
         }
     }
 
+    @Transactional(readOnly = true)
     public Member getMember(Long memberId) {
         return memberRepository.getMember(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
