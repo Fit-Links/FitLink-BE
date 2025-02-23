@@ -72,7 +72,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 // 알림 정보가 생성되었는지 확인
                 Notification notification = notificationRepository.getNotification(trainerPersonalDetail.getPersonalDetailId());
                 softly.assertThat(notification).isNotNull();
-                softly.assertThat(notification.getRefType()).isEqualTo(Notification.NotificationType.CONNECT);
+                softly.assertThat(notification.getRefType()).isEqualTo(Notification.ReferenceType.CONNECTING);
                 softly.assertThat(notification.getRefId()).isEqualTo(connectingInfo.getConnectingInfoId());
                 softly.assertThat(notification.getIsRead()).isFalse();
                 softly.assertThat(notification.getIsSent()).isTrue();

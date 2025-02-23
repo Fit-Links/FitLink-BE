@@ -104,6 +104,11 @@ public class MemberService {
         return sessionInfoRepository.getSessionInfo(memberId);
     }
 
+    public SessionInfo getSessionInfo(Long trainerId, Long memberId) {
+        return sessionInfoRepository.getSessionInfo(trainerId, memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND));
+    }
+
     public void savePersonalDetail(PersonalDetail personalDetail) {
         personalDetailRepository.savePersonalDetail(personalDetail);
     }
