@@ -51,7 +51,6 @@ public class ApiControllerAdvice {
     @ExceptionHandler(Exception.class)
     public ApiResultResponse<Object> handlerException(Exception e) {
         log.error("Exception is occurred! {}", e.getMessage());
-        log.error("Exception is occurred!", e);
         return ApiResultResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, false, e.getMessage(), null);
     }
 }

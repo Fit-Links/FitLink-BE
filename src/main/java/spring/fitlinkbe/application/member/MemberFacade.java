@@ -19,12 +19,12 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-@Transactional
 public class MemberFacade {
     private final MemberService memberService;
     private final TrainerService trainerService;
     private final NotificationService notificationService;
 
+    @Transactional
     public void connectTrainer(Long memberId, String trainerCode) {
         memberService.checkMemberAlreadyConnected(memberId);
 
@@ -36,6 +36,7 @@ public class MemberFacade {
         notificationService.sendConnectRequestNotification(trainerDetail, member.getName(), connectingInfo.getConnectingInfoId());
     }
 
+    @Transactional
     public void disconnectTrainer(Long memberId) {
         ConnectingInfo connectingInfo = memberService.getConnectedInfo(memberId);
         if (connectingInfo.isPending()) {
