@@ -63,7 +63,7 @@ class ReservationControllerTest {
 
     @Nested
     @DisplayName("예약 목록 조회 Controller TEST")
-    class GetReservationsTest {
+    class GetReservationsControllerTest {
         @Test
         @DisplayName("트레이너가 예약 목록을 조회한다.")
         void getReservationsWithTrainer() throws Exception {
@@ -318,7 +318,7 @@ class ReservationControllerTest {
 
     @Nested
     @DisplayName("예약 상세 조회 Controller TEST")
-    class GetReservation {
+    class GetReservationControllerTest {
         @Test
         @DisplayName("트레이너가 예약 상세 목록을 조회한다.")
         void getReservationWithTrainer() throws Exception {
@@ -400,7 +400,7 @@ class ReservationControllerTest {
 
     @Nested
     @DisplayName("예약 불가 설정 Controller TEST")
-    class SetDisabledTime {
+    class SetDisabledTimeControllerTest {
         @Test
         @DisplayName("예약 불가능한 날짜를 설정한다.")
         void setDisabledDate() throws Exception {
@@ -527,7 +527,7 @@ class ReservationControllerTest {
 
     @Nested
     @DisplayName("세션 예약 Controller TEST")
-    class ReserveSession {
+    class ReserveSessionControllerTest {
 
         @Test
         @DisplayName("트레이너가 세션 예약 성공")
