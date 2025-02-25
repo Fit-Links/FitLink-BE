@@ -7,6 +7,8 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
@@ -27,6 +29,7 @@ import spring.fitlinkbe.interfaces.controller.member.dto.WorkoutScheduleDto;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class MemberIntegrationTest extends BaseIntegrationTest {
 
@@ -608,6 +611,104 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 }
             });
         }
+
+        @Test
+        @DisplayName("회원 PT 희망 시간 수정 실패 - PT 희망 시간이 없을 때 요일이 중복되는 경우")
+        public void memberPtTimeUpdateFailByDuplicateDayOfWeek() throws Exception {
+            // given
+            // 회원이 있고 PT 희망 시간이 없을 때
+            Member member = testDataHandler.createMember();
+            String token = testDataHandler.createTokenFromMember(member);
+
+            // when
+            // 회원이 PT 희망 시간을 수정할 때 요일이 중복되는 경우
+            List<WorkoutScheduleDto.Request> request = List.of(
+                    new WorkoutScheduleDto.Request(null, DayOfWeek.MONDAY,
+                            List.of(LocalTime.of(12, 0), LocalTime.of(13, 0))),
+                    new WorkoutScheduleDto.Request(null, DayOfWeek.MONDAY,
+                            List.of(LocalTime.of(14, 0), LocalTime.of(15, 0))),
+                    new WorkoutScheduleDto.Request(null, DayOfWeek.WEDNESDAY,
+                            List.of(LocalTime.of(16, 0), LocalTime.of(17, 0)))
+            );
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = put(MEMBER_PT_TIME_UPDATE_API, requestBody, token);
+
+            // then
+            // 요일이 중복된다는 에러 응답을 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<List<WorkoutScheduleDto.Response>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(409);
+                softly.assertThat(response.data()).isNull();
+            });
+        }
+
+        @ParameterizedTest
+        @MethodSource("invalidRequests")
+        @DisplayName("회원 PT 희망 시간 수정 실패 - 요일, 시간이 올바르지 않은 경우")
+        public void memberPtTimeUpdateFailByInvalidRequest(List<WorkoutScheduleDto.Request> request) throws Exception {
+            // given
+            // 회원이 있을 때
+            Member member = testDataHandler.createMember();
+            String token = testDataHandler.createTokenFromMember(member);
+
+            // when
+            // 회원이 PT 희망 시간을 수정할 때 요일, 시간이 올바르지 않은 경우
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = put(MEMBER_PT_TIME_UPDATE_API, requestBody, token);
+
+            // then
+            // 요일, 시간이 올바르지 않다는 에러 응답을 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<List<WorkoutScheduleDto.Response>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.data()).isNull();
+            });
+        }
+
+        public static Stream<List<WorkoutScheduleDto.Request>> invalidRequests() {
+            // 요일이 null 인 경우
+            List<WorkoutScheduleDto.Request> invalidRequest1 = List.of(
+                    new WorkoutScheduleDto.Request(null, DayOfWeek.MONDAY,
+                            List.of(LocalTime.of(12, 0), LocalTime.of(13, 0))),
+                    new WorkoutScheduleDto.Request(null, null,
+                            List.of(LocalTime.of(14, 0), LocalTime.of(15, 0))),
+                    new WorkoutScheduleDto.Request(null, DayOfWeek.WEDNESDAY,
+                            List.of(LocalTime.of(16, 0), LocalTime.of(17, 0)))
+            );
+
+            // 요일이 겹치는 경우
+            List<WorkoutScheduleDto.Request> invalidRequest2 = List.of(
+                    new WorkoutScheduleDto.Request(null, DayOfWeek.MONDAY,
+                            List.of(LocalTime.of(12, 0), LocalTime.of(13, 0))),
+                    new WorkoutScheduleDto.Request(null, DayOfWeek.MONDAY,
+                            List.of(LocalTime.of(14, 0), LocalTime.of(15, 0))),
+                    new WorkoutScheduleDto.Request(null, DayOfWeek.WEDNESDAY,
+                            List.of(LocalTime.of(16, 0), LocalTime.of(17, 0)))
+            );
+
+            // 선호 시간이 null 인 경우
+            List<WorkoutScheduleDto.Request> invalidRequest3 = List.of(
+                    new WorkoutScheduleDto.Request(null, DayOfWeek.MONDAY,
+                            List.of(LocalTime.of(12, 0), LocalTime.of(13, 0))),
+                    new WorkoutScheduleDto.Request(null, DayOfWeek.TUESDAY,
+                            List.of(LocalTime.of(14, 0), LocalTime.of(15, 0))),
+                    new WorkoutScheduleDto.Request(null, DayOfWeek.WEDNESDAY,
+                            null)
+            );
+
+            return Stream.of(invalidRequest1, invalidRequest2, invalidRequest3);
+        }
+
 
     }
 }
