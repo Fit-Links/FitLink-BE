@@ -11,11 +11,16 @@ import spring.fitlinkbe.domain.common.model.PhoneNumber;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
+import spring.fitlinkbe.domain.member.WorkoutSchedule;
+import spring.fitlinkbe.domain.member.WorkoutScheduleRepository;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -35,16 +40,19 @@ public class TestDataHandler {
 
     private final ConnectingInfoRepository connectingInfoRepository;
 
+    private final WorkoutScheduleRepository workoutScheduleRepository;
+
     public TestDataHandler(
             PersonalDetailRepository personalDetailRepository,
             MemberRepository memberRepository, TrainerRepository trainerRepository,
-            SessionInfoRepository sessionInfoRepository, AuthTokenProvider authTokenProvider, ConnectingInfoRepository connectingInfoRepository) {
+            SessionInfoRepository sessionInfoRepository, AuthTokenProvider authTokenProvider, ConnectingInfoRepository connectingInfoRepository, WorkoutScheduleRepository workoutScheduleRepository) {
         this.personalDetailRepository = personalDetailRepository;
         this.memberRepository = memberRepository;
         this.trainerRepository = trainerRepository;
         this.sessionInfoRepository = sessionInfoRepository;
         this.authTokenProvider = authTokenProvider;
         this.connectingInfoRepository = connectingInfoRepository;
+        this.workoutScheduleRepository = workoutScheduleRepository;
     }
 
     public Member createMember() {
@@ -192,5 +200,41 @@ public class TestDataHandler {
                 .build();
 
         return sessionInfoRepository.saveSessionInfo(sessionInfo).orElseThrow();
+    }
+
+    public List<WorkoutSchedule> createWorkoutSchedules(Member member) {
+        WorkoutSchedule workoutSchedule1 = WorkoutSchedule.builder()
+                .member(member)
+                .dayOfWeek(DayOfWeek.MONDAY)
+                .preferenceTimes(List.of(LocalTime.of(10, 0), LocalTime.of(12, 0)))
+                .build();
+
+        WorkoutSchedule workoutSchedule2 = WorkoutSchedule.builder()
+                .member(member)
+                .dayOfWeek(DayOfWeek.TUESDAY)
+                .preferenceTimes(List.of(LocalTime.of(10, 0), LocalTime.of(14, 0)))
+                .build();
+
+        WorkoutSchedule workoutSchedule3 = WorkoutSchedule.builder()
+                .member(member)
+                .dayOfWeek(DayOfWeek.WEDNESDAY)
+                .preferenceTimes(List.of(LocalTime.of(12, 0), LocalTime.of(14, 0)))
+                .build();
+
+        WorkoutSchedule workoutSchedule4 = WorkoutSchedule.builder()
+                .member(member)
+                .dayOfWeek(DayOfWeek.THURSDAY)
+                .preferenceTimes(List.of(LocalTime.of(10, 0), LocalTime.of(13, 0)))
+                .build();
+
+        WorkoutSchedule workoutSchedule5 = WorkoutSchedule.builder()
+                .member(member)
+                .dayOfWeek(DayOfWeek.FRIDAY)
+                .preferenceTimes(List.of(LocalTime.of(11, 0), LocalTime.of(12, 0)))
+                .build();
+
+        return workoutScheduleRepository.saveAll(
+                List.of(workoutSchedule1, workoutSchedule2, workoutSchedule3, workoutSchedule4, workoutSchedule5)
+        );
     }
 }

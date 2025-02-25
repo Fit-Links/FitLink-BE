@@ -13,6 +13,7 @@ import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
+import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.domain.notification.NotificationRepository;
 import spring.fitlinkbe.domain.trainer.Trainer;
@@ -21,6 +22,9 @@ import spring.fitlinkbe.integration.common.TestDataHandler;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.member.dto.MemberDto;
 import spring.fitlinkbe.interfaces.controller.member.dto.MemberInfoDto;
+import spring.fitlinkbe.interfaces.controller.member.dto.WorkoutScheduleDto;
+
+import java.util.List;
 
 public class MemberIntegrationTest extends BaseIntegrationTest {
 
@@ -381,6 +385,50 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(data.name()).isEqualTo(member.getName());
                 softly.assertThat(data.birthDate()).isEqualTo(member.getBirthDate());
                 softly.assertThat(data.phoneNumber()).isEqualTo(member.getPhoneNumber());
+            });
+        }
+    }
+
+    @Nested
+    @DisplayName("회원 PT 희망 시간 조회 API 테스트")
+    public class MemberPtTimeTest {
+        private static final String MEMBER_PT_TIME_API = "/v1/members/workout-schedule";
+
+        @Test
+        @DisplayName("회원 PT 희망 시간 조회 성공")
+        public void memberPtTimeSuccess() throws Exception {
+            // given
+            // 회원이 있을 때
+            Member member = testDataHandler.createMember();
+            String token = testDataHandler.createTokenFromMember(member);
+            List<WorkoutSchedule> workoutSchedules = testDataHandler.createWorkoutSchedules(member);
+
+            // when
+            // 회원이 PT 희망 시간을 조회할 때
+            ExtractableResponse<Response> result = get(MEMBER_PT_TIME_API, token);
+
+            // then
+            // PT 희망 시간을 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<List<WorkoutScheduleDto.Response>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                List<WorkoutScheduleDto.Response> data = response.data();
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(200);
+
+                softly.assertThat(data.size()).isEqualTo(workoutSchedules.size());
+                for (WorkoutScheduleDto.Response responseDto : data) {
+                    WorkoutSchedule workoutSchedule = workoutSchedules.stream().filter(ws -> ws.getWorkoutScheduleId()
+                            .equals(responseDto.workoutScheduleId())).findFirst().orElseThrow();
+
+                    softly.assertThat(responseDto.workoutScheduleId()).isEqualTo(workoutSchedule.getWorkoutScheduleId());
+                    softly.assertThat(responseDto.dayOfWeek()).isEqualTo(workoutSchedule.getDayOfWeek());
+                    softly.assertThat(responseDto.preferenceTimes())
+                            .containsExactlyInAnyOrderElementsOf(workoutSchedule.getPreferenceTimes());
+                }
             });
         }
     }

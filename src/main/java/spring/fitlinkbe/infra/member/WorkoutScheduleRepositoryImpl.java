@@ -14,11 +14,12 @@ public class WorkoutScheduleRepositoryImpl implements WorkoutScheduleRepository 
     private final WorkoutScheduleJpaRepository workoutScheduleJpaRepository;
 
     @Override
-    public void saveAll(List<WorkoutSchedule> workoutSchedules) {
+    public List<WorkoutSchedule> saveAll(List<WorkoutSchedule> workoutSchedules) {
         List<WorkoutScheduleEntity> workoutScheduleEntities = workoutSchedules.stream()
                 .map(WorkoutScheduleEntity::from).toList();
 
-        workoutScheduleJpaRepository.saveAll(workoutScheduleEntities);
+        return workoutScheduleJpaRepository.saveAll(workoutScheduleEntities)
+                .stream().map(WorkoutScheduleEntity::toDomain).toList();
     }
 
     @Override
