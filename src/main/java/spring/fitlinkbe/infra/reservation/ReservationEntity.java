@@ -74,6 +74,25 @@ public class ReservationEntity extends BaseTimeEntity {
                 .build();
     }
 
+    public static ReservationEntity fromWithId(Reservation reservation, EntityManager em) {
+
+        return ReservationEntity.builder()
+                .reservationId(reservation.getReservationId() != null
+                        ? reservation.getReservationId() : null)
+                .trainer(em.getReference(TrainerEntity.class, reservation.getTrainer().getTrainerId()))
+                .member(em.getReference(MemberEntity.class, reservation.getMember().getMemberId()))
+                .sessionInfo(em.getReference(SessionInfoEntity.class, reservation.getSessionInfo().getSessionInfoId()))
+                .name(reservation.getName())
+                .reservationDate(reservation.getReservationDate())
+                .changeDate(reservation.getChangeDate())
+                .dayOfWeek(reservation.getDayOfWeek())
+                .status(reservation.getStatus())
+                .cancelReason(reservation.getCancelReason())
+                .priority(reservation.getPriority())
+                .isDayOff(reservation.isDayOff())
+                .build();
+    }
+
     public Reservation toDomain() {
         return Reservation.builder()
                 .reservationId(reservationId)

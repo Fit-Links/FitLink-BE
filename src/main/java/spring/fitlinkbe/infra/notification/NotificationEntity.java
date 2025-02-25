@@ -21,7 +21,10 @@ public class NotificationEntity {
     private Long refId;
 
     @Enumerated(EnumType.STRING)
-    private Notification.NotificationType refType;
+    private Notification.ReferenceType refType;
+
+    @Enumerated(EnumType.STRING)
+    private Notification.NotificationType notificationType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personal_detail_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
@@ -44,6 +47,7 @@ public class NotificationEntity {
                 .notificationId(notification.getNotificationId())
                 .refId(notification.getRefId())
                 .refType(notification.getRefType())
+                .notificationType(notification.getNotificationType())
                 .personalDetail(PersonalDetailEntity.of(notification.getPersonalDetail(), em))
                 .name(notification.getName())
                 .content(notification.getContent())
@@ -59,6 +63,7 @@ public class NotificationEntity {
                 .notificationId(notificationId)
                 .refId(refId)
                 .refType(refType)
+                .notificationType(notificationType)
                 .personalDetail(personalDetail.toDomain())
                 .name(name)
                 .content(content)

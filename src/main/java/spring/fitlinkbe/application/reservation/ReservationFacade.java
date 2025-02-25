@@ -7,6 +7,7 @@ import spring.fitlinkbe.application.reservation.criteria.ReservationCriteria;
 import spring.fitlinkbe.application.reservation.criteria.ReservationResult;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.member.MemberService;
+import spring.fitlinkbe.domain.notification.NotificationService;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.reservation.Session;
@@ -17,6 +18,9 @@ import spring.fitlinkbe.support.security.SecurityUser;
 import java.time.LocalDate;
 import java.util.List;
 
+import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
+import static spring.fitlinkbe.domain.notification.Notification.Reason;
+
 @Component
 @RequiredArgsConstructor
 public class ReservationFacade {
@@ -24,6 +28,8 @@ public class ReservationFacade {
     private final MemberService memberService;
     private final ReservationService reservationService;
     private final TrainerService trainerService;
+    private final NotificationService notificationService;
+
 
     public ReservationResult.Reservations getReservations(LocalDate date, SecurityUser user) {
 
@@ -49,7 +55,7 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public Reservation setDisabledReservation(ReservationCriteria.SetDisabledTime criteria) {
+    public Reservation setDisabledReservation(ReservationCriteria.SetDisabledTime criteria, SecurityUser user) {
         String cancelMessage = "예약 불가 설정";
         //1.  현재 시간보다 뒤에 있는 모든 예약 조회
         List<Reservation> reservations = reservationService.getReservations();
@@ -62,11 +68,42 @@ public class ReservationFacade {
         if (!duplicatedReservations.isEmpty()) {
             reservationService.cancelReservations(duplicatedReservations, cancelMessage);
             //2-2. 예약 취소한 멤버들에게 예약 취소됐다는 메시지 푸쉬
-            //TODO
+            duplicatedReservations.forEach(reservation -> {
+                PersonalDetail memberDetail = memberService.getMemberDetail(reservation.getMember().getMemberId());
+                notificationService.sendCancelReservationNotification(reservation.getReservationId(), memberDetail, Reason.DAY_OFF);
+            });
         }
         //3. 트레이너 정보 조회
-        Trainer trainerInfo = trainerService.getTrainerInfo(criteria.trainerId());
+        Trainer trainerInfo = trainerService.getTrainerInfo(user.getTrainerId());
         //4. 예약 불가능한 날짜 설정 및 결과 리턴
         return reservationService.setDisabledTime(criteria.toCommand(), trainerInfo);
     }
+
+    @Transactional
+    public ReservationResult.Reservations reserveSession(List<ReservationCriteria.ReserveSession> criteria
+            , SecurityUser user) {
+        List<Reservation> reservations = criteria.stream()
+                .map(reserveSession -> reserveSession.
+                        toDomain(memberService.getSessionInfo(reserveSession.trainerId(),
+                                        reserveSession.memberId()),
+                                user))
+                .toList();
+        List<Reservation> savedReservation = reservationService.reserveSession(reservations);
+        //만약 트레이너가 예약을 했다면, 바로 세션 생성
+        reservationService.createSessions(savedReservation);
+        // 알람 전송
+        savedReservation.forEach(reservation -> {
+            if (user.getUserRole() == TRAINER) {
+                // 트레이너가 예약했다면 멤버에게 예약이 됐다는 알람 전송
+                PersonalDetail memberDetail = memberService.getMemberDetail(reservation.getMember().getMemberId());
+                notificationService.sendApproveReservationNotification(reservation.getReservationId(), memberDetail);
+            } else {
+                // 멤버가 예약했다면 트레이너에게 예약 요청을 했다는 알람 전송
+                PersonalDetail trainerDetail = trainerService.getTrainerDetail(reservation.getTrainer().getTrainerId());
+                notificationService.sendRequestReservationNotification(reservation, trainerDetail);
+            }
+        });
+        return ReservationResult.Reservations.from(savedReservation);
+    }
+
 }

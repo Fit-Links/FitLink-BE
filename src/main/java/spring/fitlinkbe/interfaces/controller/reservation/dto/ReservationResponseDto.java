@@ -12,11 +12,12 @@ public class ReservationResponseDto {
 
 
     @Builder(toBuilder = true)
-    public record Success(Long reservationId) {
+    public record Success(Long reservationId, Reservation.Status status) {
         public static ReservationResponseDto.Success of(Reservation reservation) {
 
             return Success.builder()
                     .reservationId(reservation.getReservationId())
+                    .status(reservation.getStatus())
                     .build();
         }
     }

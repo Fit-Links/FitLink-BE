@@ -18,4 +18,6 @@ public interface SessionInfoJpaRepository extends JpaRepository<SessionInfoEntit
             "LEFT JOIN FETCH si.member " +
             "WHERE si.member.memberId = :memberId")
     Optional<SessionInfoEntity> findByMemberIdJoinFetch(Long memberId);
+
+    Optional<SessionInfoEntity> findByMember_memberIdAndTrainer_TrainerId(Long memberId, Long trainerId);
 }
