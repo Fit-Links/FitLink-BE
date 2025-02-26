@@ -8,16 +8,16 @@ USE fit_link;
 -- 회원 정보 테이블
 CREATE TABLE member
 (
-    member_id    BIGINT NOT NULL AUTO_INCREMENT,
-    trainer_id   BIGINT,
-    name         VARCHAR(255),
-    birth_date   VARCHAR(10),
+    member_id           BIGINT NOT NULL AUTO_INCREMENT,
+    trainer_id          BIGINT,
+    name                VARCHAR(255),
+    birth_date          VARCHAR(10),
     profile_picture_url VARCHAR(255),
-    phone_number VARCHAR(15),
-    is_request   BOOLEAN,
-    is_connected BOOLEAN,
-    created_at   DATETIME(6),
-    updated_at   DATETIME(6),
+    phone_number        VARCHAR(15),
+    is_request          BOOLEAN,
+    is_connected        BOOLEAN,
+    created_at          DATETIME(6),
+    updated_at          DATETIME(6),
     PRIMARY KEY (member_id)
 );
 
@@ -25,6 +25,7 @@ CREATE TABLE member
 CREATE TABLE trainer
 (
     trainer_id   BIGINT NOT NULL AUTO_INCREMENT,
+    name         VARCHAR(255),
     trainer_code VARCHAR(15),
     created_at   DATETIME(6),
     updated_at   DATETIME(6),
@@ -61,7 +62,7 @@ CREATE TABLE personal_detail
     member_id           BIGINT,
     provider_id         VARCHAR(255),
     profile_picture_url VARCHAR(255),
-    gender              ENUM ('MAN', 'WOMAN'),
+    gender              ENUM ('MALE', 'FEMALE'),
     birth_date          DATETIME(6),
     phone_number        VARCHAR(15),
     email               VARCHAR(100),
@@ -99,8 +100,9 @@ CREATE TABLE available_time
     trainer_id        BIGINT,
     is_holiday        BOOLEAN,
     unavailable       BOOLEAN,
-    start_time        DATETIME(6),
-    end_time          DATETIME(6),
+    day_of_week       ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'),
+    start_time        TIME,
+    end_time          TIME,
     created_at        DATETIME(6),
     updated_at        DATETIME(6),
     PRIMARY KEY (available_time_id)
