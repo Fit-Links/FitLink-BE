@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
+import spring.fitlinkbe.application.member.criteria.WorkoutScheduleResult;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
@@ -11,10 +12,12 @@ import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberService;
+import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.notification.NotificationService;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -79,5 +82,11 @@ public class MemberFacade {
     public MemberInfoResult.DetailResponse getMyDetail(Long memberId) {
         Member me = memberService.getMember(memberId);
         return MemberInfoResult.DetailResponse.from(me);
+    }
+
+    public List<WorkoutScheduleResult.Response> getWorkoutSchedule(Long memberId) {
+        List<WorkoutSchedule> workoutSchedules = memberService.getWorkoutSchedules(memberId);
+
+        return workoutSchedules.stream().map(WorkoutScheduleResult.Response::from).toList();
     }
 }

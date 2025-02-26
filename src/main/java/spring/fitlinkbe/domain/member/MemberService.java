@@ -38,6 +38,10 @@ public class MemberService {
         return personalDetail;
     }
 
+    public List<WorkoutSchedule> getWorkoutSchedules(Long memberId) {
+        return workoutScheduleRepository.findAllByMemberId(memberId);
+    }
+
     public PersonalDetail getMemberDetail(Long memberId) {
         return personalDetailRepository.getMemberDetail(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_DETAIL_NOT_FOUND,
