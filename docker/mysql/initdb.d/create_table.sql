@@ -12,6 +12,7 @@ CREATE TABLE member
     trainer_id   BIGINT,
     name         VARCHAR(255),
     birth_date   VARCHAR(10),
+    profile_picture_url VARCHAR(255),
     phone_number VARCHAR(15),
     is_request   BOOLEAN,
     is_connected BOOLEAN,
