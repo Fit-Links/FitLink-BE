@@ -29,6 +29,8 @@ public class TokenEntity extends BaseTimeEntity {
                 .tokenId(tokenId)
                 .personalDetailId(personalDetail.getPersonalDetailId())
                 .refreshToken(refreshToken)
+                .createdAt(getCreatedAt())
+                .updatedAt(getUpdatedAt())
                 .build();
     }
 
