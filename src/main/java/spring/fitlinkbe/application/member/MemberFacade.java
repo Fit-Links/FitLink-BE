@@ -114,7 +114,7 @@ public class MemberFacade {
                 .sorted(Comparator.comparing(WorkoutScheduleResult.Response::dayOfWeek)).toList();
     }
 
-    private static void addNewWorkOutSchedules(List<WorkoutScheduleCriteria.Request> request, Member member, List<WorkoutSchedule> workoutSchedules) {
+    private void addNewWorkOutSchedules(List<WorkoutScheduleCriteria.Request> request, Member member, List<WorkoutSchedule> workoutSchedules) {
         List<WorkoutSchedule> newWorkoutSchedules = request.stream()
                 .filter(criteria -> criteria.workoutScheduleId() == null)
                 .map(criteria -> criteria.toDomain(member))
@@ -122,7 +122,7 @@ public class MemberFacade {
         workoutSchedules.addAll(newWorkoutSchedules);
     }
 
-    private static void updateExistingWorkoutSchedules(List<WorkoutScheduleCriteria.Request> request, List<WorkoutSchedule> workoutSchedules) {
+    private void updateExistingWorkoutSchedules(List<WorkoutScheduleCriteria.Request> request, List<WorkoutSchedule> workoutSchedules) {
         request.stream()
                 .filter(criteria -> criteria.workoutScheduleId() != null)
                 .forEach(criteria -> {
