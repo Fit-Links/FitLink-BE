@@ -2,16 +2,20 @@ package spring.fitlinkbe.interfaces.controller.member;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.member.MemberFacade;
 import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
 import spring.fitlinkbe.application.member.criteria.WorkoutScheduleResult;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.member.dto.MemberDto;
 import spring.fitlinkbe.interfaces.controller.member.dto.MemberInfoDto;
 import spring.fitlinkbe.interfaces.controller.member.dto.WorkoutScheduleDto;
 import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
+import spring.fitlinkbe.support.validator.CollectionValidator;
 
 import java.util.List;
 
@@ -21,6 +25,7 @@ import java.util.List;
 public class MemberController {
 
     private final MemberFacade memberFacade;
+    private final CollectionValidator validator;
 
     @PostMapping("/connect")
     public ApiResultResponse<Object> connectTrainer(
@@ -62,6 +67,38 @@ public class MemberController {
         return ApiResultResponse.ok(MemberInfoDto.DetailResponse.from(result));
     }
 
+    @PutMapping("/workout-schedule")
+    public ApiResultResponse<Object> updateWorkoutSchedule(
+            @Login SecurityUser user,
+            @RequestBody @Valid List<WorkoutScheduleDto.Request> requestBody
+    ) {
+        if (!isWorkoutScheduleDayOfWeekUnique(requestBody)) {
+            throw new CustomException(ErrorCode.DUPLICATED_WORKOUT_SCHEDULE);
+        }
+
+        List<WorkoutScheduleResult.Response> result = memberFacade.updateWorkoutSchedule(
+                user.getMemberId(),
+                requestBody.stream().map(WorkoutScheduleDto.Request::toCriteria).toList()
+        );
+
+        return ApiResultResponse.ok(result.stream()
+                .map(WorkoutScheduleDto.Response::from)
+                .toList());
+    }
+
+    /**
+     * 요일이 중복되는지 확인
+     */
+    private boolean isWorkoutScheduleDayOfWeekUnique(List<WorkoutScheduleDto.Request> workoutSchedule) {
+        if (workoutSchedule == null) {
+            return true;
+        }
+        return workoutSchedule.stream()
+                .map(WorkoutScheduleDto.Request::dayOfWeek)
+                .distinct()
+                .count() == workoutSchedule.size();
+    }
+
     @GetMapping("/workout-schedule")
     public ApiResultResponse<List<WorkoutScheduleDto.Response>> getWorkoutSchedule(@Login SecurityUser user) {
         List<WorkoutScheduleResult.Response> result = memberFacade.getWorkoutSchedule(user.getMemberId());
@@ -69,5 +106,13 @@ public class MemberController {
         return ApiResultResponse.ok(result.stream()
                 .map(WorkoutScheduleDto.Response::from)
                 .toList());
+    }
+
+    @InitBinder
+    public void initBinder(WebDataBinder dataBinder) {
+        Object target = dataBinder.getTarget();
+        if (target instanceof List) { // List 타입에 대해서만 validator 등록
+            dataBinder.addValidators(validator);
+        }
     }
 }

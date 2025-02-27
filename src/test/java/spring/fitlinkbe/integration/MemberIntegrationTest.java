@@ -642,7 +642,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
                 softly.assertThat(response).isNotNull();
                 softly.assertThat(response.success()).isFalse();
-                softly.assertThat(response.status()).isEqualTo(409);
+                softly.assertThat(response.status()).isEqualTo(400);
                 softly.assertThat(response.data()).isNull();
             });
         }

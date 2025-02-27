@@ -52,8 +52,8 @@ public class MemberService {
         return memberRepository.saveMember(member).orElseThrow();
     }
 
-    public void saveWorkoutSchedules(List<WorkoutSchedule> workoutSchedules) {
-        workoutScheduleRepository.saveAll(workoutSchedules);
+    public List<WorkoutSchedule> saveWorkoutSchedules(List<WorkoutSchedule> workoutSchedules) {
+        return workoutScheduleRepository.saveAll(workoutSchedules);
     }
 
     /**
@@ -116,5 +116,10 @@ public class MemberService {
 
     public void savePersonalDetail(PersonalDetail personalDetail) {
         personalDetailRepository.savePersonalDetail(personalDetail);
+    }
+
+    public void deleteAllWorkoutSchedules(List<WorkoutSchedule> deletedWorkoutSchedules) {
+        workoutScheduleRepository.deleteAllByIds(deletedWorkoutSchedules.stream()
+                .map(WorkoutSchedule::getWorkoutScheduleId).toList());
     }
 }

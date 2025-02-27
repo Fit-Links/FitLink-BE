@@ -24,4 +24,9 @@ public class WorkoutSchedule {
     public Long getMemberId() {
         return member.getMemberId();
     }
+
+    public void update(DayOfWeek dayOfWeek, List<LocalTime> localTimes) {
+        this.dayOfWeek = dayOfWeek;
+        this.preferenceTimes = localTimes;
+    }
 }

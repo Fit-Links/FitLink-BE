@@ -27,4 +27,9 @@ public class WorkoutScheduleRepositoryImpl implements WorkoutScheduleRepository 
         return workoutScheduleJpaRepository.findAllByMember_MemberId(memberId).stream()
                 .map(WorkoutScheduleEntity::toDomain).toList();
     }
+
+    @Override
+    public void deleteAllByIds(List<Long> ids) {
+        workoutScheduleJpaRepository.deleteAllByWorkoutScheduleIdIn(ids);
+    }
 }
