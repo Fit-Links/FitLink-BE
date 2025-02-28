@@ -13,12 +13,16 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.member.WorkoutScheduleRepository;
+import spring.fitlinkbe.domain.reservation.Reservation;
+import spring.fitlinkbe.domain.reservation.ReservationRepository;
+import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
@@ -42,10 +46,12 @@ public class TestDataHandler {
 
     private final WorkoutScheduleRepository workoutScheduleRepository;
 
+    private final ReservationRepository reservationRepository;
+
     public TestDataHandler(
             PersonalDetailRepository personalDetailRepository,
             MemberRepository memberRepository, TrainerRepository trainerRepository,
-            SessionInfoRepository sessionInfoRepository, AuthTokenProvider authTokenProvider, ConnectingInfoRepository connectingInfoRepository, WorkoutScheduleRepository workoutScheduleRepository) {
+            SessionInfoRepository sessionInfoRepository, AuthTokenProvider authTokenProvider, ConnectingInfoRepository connectingInfoRepository, WorkoutScheduleRepository workoutScheduleRepository, ReservationRepository reservationRepository) {
         this.personalDetailRepository = personalDetailRepository;
         this.memberRepository = memberRepository;
         this.trainerRepository = trainerRepository;
@@ -53,6 +59,7 @@ public class TestDataHandler {
         this.authTokenProvider = authTokenProvider;
         this.connectingInfoRepository = connectingInfoRepository;
         this.workoutScheduleRepository = workoutScheduleRepository;
+        this.reservationRepository = reservationRepository;
     }
 
     public Member createMember() {
@@ -236,5 +243,21 @@ public class TestDataHandler {
         return workoutScheduleRepository.saveAll(
                 List.of(workoutSchedule1, workoutSchedule2, workoutSchedule3, workoutSchedule4, workoutSchedule5)
         );
+    }
+
+    public Session createSession(Member member, Trainer trainer, Session.Status status) {
+        Reservation reservation = Reservation.builder()
+                .member(member)
+                .trainer(trainer)
+                .status(Reservation.Status.RESERVATION_APPROVED)
+                .reservationDate(LocalDateTime.now())
+                .build();
+
+        Session session = Session.builder()
+                .reservationId(reservation.getReservationId())
+                .status(status)
+                .isCompleted(true)
+                .build();
+        return reservationRepository.saveSession(session).orElseThrow();
     }
 }
