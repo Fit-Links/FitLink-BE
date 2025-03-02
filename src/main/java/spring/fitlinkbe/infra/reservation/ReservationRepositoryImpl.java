@@ -8,7 +8,6 @@ import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationRepository;
 import spring.fitlinkbe.domain.reservation.Session;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,26 +24,22 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public List<Reservation> getReservations() {
 
-        return reservationJpaRepository.findAllReservation(LocalDateTime.now())
+        return reservationJpaRepository.findAll()
                 .stream()
                 .map(ReservationEntity::toDomain)
                 .toList();
     }
 
     @Override
-    public List<Reservation> getReservations(LocalDateTime startDate, LocalDateTime endDate,
-                                             UserRole role, Long userId) {
-
+    public List<Reservation> getReservations(UserRole role, Long userId) {
         if (role == MEMBER) { //멤버의 경우
-            return reservationJpaRepository.findByMemberAndDateRange(userId,
-                            startDate, endDate)
+            return reservationJpaRepository.findByMember_MemberId(userId)
                     .stream()
                     .map(ReservationEntity::toDomain)
                     .toList();
         }
 
-        return reservationJpaRepository.findByTrainerAndDateRange(userId,
-                        startDate, endDate)
+        return reservationJpaRepository.findByTrainer_TrainerId(userId)
                 .stream()
                 .map(ReservationEntity::toDomain)
                 .toList();
@@ -73,23 +68,10 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
-    public Optional<Reservation> saveReservation(Reservation reservation) {
+    public Optional<Reservation> reserveSession(Reservation reservation) {
         ReservationEntity reservationEntity = reservationJpaRepository.save(ReservationEntity.from(reservation));
 
         return Optional.of(reservationEntity.toDomain());
-    }
-
-    @Override
-    public List<Reservation> reserveSession(List<Reservation> reservations) {
-        List<ReservationEntity> entities = reservations.stream()
-                .map(reservation -> ReservationEntity.fromWithId(reservation, em))
-                .toList();
-
-        List<ReservationEntity> savedEntities = reservationJpaRepository.saveAll(entities);
-
-        return savedEntities.stream()
-                .map(ReservationEntity::toDomain)
-                .toList();
     }
 
     @Override
@@ -102,7 +84,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
-    public Optional<Session> saveSession(Session session) {
+    public Optional<Session> createSession(Session session) {
         SessionEntity savedEntity = sessionJpaRepository.save(SessionEntity.from(session, em));
 
         return Optional.of(savedEntity.toDomain());
