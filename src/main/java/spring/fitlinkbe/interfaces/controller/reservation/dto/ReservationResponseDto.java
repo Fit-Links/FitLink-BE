@@ -7,6 +7,7 @@ import spring.fitlinkbe.domain.reservation.Reservation;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ReservationResponseDto {
 
@@ -24,7 +25,7 @@ public class ReservationResponseDto {
 
     @Builder(toBuilder = true)
     public record GetList(Long reservationId, Long sessionInfoId,
-                          boolean isDayOff, DayOfWeek dayOfWeek, LocalDateTime reservationDate,
+                          boolean isDayOff, DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates,
                           Reservation.Status status, MemberInfo memberInfo) {
 
         public static ReservationResponseDto.GetList of(Reservation reservation) {
@@ -35,7 +36,7 @@ public class ReservationResponseDto {
                             reservation.getSessionInfo().getSessionInfoId())
                     .isDayOff(reservation.isDayOff())
                     .dayOfWeek(reservation.getDayOfWeek())
-                    .reservationDate(reservation.getReservationDate())
+                    .reservationDates(reservation.getReservationDates())
                     .status(reservation.getStatus())
                     .memberInfo(reservation.isReservationNotAllowed() ? null :
                             new MemberInfo(reservation.getMember().getMemberId(), reservation.getName()))
@@ -49,7 +50,7 @@ public class ReservationResponseDto {
 
     @Builder(toBuilder = true)
     public record GetDetail(Long reservationId, Long sessionId,
-                            DayOfWeek dayOfWeek, LocalDateTime reservationDate,
+                            DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates,
                             Reservation.Status status, PersonalInfo memberInfo) {
 
         public static ReservationResponseDto.GetDetail of(ReservationResult.ReservationDetail result) {
@@ -58,7 +59,7 @@ public class ReservationResponseDto {
                     .reservationId(result.reservation().getReservationId())
                     .sessionId(result.session() != null ? result.session().getSessionId() : null)
                     .dayOfWeek(result.reservation().getDayOfWeek())
-                    .reservationDate(result.reservation().getReservationDate())
+                    .reservationDates(result.reservation().getReservationDates())
                     .status(result.reservation().getStatus())
                     .memberInfo(new PersonalInfo(result.personalDetail().getMemberId(),
                             result.reservation().getName(),
