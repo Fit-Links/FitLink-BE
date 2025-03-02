@@ -19,16 +19,22 @@ public enum ErrorCode {
     CONNECT_AVAILABLE_AFTER_DISCONNECTED("이미 연결 요청중 또는 연결된 트레이너가 존재합니다.", 409),
 
     // Reservation 관련 ErrorCode
+
     RESERVATION_IS_FAILED("예약에 실패하였습니다.", 400),
+    RESERVATION_DATE_CAN_NOT_EMPTY("예약 요청 날짜는 비어있을 수 없습니다.", 400),
+    RESERVATION_DATE_CAN_NOT_SET_BEFORE_DAY("현재 날짜보다 이전 날짜는 설정이 불가능 합니다.", 400),
     SET_DISABLE_DATE_FAILED("예약 불가 설정에 실패하였습니다.", 400),
     RESERVATION_IS_ALREADY_CANCEL("이미 예약이 취소되었습니다.", 400),
     RESERVATION_CANCEL_NOT_ALLOWED("예약 취소를 할 수 없는 상태입니다.", 400),
     RESERVATION_NOT_FOUND("예약 정보를 찾지 못하였습니다.", 404),
+    FAILED_TO_CONVERT_JSON("Failed to convert LocalDateTime list to JSON", 400),
+    FAILED_TO_CONVERT_LIST("Failed to convert LocalDateTime list to List", 400),
 
     // Session 관련 ErrorCode
+    SESSION_CREATE_FAILED("세션 생성에 실패하였습니다.", 400),
     SESSION_NOT_FOUND("세션 정보를 찾지 못하였습니다.", 404),
     SESSION_IS_ALREADY_CANCEL("이미 세션이 취소되었습니다.", 400),
-    SESSION_IS_ALREADY_COMPLETED("이미 끝난 세션은 취소할 수 없습니다.", 400),
+    SESSION_IS_ALREADY_END("이미 세션이 종료되었습니다.", 400),
 
     // Notification 관련 ErrorCode
     NOTIFICATION_NOT_FOUND("알림 정보를 찾지 못하였습니다.", 404),
@@ -41,7 +47,6 @@ public enum ErrorCode {
     NEED_REQUIRED_SMS_STATUS("유저의 상태가 소셜 로그인만 진행된 상태어야 합니다", 403),
 
     TOKEN_NOT_FOUND("토큰 정보를 찾지 못하였습니다.", 404),
-
 
     // Common ErrorCode
     INVALID_PHONE_NUMBER_FORMAT("유효하지 않은 전화번호 형식입니다.", 400),
