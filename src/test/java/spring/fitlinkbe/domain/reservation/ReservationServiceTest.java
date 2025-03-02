@@ -20,10 +20,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
-import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_IS_ALREADY_CANCEL;
-import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_NOT_FOUND;
+import static spring.fitlinkbe.domain.common.exception.ErrorCode.*;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
 
 class ReservationServiceTest {
@@ -342,31 +340,30 @@ class ReservationServiceTest {
                     .sessionId(1L)
                     .build();
 
-            when(reservationRepository.createSessions(anyList()))
-                    .thenReturn(List.of(session));
+            when(reservationRepository.createSession(any(Session.class)))
+                    .thenReturn(Optional.ofNullable(session));
 
             //when
-            List<Session> result = reservationService.createSessions(List.of(reservation));
+            Session result = reservationService.createSession(reservation);
 
             //then
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).getSessionId()).isEqualTo(1L);
+            assertThat(result).isNotNull();
+            assertThat(result.getSessionId()).isEqualTo(1L);
         }
 
         @Test
         @DisplayName("세션 생성 실패 - 예약 정보가 안넘어 왔을 때")
         void createSessionNoReservationInfo() {
             //given
-            when(reservationRepository.createSessions(anyList())).thenThrow(
-                    new CustomException(RESERVATION_NOT_FOUND,
-                            RESERVATION_NOT_FOUND.getMsg()));
+            when(reservationRepository.createSession(any())).thenThrow(
+                    new CustomException(SESSION_CREATE_FAILED,
+                            SESSION_CREATE_FAILED.getMsg()));
 
             //when & then
-            assertThatThrownBy(() -> reservationService.createSessions(List.of()))
+            assertThatThrownBy(() -> reservationService.createSession(Reservation.builder().build()))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
-                    .isEqualTo(RESERVATION_NOT_FOUND);
+                    .isEqualTo(SESSION_CREATE_FAILED);
         }
     }
-
 }

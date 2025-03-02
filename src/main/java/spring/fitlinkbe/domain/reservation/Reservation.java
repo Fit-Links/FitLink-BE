@@ -14,11 +14,11 @@ import spring.fitlinkbe.support.utils.DateUtils;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
-import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_CANCEL_NOT_ALLOWED;
-import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_IS_ALREADY_CANCEL;
+import static spring.fitlinkbe.domain.common.exception.ErrorCode.*;
 
 @Builder(toBuilder = true)
 @Getter
@@ -69,6 +69,22 @@ public class Reservation {
         return reservationDate.isAfter(nowDate);
     }
 
+    public boolean isReservationDateSame(List<LocalDateTime> reservationDates, LocalDateTime requestDate) {
+
+        LocalDateTime truncatedRequestDate = requestDate.truncatedTo(ChronoUnit.HOURS);
+        return reservationDates.stream()
+                .map(date -> date.truncatedTo(ChronoUnit.HOURS))
+                .anyMatch(truncatedRequestDate::isEqual);
+    }
+
+    public boolean isWaitingStatus() {
+        if (status != Status.RESERVATION_WAITING) {
+            throw new CustomException(RESERVATION_IS_NOT_WAITING_STATUS, "예약 상태가 대기 상태가 아닙니다.");
+        }
+
+        return true;
+    }
+
     public boolean isReservationInRange(LocalDateTime startDate, LocalDateTime endDate) {
         LocalDateTime reservationDate = getReservationDate();
 
@@ -78,7 +94,7 @@ public class Reservation {
 
     public LocalDateTime getReservationDate() {
 
-        if(reservationDates == null) return LocalDateTime.now().minusYears(1);
+        if (reservationDates == null) return LocalDateTime.now().minusYears(1);
 
         return reservationDates.size() == 1 ? reservationDates.get(0)
                 : findEarlierDate(reservationDates);

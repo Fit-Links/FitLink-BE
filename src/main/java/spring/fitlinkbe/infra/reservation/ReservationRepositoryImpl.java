@@ -102,19 +102,4 @@ public class ReservationRepositoryImpl implements ReservationRepository {
                 .map(SessionEntity::toDomain)
                 .toList();
     }
-
-    @Override
-    public List<Session> createSessions(List<Session> sessions) {
-
-        List<SessionEntity> entities = sessions.stream()
-                .map(session -> SessionEntity.from(session, em))
-                .toList();
-
-        List<SessionEntity> savedEntities = sessionJpaRepository.saveAll(entities);
-
-        return savedEntities.stream()
-                .map(SessionEntity::toDomain)
-                .toList();
-    }
-
 }
