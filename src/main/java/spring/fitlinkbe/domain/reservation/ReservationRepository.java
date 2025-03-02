@@ -23,7 +23,4 @@ public interface ReservationRepository {
 
     List<Session> cancelSessions(List<Session> sessions);
 
-    List<Session> createSessions(List<Session> sessions);
-
-
 }

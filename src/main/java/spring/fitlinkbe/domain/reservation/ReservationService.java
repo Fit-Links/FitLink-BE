@@ -117,17 +117,4 @@ public class ReservationService {
         return reservationRepository.createSession(session)
                 .orElseThrow(() -> new CustomException(SESSION_CREATE_FAILED));
     }
-
-    @Transactional
-    public List<Session> createSessions(List<Reservation> savedReservation) {
-
-        List<Session> sessions = savedReservation
-                .stream().map(reservation -> Session.builder()
-                        .reservationId(reservation.getReservationId())
-                        .status(Session.Status.SESSION_WAITING)
-                        .build())
-                .toList();
-
-        return reservationRepository.createSessions(sessions);
-    }
 }
