@@ -21,10 +21,9 @@ public enum ErrorCode {
     // Reservation 관련 ErrorCode
 
     RESERVATION_IS_FAILED("예약에 실패하였습니다.", 400),
-    RESERVATION_DATE_CAN_NOT_EMPTY("예약 요청 날짜는 비어있을 수 없습니다.", 400),
-    RESERVATION_DATE_CAN_NOT_SET_BEFORE_DAY("현재 날짜보다 이전 날짜는 설정이 불가능 합니다.", 400),
     SET_DISABLE_DATE_FAILED("예약 불가 설정에 실패하였습니다.", 400),
     RESERVATION_IS_ALREADY_CANCEL("이미 예약이 취소되었습니다.", 400),
+    RESERVATION_IS_NOT_WAITING_STATUS("예약 상태가 대기 상태가 아닙니다.", 400),
     RESERVATION_CANCEL_NOT_ALLOWED("예약 취소를 할 수 없는 상태입니다.", 400),
     RESERVATION_NOT_FOUND("예약 정보를 찾지 못하였습니다.", 404),
     FAILED_TO_CONVERT_JSON("Failed to convert LocalDateTime list to JSON", 400),
