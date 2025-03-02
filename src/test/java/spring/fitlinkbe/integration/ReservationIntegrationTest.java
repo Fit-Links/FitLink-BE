@@ -442,7 +442,186 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
     }
 
     @Nested
-    @DisplayName("예약 상세 조회 Integration TEST")
+    @DisplayName("예약 상세 대기 목록 조회 Integration TEST")
+    class GetWaitingMembersIntegrationTest {
+        @Test
+        @DisplayName("트레이너 예약 상세 대기 목록 조회 성공")
+        void getReservationWaitingMembersWithTrainer() {
+            // given
+            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetails.getPersonalDetailId());
+
+            Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
+            Member member1 = memberRepository.getMember(1L).orElseThrow();
+
+            SessionInfo sessionInfo1 = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+
+            LocalDateTime reserveDate = LocalDateTime.now().plusDays(1);
+
+            Reservation reservation1 = Reservation.builder()
+                    .reservationDates(List.of(reserveDate))
+                    .trainer(trainer)
+                    .member(member1)
+                    .sessionInfo(sessionInfo1)
+                    .name(member1.getName())
+                    .dayOfWeek(reserveDate.getDayOfWeek())
+                    .status(RESERVATION_WAITING)
+                    .build();
+
+            Reservation savedReservation1 = reservationRepository.reserveSession(reservation1).orElseThrow();
+
+            Member member2 = testDataHandler.createMember();
+            SessionInfo sessionInfo2 = testDataHandler.createSessionInfo(member2, trainer);
+
+            Reservation reservation2 = Reservation.builder()
+                    .reservationDates(List.of(reserveDate))
+                    .trainer(trainer)
+                    .member(member2)
+                    .sessionInfo(sessionInfo2)
+                    .name(member2.getName())
+                    .dayOfWeek(reserveDate.getDayOfWeek())
+                    .status(RESERVATION_WAITING)
+                    .build();
+
+            Reservation savedReservation2 = reservationRepository.reserveSession(reservation2).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/waiting-members/"
+                    + reserveDate, accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                List<ReservationResponseDto.GetWaitingMember> content = result.body().jsonPath()
+                        .getList("data", ReservationResponseDto.GetWaitingMember.class);
+                softly.assertThat(content).hasSize(2);
+                softly.assertThat(content.get(0).reservationId()).isEqualTo(savedReservation1.getReservationId());
+                softly.assertThat(content.get(1).reservationId()).isEqualTo(savedReservation2.getReservationId());
+
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너 예약 상세 대기 목록 조회 실패 - reservationDate 정보 누락")
+        void getReservationWithTrainerNoReservationDate() {
+            // given
+            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetails.getPersonalDetailId());
+
+            Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
+            Member member1 = memberRepository.getMember(1L).orElseThrow();
+
+            SessionInfo sessionInfo1 = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+
+            LocalDateTime reserveDate = LocalDateTime.now().plusDays(1);
+
+            Reservation reservation1 = Reservation.builder()
+                    .reservationDates(List.of(reserveDate))
+                    .trainer(trainer)
+                    .member(member1)
+                    .sessionInfo(sessionInfo1)
+                    .name(member1.getName())
+                    .dayOfWeek(reserveDate.getDayOfWeek())
+                    .status(RESERVATION_WAITING)
+                    .build();
+
+            reservationRepository.reserveSession(reservation1).orElseThrow();
+
+            Member member2 = testDataHandler.createMember();
+            SessionInfo sessionInfo2 = testDataHandler.createSessionInfo(member2, trainer);
+
+            Reservation reservation2 = Reservation.builder()
+                    .reservationDates(List.of(reserveDate))
+                    .trainer(trainer)
+                    .member(member2)
+                    .sessionInfo(sessionInfo2)
+                    .name(member2.getName())
+                    .dayOfWeek(reserveDate.getDayOfWeek())
+                    .status(RESERVATION_WAITING)
+                    .build();
+
+            reservationRepository.reserveSession(reservation2).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/waiting-members/", accessToken);
+
+            // then
+            assertSoftly(softly -> softly.assertThat(result.statusCode()).isEqualTo(500));
+        }
+
+        @Test
+        @DisplayName("트레이너 예약 상세 대기 목록 조회 실패 - 예약 대기 상태가 아님")
+        void getReservationWithTrainerNoWaitingStatus() {
+            // given
+            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetails.getPersonalDetailId());
+
+            Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
+            Member member1 = memberRepository.getMember(1L).orElseThrow();
+
+            SessionInfo sessionInfo1 = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+
+            LocalDateTime reserveDate = LocalDateTime.now().plusDays(1);
+
+            Reservation reservation1 = Reservation.builder()
+                    .reservationDates(List.of(reserveDate))
+                    .trainer(trainer)
+                    .member(member1)
+                    .sessionInfo(sessionInfo1)
+                    .name(member1.getName())
+                    .dayOfWeek(reserveDate.getDayOfWeek())
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            reservationRepository.reserveSession(reservation1).orElseThrow();
+
+            Member member2 = testDataHandler.createMember();
+            SessionInfo sessionInfo2 = testDataHandler.createSessionInfo(member2, trainer);
+
+            Reservation reservation2 = Reservation.builder()
+                    .reservationDates(List.of(reserveDate))
+                    .trainer(trainer)
+                    .member(member2)
+                    .sessionInfo(sessionInfo2)
+                    .name(member2.getName())
+                    .dayOfWeek(reserveDate.getDayOfWeek())
+                    .status(RESERVATION_WAITING)
+                    .build();
+
+            reservationRepository.reserveSession(reservation2).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/waiting-members/"
+                    + reserveDate, accessToken);
+
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class))
+                        .contains("예약 상태가 대기 상태가 아닙니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.GetWaitingMember.class))
+                        .isNull();
+            });
+        }
+
+    }
+
+    @Nested
+    @DisplayName("예약 불가 설정 Integration TEST")
     class SetDisabledTimeIntegrationTest {
         @Test
         @DisplayName("예약 불가 설정을 하면 이전의 있던 예약들은 취소되며, 예약 불가 설정한 예약은 저장됩니다.")
