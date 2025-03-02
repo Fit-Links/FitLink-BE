@@ -14,6 +14,7 @@ import spring.fitlinkbe.support.utils.DateUtils;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_CANCEL_NOT_ALLOWED;
@@ -29,12 +30,11 @@ public class Reservation {
     private Trainer trainer;
     private SessionInfo sessionInfo;
     private String name;
-    private LocalDateTime reservationDate;
+    private List<LocalDateTime> reservationDates;
     private LocalDateTime changeDate;
     private DayOfWeek dayOfWeek;
     private Status status;
     private String cancelReason;
-    private int priority;
     private boolean isDayOff;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -59,6 +59,33 @@ public class Reservation {
     public static LocalDateTime getEndDate(LocalDateTime startDate, UserRole userRole) {
         return (userRole == MEMBER) ? DateUtils.getOneMonthAfterDate(startDate)
                 : DateUtils.getTwoWeekAfterDate(startDate);
+    }
+
+    public boolean isReservationAfterToday() {
+        LocalDateTime nowDate = LocalDateTime.now();
+
+        LocalDateTime reservationDate = getReservationDate();
+
+        return reservationDate.isAfter(nowDate);
+    }
+
+    public boolean isReservationInRange(LocalDateTime startDate, LocalDateTime endDate) {
+        LocalDateTime reservationDate = getReservationDate();
+
+        return reservationDate.isAfter(startDate)
+                && reservationDate.isBefore(endDate);
+    }
+
+    public LocalDateTime getReservationDate() {
+
+        if(reservationDates == null) return LocalDateTime.now().minusYears(1);
+
+        return reservationDates.size() == 1 ? reservationDates.get(0)
+                : findEarlierDate(reservationDates);
+    }
+
+    private LocalDateTime findEarlierDate(List<LocalDateTime> dates) {
+        return dates.get(0).isAfter(dates.get(1)) ? dates.get(1) : dates.get(0);
     }
 
     public void cancel(String message) {

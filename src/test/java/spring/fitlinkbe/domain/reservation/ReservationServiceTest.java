@@ -11,7 +11,6 @@ import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
 import spring.fitlinkbe.domain.trainer.Trainer;
-import spring.fitlinkbe.support.utils.DateUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -50,15 +49,13 @@ class ReservationServiceTest {
 
             //given
             LocalDate startDdate = LocalDate.of(2024, 4, 20);
-            LocalDateTime endDate = DateUtils.getTwoWeekAfterDate(startDdate.atStartOfDay());
             LocalDateTime reservationDate = startDdate.atStartOfDay().plusDays(2L);
 
             Reservation reservation = Reservation.builder()
-                    .reservationDate(reservationDate)
+                    .reservationDates(List.of(reservationDate))
                     .build();
 
-            when(reservationRepository.getReservations(startDdate.atStartOfDay(), endDate,
-                    UserRole.TRAINER, 1L))
+            when(reservationRepository.getReservations(UserRole.TRAINER, 1L))
                     .thenReturn(List.of(reservation));
 
             //when
@@ -74,14 +71,13 @@ class ReservationServiceTest {
 
             //given
             LocalDate startDdate = LocalDate.of(2024, 4, 20);
-            LocalDateTime endDate = DateUtils.getOneMonthAfterDate(startDdate.atStartOfDay());
-            LocalDateTime reservationDate = startDdate.atStartOfDay().plusMonths(1L).minusSeconds(1L);
+            LocalDateTime reservationDate = startDdate.atStartOfDay().plusMonths(1L).minusSeconds(2L);
 
             Reservation reservation = Reservation.builder()
-                    .reservationDate(reservationDate)
+                    .reservationDates(List.of(reservationDate))
                     .build();
 
-            when(reservationRepository.getReservations(startDdate.atStartOfDay(), endDate, UserRole.MEMBER, 1L))
+            when(reservationRepository.getReservations(UserRole.MEMBER, 1L))
                     .thenReturn(List.of(reservation));
 
             //when
@@ -97,9 +93,8 @@ class ReservationServiceTest {
 
             //given
             LocalDate startDdate = LocalDate.of(2024, 4, 20);
-            LocalDateTime endDate = DateUtils.getOneMonthAfterDate(startDdate.atStartOfDay());
 
-            when(reservationRepository.getReservations(startDdate.atStartOfDay(), endDate, UserRole.TRAINER, 1L))
+            when(reservationRepository.getReservations(UserRole.TRAINER, 1L))
                     .thenReturn(List.of());
 
             //when
@@ -273,7 +268,7 @@ class ReservationServiceTest {
                     .status(DISABLED_TIME_RESERVATION)
                     .build();
 
-            when(reservationRepository.saveReservation(any(Reservation.class)))
+            when(reservationRepository.reserveSession(any(Reservation.class)))
                     .thenReturn(Optional.ofNullable(savedReservation));
 
             //when
@@ -302,27 +297,27 @@ class ReservationServiceTest {
                     .status(RESERVATION_WAITING)
                     .build();
 
-            when(reservationRepository.reserveSession(anyList()))
-                    .thenReturn(List.of(savedReservation));
+            when(reservationRepository.reserveSession(reservation))
+                    .thenReturn(Optional.ofNullable(savedReservation));
 
             //when
-            List<Reservation> result = reservationService.reserveSession(List.of(reservation));
+            Reservation result = reservationService.reserveSession(reservation);
 
             //then
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).getReservationId()).isEqualTo(1L);
+            assertThat(result).isNotNull();
+            assertThat(result.getReservationId()).isEqualTo(1L);
         }
 
         @Test
         @DisplayName("세션 예약 실패 - 예약 정보가 안넘어 왔을 때")
         void reserveSessionNoReservationInfo() {
             //given
-            when(reservationRepository.reserveSession(anyList())).thenThrow(
+            when(reservationRepository.reserveSession(any(Reservation.class))).thenThrow(
                     new CustomException(RESERVATION_NOT_FOUND,
                             RESERVATION_NOT_FOUND.getMsg()));
 
             //when & then
-            assertThatThrownBy(() -> reservationService.reserveSession(List.of()))
+            assertThatThrownBy(() -> reservationService.reserveSession(Reservation.builder().build()))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(RESERVATION_NOT_FOUND);

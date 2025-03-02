@@ -59,7 +59,7 @@ public class ReservationFacade {
         List<Reservation> reservations = reservationService.getReservations();
         //2. 예약 불가능한 시간대나 현시간보다 뒤에 예약이 있나 확인
         List<Reservation> duplicatedReservations = reservations.stream()
-                .filter(reservation -> reservation.isReservationAfterToday(reservation))
+                .filter(Reservation::isReservationAfterToday)
                 .map(reservation -> reservation.checkStatus() ? reservation : null)
                 .toList();
         //2-1. 만약 그러한 예약들이 있다면 모두 취소 시킴
