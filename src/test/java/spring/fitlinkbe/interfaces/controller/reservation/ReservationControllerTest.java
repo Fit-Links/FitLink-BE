@@ -393,6 +393,83 @@ class ReservationControllerTest {
     }
 
     @Nested
+    @DisplayName("예약 상세 대기 목록 조회 Controller TEST")
+    class GetWaitingMembersControllerTest {
+        @Test
+        @DisplayName("트레이너가 예약 상세 대기 목록을 조회한다.")
+        void getReservationWithTrainer() throws Exception {
+            //given
+            LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("강산")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            ReservationResult.ReservationWaitingMember result =
+                    ReservationResult.ReservationWaitingMember.builder()
+                            .reservation(Reservation.builder()
+                                    .reservationDates(List.of(requestDate.plusDays(1))).build())
+                            .personalDetail(PersonalDetail.builder().personalDetailId(2L).build())
+                            .build();
+
+            when(reservationFacade.getWaitingMembers(any(LocalDateTime.class))).thenReturn(List.of(result));
+
+            //when & then
+            mockMvc.perform(get("/v1/reservations/waiting-members/%s".formatted(requestDate))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user)))  // OAuth2 인증
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.msg").value("OK"))
+                    .andExpect(jsonPath("$.data").isNotEmpty());
+        }
+
+        @Test
+        @DisplayName("예약 날짜를 안넣어준 경우 success를 false를 반환한다.")
+        void getReservationWithNotFound() throws Exception {
+            //given
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("강산")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            ReservationResult.ReservationWaitingMember result =
+                    ReservationResult.ReservationWaitingMember.builder()
+                            .reservation(Reservation.builder()
+                                    .reservationDates(List.of(LocalDateTime.now().plusDays(1))).build())
+                            .personalDetail(PersonalDetail.builder().personalDetailId(2L).build())
+                            .build();
+
+            when(reservationFacade.getWaitingMembers(any(LocalDateTime.class))).thenReturn(List.of(result));
+
+            //when & then
+            mockMvc.perform(get("/v1/reservations/waiting-members/%s".formatted(""))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user)))  // OAuth2 인증
+                    .andDo(print())
+                    .andExpect(status().is5xxServerError())
+                    .andExpect(jsonPath("$.status").value(500))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+    }
+
+    @Nested
     @DisplayName("예약 불가 설정 Controller TEST")
     class SetDisabledTimeControllerTest {
         @Test
@@ -740,6 +817,7 @@ class ReservationControllerTest {
         }
 
     }
+
 
     private String getAccessToken(PersonalDetail personalDetail) {
 

@@ -73,4 +73,24 @@ public class ReservationResponseDto {
                                     String profilePictureUrl) {
         }
     }
+
+    @Builder(toBuilder = true)
+    public record GetWaitingMember(Long reservationId, Long memberId, String name,
+                                   LocalDate birthDate, String phoneNumber, String profilePictureUrl,
+                                   DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates) {
+
+        public static ReservationResponseDto.GetWaitingMember of(ReservationResult.ReservationWaitingMember member) {
+
+            return GetWaitingMember.builder()
+                    .memberId(member.personalDetail().getMemberId())
+                    .name(member.personalDetail().getName())
+                    .birthDate(member.personalDetail().getBirthDate())
+                    .phoneNumber(member.personalDetail().getPhoneNumber())
+                    .profilePictureUrl(member.personalDetail().getProfilePictureUrl())
+                    .reservationId(member.reservation().getReservationId())
+                    .reservationDates(member.reservation().getReservationDates())
+                    .dayOfWeek(member.reservation().getReservationDates().get(0).getDayOfWeek())
+                    .build();
+        }
+    }
 }

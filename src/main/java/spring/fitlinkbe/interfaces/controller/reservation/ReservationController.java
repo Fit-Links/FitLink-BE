@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.reservation.ReservationFacade;
+import spring.fitlinkbe.application.reservation.criteria.ReservationResult;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationRequestDto;
@@ -14,6 +15,7 @@ import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -56,6 +58,26 @@ public class ReservationController {
         return ApiResultResponse.ok(ReservationResponseDto.GetDetail.of(
                 reservationFacade.getReservation(reservationId)));
 
+    }
+
+    /**
+     * 예약 상세 대기 조회
+     *
+     * @param reservationDate reservationDate 정보
+     * @return ApiResultResponse 예약 상세 대기 멤버 정보를 반환한다.
+     */
+
+    @GetMapping("/waiting-members/{reservationDate}")
+    public ApiResultResponse<List<ReservationResponseDto.GetWaitingMember>> getWaitingMembers(@PathVariable("reservationDate")
+                                                                                              @NotNull(message = "예약 날짜는 필수입니다.")
+                                                                                              LocalDateTime reservationDate) {
+
+
+        List<ReservationResult.ReservationWaitingMember> result = reservationFacade.getWaitingMembers(reservationDate);
+
+        return ApiResultResponse.ok(result.stream()
+                .map(ReservationResponseDto.GetWaitingMember::of)
+                .toList());
     }
 
     /**
