@@ -23,6 +23,18 @@ public class ReservationResult {
     }
 
     @Builder(toBuilder = true)
+    public record ReservationWaitingMember(Reservation reservation, PersonalDetail personalDetail) {
+
+        public static ReservationWaitingMember from(Reservation reservation, PersonalDetail personalDetail) {
+
+            return ReservationResult.ReservationWaitingMember.builder()
+                    .reservation(reservation)
+                    .personalDetail(personalDetail)
+                    .build();
+        }
+    }
+
+    @Builder(toBuilder = true)
     public record Reservations(List<Reservation> reservations) {
 
         public static Reservations from(List<Reservation> reservations) {

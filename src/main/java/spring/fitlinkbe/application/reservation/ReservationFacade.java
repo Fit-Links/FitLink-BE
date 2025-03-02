@@ -16,6 +16,7 @@ import spring.fitlinkbe.domain.trainer.TrainerService;
 import spring.fitlinkbe.support.security.SecurityUser;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
@@ -98,5 +99,21 @@ public class ReservationFacade {
             notificationService.sendRequestReservationNotification(savedReservation, trainerDetail);
         }
         return savedReservation;
+    }
+
+    @Transactional
+    public List<ReservationResult.ReservationWaitingMember> getWaitingMembers(LocalDateTime reservationDate) {
+        // 예약 조회
+        List<Reservation> reservations = reservationService.getReservations();
+        // 예약 날짜 일치하는거 필터
+        List<Reservation> filteredList = reservations.stream()
+                .filter((r) -> r.isReservationDateSame(r.getReservationDates(), reservationDate))
+                .filter(Reservation::isWaitingStatus) //만약 이 시간대 예약 대기 상태가 아닌게 발견되면 예외 던짐
+                .toList();
+        // 예약들 마다 멤버 디테일 정보 조회 및 조합해서 리턴
+        return filteredList.stream()
+                .map(reservation -> ReservationResult.ReservationWaitingMember.from(reservation,
+                        memberService.getMemberDetail(reservation.getMember().getMemberId())))
+                .toList();
     }
 }
