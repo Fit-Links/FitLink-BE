@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder(toBuilder = true)
@@ -17,7 +17,7 @@ public class Token {
 
     private String refreshToken;
 
-    private LocalTime createdAt;
+    private LocalDateTime createdAt;
 
-    private LocalTime updatedAt;
+    private LocalDateTime updatedAt;
 }

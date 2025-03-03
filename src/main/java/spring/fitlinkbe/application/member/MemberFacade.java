@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
+import spring.fitlinkbe.application.member.criteria.WorkoutScheduleCriteria;
 import spring.fitlinkbe.application.member.criteria.WorkoutScheduleResult;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
@@ -17,6 +18,8 @@ import spring.fitlinkbe.domain.notification.NotificationService;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,6 +90,55 @@ public class MemberFacade {
     public List<WorkoutScheduleResult.Response> getWorkoutSchedule(Long memberId) {
         List<WorkoutSchedule> workoutSchedules = memberService.getWorkoutSchedules(memberId);
 
-        return workoutSchedules.stream().map(WorkoutScheduleResult.Response::from).toList();
+        return workoutSchedules.stream().map(WorkoutScheduleResult.Response::from)
+                .sorted(Comparator.comparing(WorkoutScheduleResult.Response::dayOfWeek)).toList();
+    }
+
+    public List<WorkoutScheduleResult.Response> updateWorkoutSchedule(
+            Long memberId,
+            List<WorkoutScheduleCriteria.Request> request
+    ) {
+        Member member = memberService.getMember(memberId);
+        List<WorkoutSchedule> workoutSchedules = new ArrayList<>(memberService.getWorkoutSchedules(memberId));
+        List<Long> requestWorkoutScheduleIds = request.stream()
+                .map(WorkoutScheduleCriteria.Request::workoutScheduleId).toList();
+
+        deleteNotContainedSchedules(workoutSchedules, requestWorkoutScheduleIds);
+
+        updateExistingWorkoutSchedules(request, workoutSchedules);
+
+        addNewWorkOutSchedules(request, member, workoutSchedules);
+
+        List<WorkoutSchedule> result = memberService.saveWorkoutSchedules(workoutSchedules);
+        return result.stream().map(WorkoutScheduleResult.Response::from)
+                .sorted(Comparator.comparing(WorkoutScheduleResult.Response::dayOfWeek)).toList();
+    }
+
+    private void addNewWorkOutSchedules(List<WorkoutScheduleCriteria.Request> request, Member member, List<WorkoutSchedule> workoutSchedules) {
+        List<WorkoutSchedule> newWorkoutSchedules = request.stream()
+                .filter(criteria -> criteria.workoutScheduleId() == null)
+                .map(criteria -> criteria.toDomain(member))
+                .toList();
+        workoutSchedules.addAll(newWorkoutSchedules);
+    }
+
+    private void updateExistingWorkoutSchedules(List<WorkoutScheduleCriteria.Request> request, List<WorkoutSchedule> workoutSchedules) {
+        request.stream()
+                .filter(criteria -> criteria.workoutScheduleId() != null)
+                .forEach(criteria -> {
+                    WorkoutSchedule workoutSchedule = workoutSchedules.stream()
+                            .filter(ws -> ws.getWorkoutScheduleId().equals(criteria.workoutScheduleId()))
+                            .findFirst()
+                            .orElseThrow(() -> new CustomException(ErrorCode.WORKOUT_SCHEDULE_NOT_FOUND));
+                    workoutSchedule.update(criteria.dayOfWeek(), criteria.preferenceTimes());
+                });
+    }
+
+    private void deleteNotContainedSchedules(List<WorkoutSchedule> workoutSchedules, List<Long> requestWorkoutScheduleIds) {
+        List<WorkoutSchedule> deletedWorkoutSchedules = workoutSchedules.stream()
+                .filter(workoutSchedule -> !requestWorkoutScheduleIds.contains(workoutSchedule.getWorkoutScheduleId()))
+                .toList();
+        memberService.deleteAllWorkoutSchedules(deletedWorkoutSchedules);
+        workoutSchedules.removeAll(deletedWorkoutSchedules);
     }
 }

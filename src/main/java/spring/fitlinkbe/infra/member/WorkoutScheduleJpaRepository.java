@@ -9,4 +9,6 @@ public interface WorkoutScheduleJpaRepository extends JpaRepository<WorkoutSched
 
     @EntityGraph(attributePaths = {"member"})
     List<WorkoutScheduleEntity> findAllByMember_MemberId(Long memberId);
+
+    void deleteAllByWorkoutScheduleIdIn(List<Long> ids);
 }
