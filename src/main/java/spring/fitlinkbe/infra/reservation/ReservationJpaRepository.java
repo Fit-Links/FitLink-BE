@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReservationJpaRepository extends JpaRepository<ReservationEntity, Long> {
-
     @Query("SELECT r FROM ReservationEntity r " +
             "LEFT JOIN FETCH r.member " +
             "LEFT JOIN FETCH r.trainer " +

@@ -2,6 +2,7 @@ package spring.fitlinkbe.infra.reservation;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.Hibernate;
 import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
 
@@ -45,7 +46,7 @@ public class SessionEntity extends BaseTimeEntity {
     public Session toDomain() {
         return Session.builder()
                 .sessionId(sessionId)
-                .reservation(reservation.toDomain())
+                .reservation(Hibernate.isInitialized(reservation) ? reservation.toDomain() : null)
                 .status(status)
                 .cancelReason(cancelReason)
                 .isCompleted(isCompleted)

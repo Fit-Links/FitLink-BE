@@ -2,6 +2,7 @@ package spring.fitlinkbe.infra.reservation;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.Hibernate;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
 import spring.fitlinkbe.infra.common.sessioninfo.SessionInfoEntity;
@@ -77,9 +78,10 @@ public class ReservationEntity extends BaseTimeEntity {
     public Reservation toDomain() {
         return Reservation.builder()
                 .reservationId(reservationId)
-                .member(isReservationNotAllowed() ? null : member.toDomain())
-                .trainer(trainer.toDomain())
-                .sessionInfo((sessionInfo == null || isReservationNotAllowed()) ? null : sessionInfo.toDomain())
+                .member(isReservationNotAllowed() ? null : Hibernate.isInitialized(member) ? member.toDomain() : null)
+                .trainer(Hibernate.isInitialized(trainer) ? trainer.toDomain() : null)
+                .sessionInfo((sessionInfo == null || isReservationNotAllowed()) ? null :
+                        Hibernate.isInitialized(sessionInfo) ? sessionInfo.toDomain() : null)
                 .name(name)
                 .reservationDates(reservationDates)
                 .changeDate(changeDate)
