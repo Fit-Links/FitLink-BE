@@ -3,8 +3,6 @@ package spring.fitlinkbe.integration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Transient;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -716,9 +714,9 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
     }
 
     @Nested
-    @DisplayName("특정 회원 PT 내역 조회 API 테스트")
+    @DisplayName("나의 PT 내역 조회 API 테스트")
     public class MemberSessionTest {
-        private static final String MEMBER_SESSION_API = "/v1/members/{memberId}/sessions";
+        private static final String MEMBER_SESSION_API = "/v1/members/me/sessions";
 
         @Test
         @DisplayName("회원 PT 내역 조회 성공 - 전체 조회")
@@ -737,7 +735,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             // 회원이 PT 내역을 조회할 때
             int page = 0;
             int size = 10;
-            String url = MEMBER_SESSION_API.replace("{memberId}", member.getMemberId().toString()) + "?page=" + page + "&size=" + size;
+            String url = MEMBER_SESSION_API + "?page=" + page + "&size=" + size;
             ExtractableResponse<Response> result = get(url, token);
 
             // then
@@ -775,7 +773,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             // 회원이 PT 내역을 조회할 때 상태별로 조회할 때
             int page = 0;
             int size = 10;
-            String url = MEMBER_SESSION_API.replace("{memberId}", member.getMemberId().toString()) + "?page=" + page + "&size=" + size + "&status=SESSION_WAITING";
+            String url = MEMBER_SESSION_API + "?page=" + page + "&size=" + size + "&status=SESSION_WAITING";
             ExtractableResponse<Response> result = get(url, token);
 
             // then
@@ -813,7 +811,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             // 회원이 PT 내역을 조회할 때 페이징 조회할 때
             int page = 0;
             int size = 3;
-            String url = MEMBER_SESSION_API.replace("{memberId}", member.getMemberId().toString()) + "?page=" + page + "&size=" + size;
+            String url = MEMBER_SESSION_API + "?page=" + page + "&size=" + size;
             ExtractableResponse<Response> result = get(url, token);
 
             // then
@@ -849,7 +847,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
             // when
             // 회원이 PT 내역을 조회할 때 페이징 기본값으로 조회할 때
-            ExtractableResponse<Response> result = get(MEMBER_SESSION_API.replace("{memberId}", member.getMemberId().toString()), token);
+            ExtractableResponse<Response> result = get(MEMBER_SESSION_API, token);
 
             // then
             // PT 내역을 받는다
@@ -881,7 +879,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             // 회원이 PT 내역을 조회할 때 세션 정보가 없을 때
             int page = 0;
             int size = 10;
-            String url = MEMBER_SESSION_API.replace("{memberId}", member.getMemberId().toString()) + "?page=" + page + "&size=" + size;
+            String url = MEMBER_SESSION_API + "?page=" + page + "&size=" + size;
             ExtractableResponse<Response> result = get(url, token);
 
             // then

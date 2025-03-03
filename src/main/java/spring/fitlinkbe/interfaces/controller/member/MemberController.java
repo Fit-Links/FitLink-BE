@@ -11,7 +11,6 @@ import spring.fitlinkbe.application.member.MemberFacade;
 import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
 import spring.fitlinkbe.application.member.criteria.MemberSessionResult;
 import spring.fitlinkbe.application.member.criteria.WorkoutScheduleResult;
-import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.reservation.Session;
@@ -116,32 +115,15 @@ public class MemberController {
                 .toList());
     }
 
-    @GetMapping("/{memberId}/sessions")
+    @GetMapping("/me/sessions")
     public ApiResultResponse<CustomPageResponse<MemberSessionDto.SessionResponse>> getSessions(
-            @PathVariable Long memberId,
             @Login SecurityUser user,
             @PageableDefault(size = 5) Pageable pageRequest,
             @RequestParam(required = false) Session.Status status
     ) {
-        checkMemberPermission(memberId, user);
-        Page<MemberSessionResult.SessionResponse> result = memberFacade.getSessions(memberId, status, pageRequest);
+        Page<MemberSessionResult.SessionResponse> result = memberFacade.getSessions(user.getMemberId(), status, pageRequest);
 
         return ApiResultResponse.ok(CustomPageResponse.of(result, MemberSessionDto.SessionResponse::from));
-    }
-
-    /**
-     * @param memberId
-     * @param user
-     * @throws CustomException
-     */
-    private void checkMemberPermission(Long memberId, SecurityUser user) {
-        if (user.getUserRole() == UserRole.TRAINER) {
-            return;
-        }
-
-        if (!memberId.equals(user.getMemberId())) {
-            throw new CustomException(ErrorCode.MEMBER_PERMISSION_DENIED, "회원은 자기 자신의 정보만 조회 가능합니다.");
-        }
     }
 
     @InitBinder

@@ -147,7 +147,6 @@ public class MemberFacade {
     }
 
     public Page<MemberSessionResult.SessionResponse> getSessions(Long memberId, Session.Status status, Pageable pageRequest) {
-        memberService.checkMemberExists(memberId);
         Page<Session> sessions = memberService.getSessions(memberId, status, pageRequest);
 
         return sessions.map(MemberSessionResult.SessionResponse::from);
