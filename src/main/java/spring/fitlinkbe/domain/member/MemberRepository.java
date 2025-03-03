@@ -10,4 +10,6 @@ public interface MemberRepository {
     Optional<Member> getMember(Long memberId);
 
     List<Member> getMembers();
+
+    boolean exists(Long memberId);
 }

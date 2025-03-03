@@ -51,7 +51,9 @@ public class TestDataHandler {
     public TestDataHandler(
             PersonalDetailRepository personalDetailRepository,
             MemberRepository memberRepository, TrainerRepository trainerRepository,
-            SessionInfoRepository sessionInfoRepository, AuthTokenProvider authTokenProvider, ConnectingInfoRepository connectingInfoRepository, WorkoutScheduleRepository workoutScheduleRepository, ReservationRepository reservationRepository) {
+            SessionInfoRepository sessionInfoRepository, AuthTokenProvider authTokenProvider,
+            ConnectingInfoRepository connectingInfoRepository, WorkoutScheduleRepository workoutScheduleRepository,
+            ReservationRepository reservationRepository) {
         this.personalDetailRepository = personalDetailRepository;
         this.memberRepository = memberRepository;
         this.trainerRepository = trainerRepository;
@@ -252,9 +254,10 @@ public class TestDataHandler {
                 .status(Reservation.Status.RESERVATION_APPROVED)
                 .reservationDate(LocalDateTime.now())
                 .build();
+        Reservation saved = reservationRepository.saveReservation(reservation).orElseThrow();
 
         Session session = Session.builder()
-                .reservationId(reservation.getReservationId())
+                .reservation(saved)
                 .status(status)
                 .isCompleted(true)
                 .build();

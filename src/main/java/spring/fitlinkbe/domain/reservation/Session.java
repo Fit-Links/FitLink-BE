@@ -16,7 +16,7 @@ import static spring.fitlinkbe.domain.common.exception.ErrorCode.SESSION_IS_ALRE
 @AllArgsConstructor
 public class Session {
     private Long sessionId;
-    private Long reservationId;
+    private Reservation reservation;
     private Status status;
     private String cancelReason;
     private boolean isCompleted;

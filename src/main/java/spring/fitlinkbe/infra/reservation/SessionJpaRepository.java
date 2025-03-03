@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface SessionJpaRepository extends JpaRepository<SessionEntity, Long> {
+public interface SessionJpaRepository extends JpaRepository<SessionEntity, Long>, SessionRepositoryCustom {
 
     @EntityGraph(attributePaths = {"reservation"})
     Optional<SessionEntity> findByReservation_ReservationId(Long reservationId);

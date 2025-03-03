@@ -3,6 +3,8 @@ package spring.fitlinkbe.integration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Transient;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

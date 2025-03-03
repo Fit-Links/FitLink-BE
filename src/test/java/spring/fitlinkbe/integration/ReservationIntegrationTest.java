@@ -422,7 +422,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             Reservation savedReservation = reservationRepository.reserveSession(reservation).orElseThrow();
 
             Session session = Session.builder()
-                    .reservationId(savedReservation.getReservationId())
+                    .reservation(savedReservation)
                     .build();
 
             reservationRepository.createSession(session);
@@ -685,7 +685,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             Reservation savedReservation = reservationRepository.reserveSession(reservation).orElseThrow();
 
             Session session = Session.builder()
-                    .reservationId(savedReservation.getReservationId())
+                    .reservation(savedReservation)
                     .build();
 
             reservationRepository.createSession(session);

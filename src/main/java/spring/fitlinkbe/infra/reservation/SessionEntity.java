@@ -23,6 +23,7 @@ public class SessionEntity extends BaseTimeEntity {
     @JoinColumn(name = "reservation_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private ReservationEntity reservation;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     private String cancelReason;
@@ -34,9 +35,7 @@ public class SessionEntity extends BaseTimeEntity {
         return SessionEntity.builder()
                 .sessionId(session.getSessionId() != null
                         ? session.getSessionId() : null)
-
-                .reservation(session.getReservationId() != null ?
-                        em.getReference(ReservationEntity.class, session.getReservationId()) : null)
+                .reservation(em.getReference(ReservationEntity.class, session.getReservation().getReservationId()))
                 .status(session.getStatus())
                 .cancelReason(session.getCancelReason())
                 .isCompleted(session.isCompleted())
@@ -46,7 +45,7 @@ public class SessionEntity extends BaseTimeEntity {
     public Session toDomain() {
         return Session.builder()
                 .sessionId(sessionId)
-                .reservationId(reservation.getReservationId())
+                .reservation(reservation.toDomain())
                 .status(status)
                 .cancelReason(cancelReason)
                 .isCompleted(isCompleted)

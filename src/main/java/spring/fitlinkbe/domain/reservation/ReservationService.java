@@ -123,7 +123,7 @@ public class ReservationService {
     public Session createSession(Reservation savedReservation) {
 
         Session session = Session.builder()
-                .reservationId(savedReservation.getReservationId())
+                .reservation(savedReservation)
                 .status(Session.Status.SESSION_WAITING)
                 .build();
 

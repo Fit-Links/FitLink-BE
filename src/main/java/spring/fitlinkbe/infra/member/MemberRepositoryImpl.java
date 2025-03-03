@@ -36,4 +36,9 @@ public class MemberRepositoryImpl implements MemberRepository {
     public List<Member> getMembers() {
         return memberJpaRepository.findAll().stream().map(MemberEntity::toDomain).toList();
     }
+
+    @Override
+    public boolean exists(Long memberId) {
+        return memberJpaRepository.existsById(memberId);
+    }
 }
