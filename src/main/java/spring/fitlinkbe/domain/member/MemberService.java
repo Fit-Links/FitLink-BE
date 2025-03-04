@@ -1,8 +1,6 @@
 package spring.fitlinkbe.domain.member;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
@@ -14,8 +12,6 @@ import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
-import spring.fitlinkbe.domain.reservation.Session;
-import spring.fitlinkbe.domain.reservation.SessionRepository;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
 import java.util.List;
@@ -33,7 +29,6 @@ public class MemberService {
     private final PersonalDetailRepository personalDetailRepository;
     private final ConnectingInfoRepository connectingInfoRepository;
     private final SessionInfoRepository sessionInfoRepository;
-    private final SessionRepository sessionRepository;
 
     public PersonalDetail registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command, Member savedMember) {
         PersonalDetail personalDetail = personalDetailRepository.getById(personalDetailId);
@@ -128,10 +123,6 @@ public class MemberService {
     public void deleteAllWorkoutSchedules(List<WorkoutSchedule> deletedWorkoutSchedules) {
         workoutScheduleRepository.deleteAllByIds(deletedWorkoutSchedules.stream()
                 .map(WorkoutSchedule::getWorkoutScheduleId).toList());
-    }
-
-    public Page<Session> getSessions(Long memberId, Session.Status status, Pageable pageRequest) {
-        return sessionRepository.getSessions(memberId, status, pageRequest);
     }
 
     public void checkMemberExists(Long memberId) {

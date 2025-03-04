@@ -18,6 +18,7 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.notification.NotificationService;
+import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
@@ -33,6 +34,7 @@ public class MemberFacade {
     private final MemberService memberService;
     private final TrainerService trainerService;
     private final NotificationService notificationService;
+    private final ReservationService reservationService;
 
     @Transactional
     public void connectTrainer(Long memberId, String trainerCode) {
@@ -146,8 +148,9 @@ public class MemberFacade {
         workoutSchedules.removeAll(deletedWorkoutSchedules);
     }
 
+    @Transactional(readOnly = true)
     public Page<MemberSessionResult.SessionResponse> getSessions(Long memberId, Session.Status status, Pageable pageRequest) {
-        Page<Session> sessions = memberService.getSessions(memberId, status, pageRequest);
+        Page<Session> sessions = reservationService.getSessions(memberId, status, pageRequest);
 
         return sessions.map(MemberSessionResult.SessionResponse::from);
     }
