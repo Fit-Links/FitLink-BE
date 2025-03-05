@@ -9,6 +9,7 @@ import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.support.security.SecurityUser;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 
@@ -25,7 +26,7 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
-    public record ReserveSession(Long trainerId, Long memberId, String name, LocalDateTime date, int priority) {
+    public record ReserveSession(Long trainerId, Long memberId, String name, List<LocalDateTime> dates) {
         public Reservation toDomain(SessionInfo sessionInfo, SecurityUser user) {
 
             return Reservation.builder()
@@ -33,11 +34,10 @@ public class ReservationCriteria {
                     .member(Member.builder().memberId(memberId).build())
                     .sessionInfo(sessionInfo)
                     .name(name)
-                    .reservationDate(date)
-                    .dayOfWeek(date.getDayOfWeek())
+                    .reservationDates(dates)
+                    .dayOfWeek(dates.get(0).getDayOfWeek())
                     .status(user.getUserRole() == MEMBER ? Reservation.Status.RESERVATION_WAITING
                             : Reservation.Status.RESERVATION_APPROVED)
-                    .priority(priority)
                     .build();
         }
     }

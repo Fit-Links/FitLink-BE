@@ -99,16 +99,15 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
 
             Reservation reservation = Reservation.builder()
-                    .reservationDate(reqeustDate)
+                    .reservationDates(List.of(reqeustDate))
                     .trainer(trainer)
                     .member(member)
                     .sessionInfo(sessionInfo)
                     .name(member.getName())
                     .dayOfWeek(reqeustDate.getDayOfWeek())
-                    .priority(0)
                     .build();
 
-            reservationRepository.saveReservation(reservation);
+            reservationRepository.reserveSession(reservation);
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
@@ -141,12 +140,12 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             trainerRepository.saveDayOff(dayOff);
 
             Reservation reservation = Reservation.builder()
-                    .reservationDate(dayOffDate.atStartOfDay())
+                    .reservationDates(List.of(dayOffDate.atStartOfDay()))
                     .trainer(trainer)
                     .isDayOff(true)
                     .build();
 
-            reservationRepository.saveReservation(reservation);
+            reservationRepository.reserveSession(reservation);
 
             PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -190,16 +189,15 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             LocalDateTime reqeustDate = LocalDateTime.now().plusWeeks(2);
 
             Reservation reservation = Reservation.builder()
-                    .reservationDate(reqeustDate)
+                    .reservationDates(List.of(reqeustDate))
                     .trainer(trainer)
                     .member(member)
                     .sessionInfo(sessionInfo)
                     .name(member.getName())
                     .dayOfWeek(reqeustDate.getDayOfWeek())
-                    .priority(0)
                     .build();
 
-            reservationRepository.saveReservation(reservation);
+            reservationRepository.reserveSession(reservation);
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
@@ -235,16 +233,15 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             LocalDateTime reqeustDate = LocalDateTime.now().plusMonths(1).minusDays(1).minusSeconds(1);
 
             Reservation reservation = Reservation.builder()
-                    .reservationDate(reqeustDate)
+                    .reservationDates(List.of(reqeustDate))
                     .trainer(trainer)
                     .member(member)
                     .sessionInfo(sessionInfo)
                     .name(member.getName())
                     .dayOfWeek(reqeustDate.getDayOfWeek())
-                    .priority(0)
                     .build();
 
-            reservationRepository.saveReservation(reservation);
+            reservationRepository.reserveSession(reservation);
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
@@ -280,16 +277,15 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             LocalDateTime reqeustDate = LocalDateTime.now().plusMonths(1).minusSeconds(1);
 
             Reservation reservation = Reservation.builder()
-                    .reservationDate(reqeustDate)
+                    .reservationDates(List.of(reqeustDate))
                     .trainer(trainer)
                     .member(member)
                     .sessionInfo(sessionInfo)
                     .name(member.getName())
                     .dayOfWeek(reqeustDate.getDayOfWeek())
-                    .priority(0)
                     .build();
 
-            reservationRepository.saveReservation(reservation);
+            reservationRepository.reserveSession(reservation);
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
@@ -328,17 +324,16 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             LocalDateTime reqeustDate = LocalDateTime.now().plusMonths(1).minusSeconds(1);
 
             Reservation reservation = Reservation.builder()
-                    .reservationDate(reqeustDate)
+                    .reservationDates(List.of(reqeustDate))
                     .trainer(trainer)
                     .member(member)
                     .sessionInfo(sessionInfo)
                     .name(member.getName())
                     .dayOfWeek(reqeustDate.getDayOfWeek())
                     .status(RESERVATION_WAITING)
-                    .priority(0)
                     .build();
 
-            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+            Reservation savedReservation = reservationRepository.reserveSession(reservation).orElseThrow();
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/"
@@ -372,17 +367,16 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             LocalDateTime reqeustDate = LocalDateTime.now().plusMonths(1).minusSeconds(1);
 
             Reservation reservation = Reservation.builder()
-                    .reservationDate(reqeustDate)
+                    .reservationDates(List.of(reqeustDate))
                     .trainer(trainer)
                     .member(member)
                     .sessionInfo(sessionInfo)
                     .name(member.getName())
                     .dayOfWeek(reqeustDate.getDayOfWeek())
                     .status(RESERVATION_WAITING)
-                    .priority(2)
                     .build();
 
-            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+            Reservation savedReservation = reservationRepository.reserveSession(reservation).orElseThrow();
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/"
@@ -416,23 +410,22 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             LocalDateTime reqeustDate = LocalDateTime.now().plusMonths(1).minusSeconds(1);
 
             Reservation reservation = Reservation.builder()
-                    .reservationDate(reqeustDate)
+                    .reservationDates(List.of(reqeustDate))
                     .trainer(trainer)
                     .member(member)
                     .sessionInfo(sessionInfo)
                     .name(member.getName())
                     .dayOfWeek(reqeustDate.getDayOfWeek())
                     .status(RESERVATION_APPROVED)
-                    .priority(0)
                     .build();
 
-            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+            Reservation savedReservation = reservationRepository.reserveSession(reservation).orElseThrow();
 
             Session session = Session.builder()
                     .reservationId(savedReservation.getReservationId())
                     .build();
 
-            reservationRepository.saveSession(session);
+            reservationRepository.createSession(session);
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/"
@@ -449,7 +442,170 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
     }
 
     @Nested
-    @DisplayName("예약 상세 조회 Integration TEST")
+    @DisplayName("예약 상세 대기 목록 조회 Integration TEST")
+    class GetWaitingMembersIntegrationTest {
+        @Test
+        @DisplayName("트레이너 예약 상세 대기 목록 조회 성공")
+        void getReservationWaitingMembersWithTrainer() {
+            // given
+            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetails.getPersonalDetailId());
+
+            Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
+            Member member1 = memberRepository.getMember(1L).orElseThrow();
+
+            SessionInfo sessionInfo1 = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+
+            LocalDateTime reserveDate = LocalDateTime.now().plusDays(1);
+
+            Reservation reservation1 = Reservation.builder()
+                    .reservationDates(List.of(reserveDate))
+                    .trainer(trainer)
+                    .member(member1)
+                    .sessionInfo(sessionInfo1)
+                    .name(member1.getName())
+                    .dayOfWeek(reserveDate.getDayOfWeek())
+                    .status(RESERVATION_WAITING)
+                    .build();
+
+            Reservation savedReservation1 = reservationRepository.reserveSession(reservation1).orElseThrow();
+
+            Member member2 = testDataHandler.createMember();
+            SessionInfo sessionInfo2 = testDataHandler.createSessionInfo(member2, trainer);
+
+            Reservation reservation2 = Reservation.builder()
+                    .reservationDates(List.of(reserveDate))
+                    .trainer(trainer)
+                    .member(member2)
+                    .sessionInfo(sessionInfo2)
+                    .name(member2.getName())
+                    .dayOfWeek(reserveDate.getDayOfWeek())
+                    .status(RESERVATION_WAITING)
+                    .build();
+
+            Reservation savedReservation2 = reservationRepository.reserveSession(reservation2).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/waiting-members/"
+                    + reserveDate, accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                List<ReservationResponseDto.GetWaitingMember> content = result.body().jsonPath()
+                        .getList("data", ReservationResponseDto.GetWaitingMember.class);
+                softly.assertThat(content).hasSize(2);
+                softly.assertThat(content.get(0).reservationId()).isEqualTo(savedReservation1.getReservationId());
+                softly.assertThat(content.get(1).reservationId()).isEqualTo(savedReservation2.getReservationId());
+
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너 예약 상세 대기 목록 조회 실패 - reservationDate 정보 누락")
+        void getReservationWithTrainerNoReservationDate() {
+            // given
+            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetails.getPersonalDetailId());
+
+            Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
+            Member member1 = memberRepository.getMember(1L).orElseThrow();
+
+            SessionInfo sessionInfo1 = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+
+            LocalDateTime reserveDate = LocalDateTime.now().plusDays(1);
+
+            Reservation reservation1 = Reservation.builder()
+                    .reservationDates(List.of(reserveDate))
+                    .trainer(trainer)
+                    .member(member1)
+                    .sessionInfo(sessionInfo1)
+                    .name(member1.getName())
+                    .dayOfWeek(reserveDate.getDayOfWeek())
+                    .status(RESERVATION_WAITING)
+                    .build();
+
+            reservationRepository.reserveSession(reservation1).orElseThrow();
+
+            Member member2 = testDataHandler.createMember();
+            SessionInfo sessionInfo2 = testDataHandler.createSessionInfo(member2, trainer);
+
+            Reservation reservation2 = Reservation.builder()
+                    .reservationDates(List.of(reserveDate))
+                    .trainer(trainer)
+                    .member(member2)
+                    .sessionInfo(sessionInfo2)
+                    .name(member2.getName())
+                    .dayOfWeek(reserveDate.getDayOfWeek())
+                    .status(RESERVATION_WAITING)
+                    .build();
+
+            reservationRepository.reserveSession(reservation2).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/waiting-members/", accessToken);
+
+            // then
+            assertSoftly(softly -> softly.assertThat(result.statusCode()).isEqualTo(500));
+        }
+
+        @Test
+        @DisplayName("트레이너 예약 상세 대기 목록 조회 실패 - 예약 대기자 없음")
+        void getReservationWithTrainerNoWaitingStatus() {
+            // given
+            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetails.getPersonalDetailId());
+
+            Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
+            Member member1 = memberRepository.getMember(1L).orElseThrow();
+
+            SessionInfo sessionInfo1 = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+
+            LocalDateTime reserveDate = LocalDateTime.now().plusDays(1);
+
+            Reservation reservation1 = Reservation.builder()
+                    .reservationDates(List.of(reserveDate))
+                    .trainer(trainer)
+                    .member(member1)
+                    .sessionInfo(sessionInfo1)
+                    .name(member1.getName())
+                    .dayOfWeek(reserveDate.getDayOfWeek())
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            reservationRepository.reserveSession(reservation1).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/waiting-members/"
+                    + reserveDate, accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class))
+                        .contains("이 날짜에 예약 대기자가 없습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.GetWaitingMember.class))
+                        .isNull();
+            });
+        }
+
+    }
+
+    @Nested
+    @DisplayName("예약 불가 설정 Integration TEST")
     class SetDisabledTimeIntegrationTest {
         @Test
         @DisplayName("예약 불가 설정을 하면 이전의 있던 예약들은 취소되며, 예약 불가 설정한 예약은 저장됩니다.")
@@ -468,16 +624,15 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
 
             Reservation reservation = Reservation.builder()
-                    .reservationDate(reservationDate)
+                    .reservationDates(List.of(reservationDate))
                     .trainer(trainer)
                     .member(member)
                     .name(member.getName())
                     .dayOfWeek(reservationDate.getDayOfWeek())
                     .status(RESERVATION_WAITING)
-                    .priority(0)
                     .build();
 
-            reservationRepository.saveReservation(reservation).orElseThrow();
+            reservationRepository.reserveSession(reservation).orElseThrow();
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
@@ -518,23 +673,22 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
 
             Reservation reservation = Reservation.builder()
-                    .reservationDate(reservationDate)
+                    .reservationDates(List.of(reservationDate))
                     .trainer(trainer)
                     .member(member)
                     .sessionInfo(sessionInfo)
                     .name(member.getName())
                     .dayOfWeek(reservationDate.getDayOfWeek())
                     .status(RESERVATION_WAITING)
-                    .priority(0)
                     .build();
 
-            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+            Reservation savedReservation = reservationRepository.reserveSession(reservation).orElseThrow();
 
             Session session = Session.builder()
                     .reservationId(savedReservation.getReservationId())
                     .build();
 
-            reservationRepository.saveSession(session);
+            reservationRepository.createSession(session);
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
@@ -608,15 +762,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
-            ReservationRequestDto.ReserveSessions request = ReservationRequestDto.ReserveSessions
-                    .builder()
-                    .reserveSessions(List.of(ReservationRequestDto.ReserveSessions.ReserveSession.builder()
-                            .trainerId(1L)
-                            .memberId(1L)
-                            .date(requestDate)
-                            .priority(0)
-                            .name("홍길동")
-                            .build()))
+            ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
+                    .trainerId(1L)
+                    .memberId(1L)
+                    .dates(List.of(requestDate))
+                    .name("홍길동")
                     .build();
 
             // when
@@ -628,16 +778,20 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             assertSoftly(softly -> {
                 // 예약이 잘 됐는지 확인
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                List<ReservationResponseDto.GetList> content = result.body().jsonPath()
-                        .getList("data", ReservationResponseDto.GetList.class);
-                softly.assertThat(content.size()).isEqualTo(1);
-                softly.assertThat(content.get(0).status()).isEqualTo(RESERVATION_APPROVED);
+
+                ReservationResponseDto.Success content = result.body().jsonPath()
+                        .getObject("data", ReservationResponseDto.Success.class);
+
+                softly.assertThat(content.reservationId()).isEqualTo(1L);
+                softly.assertThat(content.status()).isEqualTo(RESERVATION_APPROVED);
+
                 // 세션이 잘 생성됐는지 확인
-                Session session = reservationRepository.getSession(content.get(0).reservationId()).orElseThrow();
+                Session session = reservationRepository.getSession(content.reservationId()).orElseThrow();
                 softly.assertThat(session).isNotNull();
                 softly.assertThat(session.getStatus()).isEqualTo(Session.Status.SESSION_WAITING);
+
                 // 알람이 잘 생성됐는지 확인
-                Notification notification = notificationRepository.getNotification(content.get(0).reservationId(),
+                Notification notification = notificationRepository.getNotification(content.reservationId(),
                         Notification.ReferenceType.RESERVATION);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_APPROVE);
@@ -656,15 +810,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
-            ReservationRequestDto.ReserveSessions request = ReservationRequestDto.ReserveSessions
-                    .builder()
-                    .reserveSessions(List.of(ReservationRequestDto.ReserveSessions.ReserveSession.builder()
-                            .trainerId(1L)
-                            .memberId(1L)
-                            .date(requestDate)
-                            .priority(0)
-                            .name("홍길동")
-                            .build()))
+            ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
+                    .trainerId(1L)
+                    .memberId(1L)
+                    .dates(List.of(requestDate))
+                    .name("홍길동")
                     .build();
 
             // when
@@ -676,12 +826,14 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             assertSoftly(softly -> {
                 //예약이 잘됐는지 확인
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                List<ReservationResponseDto.GetList> content = result.body().jsonPath()
-                        .getList("data", ReservationResponseDto.GetList.class);
-                softly.assertThat(content.size()).isEqualTo(1);
-                softly.assertThat(content.get(0).status()).isEqualTo(RESERVATION_WAITING);
+                ReservationResponseDto.Success content = result.body().jsonPath()
+                        .getObject("data", ReservationResponseDto.Success.class);
+
+                softly.assertThat(content.reservationId()).isEqualTo(1L);
+                softly.assertThat(content.status()).isEqualTo(RESERVATION_WAITING);
+
                 // 알람이 잘 생성됐는지 확인
-                Notification notification = notificationRepository.getNotification(content.get(0).reservationId(),
+                Notification notification = notificationRepository.getNotification(content.reservationId(),
                         Notification.ReferenceType.RESERVATION);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_REQUESTED);
@@ -698,25 +850,14 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetails.getPersonalDetailId());
 
-            LocalDateTime requestDate1 = LocalDateTime.now().plusHours(1);
-            LocalDateTime requestDate2 = LocalDateTime.now().plusHours(3);
+            LocalDateTime requestDate1 = LocalDateTime.now().plusHours(3);
+            LocalDateTime requestDate2 = LocalDateTime.now().plusHours(1);
 
-            ReservationRequestDto.ReserveSessions request = ReservationRequestDto.ReserveSessions
-                    .builder()
-                    .reserveSessions(List.of(ReservationRequestDto.ReserveSessions.ReserveSession.builder()
-                                    .trainerId(1L)
-                                    .memberId(1L)
-                                    .date(requestDate1)
-                                    .priority(1)
-                                    .name("홍길동")
-                                    .build(),
-                            ReservationRequestDto.ReserveSessions.ReserveSession.builder()
-                                    .trainerId(1L)
-                                    .memberId(1L)
-                                    .date(requestDate2)
-                                    .priority(2)
-                                    .name("홍길동")
-                                    .build()))
+            ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
+                    .trainerId(1L)
+                    .memberId(1L)
+                    .dates(List.of(requestDate1, requestDate2))
+                    .name("홍길동")
                     .build();
 
             // when
@@ -728,13 +869,15 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             assertSoftly(softly -> {
                 //예약이 잘 됐는지 확인
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                List<ReservationResponseDto.GetList> content = result.body().jsonPath()
-                        .getList("data", ReservationResponseDto.GetList.class);
-                softly.assertThat(content.size()).isEqualTo(2);
-                softly.assertThat(content.get(0).status()).isEqualTo(RESERVATION_WAITING);
-                softly.assertThat(content.get(1).status()).isEqualTo(RESERVATION_WAITING);
+
+                ReservationResponseDto.Success content = result.body().jsonPath()
+                        .getObject("data", ReservationResponseDto.Success.class);
+
+                softly.assertThat(content.reservationId()).isEqualTo(1L);
+                softly.assertThat(content.status()).isEqualTo(RESERVATION_WAITING);
+
                 // 알람이 잘 생성됐는지 확인
-                Notification notification = notificationRepository.getNotification(content.get(0).reservationId(),
+                Notification notification = notificationRepository.getNotification(content.reservationId(),
                         Notification.ReferenceType.RESERVATION);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_REQUESTED);
@@ -753,14 +896,10 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
-            ReservationRequestDto.ReserveSessions request = ReservationRequestDto.ReserveSessions
-                    .builder()
-                    .reserveSessions(List.of(ReservationRequestDto.ReserveSessions.ReserveSession.builder()
-                            .memberId(1L)
-                            .date(requestDate)
-                            .priority(0)
-                            .name("홍길동")
-                            .build()))
+            ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
+                    .memberId(1L)
+                    .dates(List.of(requestDate))
+                    .name("홍길동")
                     .build();
 
             // when
@@ -790,14 +929,10 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
-            ReservationRequestDto.ReserveSessions request = ReservationRequestDto.ReserveSessions
-                    .builder()
-                    .reserveSessions(List.of(ReservationRequestDto.ReserveSessions.ReserveSession.builder()
-                            .trainerId(1L)
-                            .date(requestDate)
-                            .priority(0)
-                            .name("홍길동")
-                            .build()))
+            ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
+                    .trainerId(1L)
+                    .dates(List.of(requestDate))
+                    .name("홍길동")
                     .build();
 
             // when
@@ -816,7 +951,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("직접 예약 실패 - date 부재")
+        @DisplayName("직접 예약 실패 - dates 부재")
         void reserveSessionNoDate() {
             // given
             PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
@@ -825,14 +960,10 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetails.getPersonalDetailId());
 
-            ReservationRequestDto.ReserveSessions request = ReservationRequestDto.ReserveSessions
-                    .builder()
-                    .reserveSessions(List.of(ReservationRequestDto.ReserveSessions.ReserveSession.builder()
-                            .trainerId(1L)
-                            .memberId(1L)
-                            .priority(0)
-                            .name("홍길동")
-                            .build()))
+            ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
+                    .trainerId(1L)
+                    .memberId(1L)
+                    .name("홍길동")
                     .build();
 
             // when
@@ -844,7 +975,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
                 softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
-                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("현재 날짜보다 이전 날짜는 설정이 불가능 합니다.");
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("예약 요청 날짜는 비어있을 수 없습니다.");
                 softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.GetList.class))
                         .isNull();
             });
@@ -862,14 +993,10 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
-            ReservationRequestDto.ReserveSessions request = ReservationRequestDto.ReserveSessions
-                    .builder()
-                    .reserveSessions(List.of(ReservationRequestDto.ReserveSessions.ReserveSession.builder()
-                            .trainerId(1L)
-                            .memberId(1L)
-                            .date(requestDate)
-                            .priority(0)
-                            .build()))
+            ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
+                    .trainerId(1L)
+                    .memberId(1L)
+                    .dates(List.of(requestDate))
                     .build();
 
             // when
@@ -886,6 +1013,5 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                         .isNull();
             });
         }
-
     }
 }

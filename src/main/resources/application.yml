@@ -64,6 +64,7 @@ spring:
       driver-class-name: com.mysql.cj.jdbc.Driver
       username: root
       password: 1234
+      maximum-pool-size: 50
 
   jpa:
     hibernate:
@@ -132,6 +133,7 @@ spring:
       driver-class-name:
       username:
       password:
+      maximum-pool-size: 50
 
   jpa:
     hibernate:

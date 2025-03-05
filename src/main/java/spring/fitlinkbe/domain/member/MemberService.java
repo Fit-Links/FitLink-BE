@@ -38,10 +38,12 @@ public class MemberService {
         return personalDetail;
     }
 
+    @Transactional(readOnly = true)
     public List<WorkoutSchedule> getWorkoutSchedules(Long memberId) {
         return workoutScheduleRepository.findAllByMemberId(memberId);
     }
 
+    @Transactional(readOnly = true)
     public PersonalDetail getMemberDetail(Long memberId) {
         return personalDetailRepository.getMemberDetail(memberId)
                 .orElseThrow(() -> new CustomException(MEMBER_DETAIL_NOT_FOUND,

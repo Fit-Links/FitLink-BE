@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_WAITING_MEMBERS_EMPTY;
+import static spring.fitlinkbe.domain.common.exception.ErrorCode.SESSION_CREATE_FAILED;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.DISABLED_TIME_RESERVATION;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_WAITING;
@@ -40,7 +42,23 @@ public class ReservationService {
         LocalDateTime startDate = date.atStartOfDay();
         LocalDateTime endDate = getEndDate(startDate, role);
 
-        return reservationRepository.getReservations(startDate, endDate, role, userId);
+        List<Reservation> reservations = reservationRepository.getReservations(role, userId);
+
+        return reservations.stream()
+                .filter(reservation -> reservation.isReservationInRange(startDate, endDate))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Reservation> getReservationsWithWaitingStatus(Long trainerId) {
+        List<Reservation> WaitingMembers = reservationRepository.getReservationsWithWaitingStatus(RESERVATION_WAITING,
+                trainerId);
+
+        if (WaitingMembers.isEmpty()) {
+            throw new CustomException(RESERVATION_WAITING_MEMBERS_EMPTY);
+        }
+
+        return WaitingMembers;
     }
 
     @Transactional(readOnly = true)
@@ -84,30 +102,34 @@ public class ReservationService {
 
         Reservation reservation = Reservation.builder()
                 .trainer(trainerInfo)
-                .reservationDate(command.date())
+                .reservationDates(List.of(command.date()))
                 .status(DISABLED_TIME_RESERVATION)
                 .build();
 
-        return reservationRepository.saveReservation(reservation).orElseThrow(() ->
+        return reservationRepository.reserveSession(reservation).orElseThrow(() ->
                 new CustomException(ErrorCode.SET_DISABLE_DATE_FAILED,
                         "예약 불가 설정을 할 수 없습니다."));
     }
 
     @Transactional
-    public List<Reservation> reserveSession(List<Reservation> reservations) {
-        return reservationRepository.reserveSession(reservations);
+    public Reservation reserveSession(Reservation reservation) {
+        return reservationRepository.reserveSession(reservation)
+                .orElseThrow(() ->
+                        new CustomException(ErrorCode.RESERVATION_IS_FAILED,
+                                "예약에 실패하였습니다."));
     }
 
     @Transactional
-    public List<Session> createSessions(List<Reservation> savedReservation) {
+    public Session createSession(Reservation savedReservation) {
 
-        List<Session> sessions = savedReservation
-                .stream().map(reservation -> Session.builder()
-                        .reservationId(reservation.getReservationId())
-                        .status(Session.Status.SESSION_WAITING)
-                        .build())
-                .toList();
+        Session session = Session.builder()
+                .reservationId(savedReservation.getReservationId())
+                .status(Session.Status.SESSION_WAITING)
+                .build();
 
-        return reservationRepository.createSessions(sessions);
+        return reservationRepository.createSession(session)
+                .orElseThrow(() -> new CustomException(SESSION_CREATE_FAILED));
     }
+
+
 }

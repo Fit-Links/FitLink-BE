@@ -10,6 +10,7 @@ import spring.fitlinkbe.infra.trainer.TrainerEntity;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -37,7 +38,9 @@ public class ReservationEntity extends BaseTimeEntity {
 
     private String name;
 
-    private LocalDateTime reservationDate;
+    @Column(columnDefinition = "JSON")
+    @Convert(converter = LocalDateTimeListConverter.class)
+    private List<LocalDateTime> reservationDates;
 
     private LocalDateTime changeDate;
 
@@ -48,8 +51,6 @@ public class ReservationEntity extends BaseTimeEntity {
     private Reservation.Status status;
 
     private String cancelReason;
-
-    private int priority;
 
     private boolean isDayOff;
 
@@ -64,31 +65,11 @@ public class ReservationEntity extends BaseTimeEntity {
                 .sessionInfo(reservation.isReservationNotAllowed() ? null
                         : SessionInfoEntity.from(reservation.getSessionInfo()))
                 .name(reservation.getName())
-                .reservationDate(reservation.getReservationDate())
+                .reservationDates(reservation.getReservationDates())
                 .changeDate(reservation.getChangeDate())
                 .dayOfWeek(reservation.getDayOfWeek())
                 .status(reservation.getStatus())
                 .cancelReason(reservation.getCancelReason())
-                .priority(reservation.getPriority())
-                .isDayOff(reservation.isDayOff())
-                .build();
-    }
-
-    public static ReservationEntity fromWithId(Reservation reservation, EntityManager em) {
-
-        return ReservationEntity.builder()
-                .reservationId(reservation.getReservationId() != null
-                        ? reservation.getReservationId() : null)
-                .trainer(em.getReference(TrainerEntity.class, reservation.getTrainer().getTrainerId()))
-                .member(em.getReference(MemberEntity.class, reservation.getMember().getMemberId()))
-                .sessionInfo(em.getReference(SessionInfoEntity.class, reservation.getSessionInfo().getSessionInfoId()))
-                .name(reservation.getName())
-                .reservationDate(reservation.getReservationDate())
-                .changeDate(reservation.getChangeDate())
-                .dayOfWeek(reservation.getDayOfWeek())
-                .status(reservation.getStatus())
-                .cancelReason(reservation.getCancelReason())
-                .priority(reservation.getPriority())
                 .isDayOff(reservation.isDayOff())
                 .build();
     }
@@ -100,12 +81,11 @@ public class ReservationEntity extends BaseTimeEntity {
                 .trainer(trainer.toDomain())
                 .sessionInfo((sessionInfo == null || isReservationNotAllowed()) ? null : sessionInfo.toDomain())
                 .name(name)
-                .reservationDate(reservationDate)
+                .reservationDates(reservationDates)
                 .changeDate(changeDate)
                 .dayOfWeek(dayOfWeek)
                 .status(status)
                 .cancelReason(cancelReason)
-                .priority(priority)
                 .isDayOff(isDayOff)
                 .createdAt(getCreatedAt())
                 .updatedAt(getUpdatedAt())

@@ -22,16 +22,22 @@ public enum ErrorCode {
     DUPLICATED_WORKOUT_SCHEDULE("운동 희망일이 겹칩니다", 400),
 
     // Reservation 관련 ErrorCode
+
     RESERVATION_IS_FAILED("예약에 실패하였습니다.", 400),
     SET_DISABLE_DATE_FAILED("예약 불가 설정에 실패하였습니다.", 400),
     RESERVATION_IS_ALREADY_CANCEL("이미 예약이 취소되었습니다.", 400),
+    RESERVATION_IS_NOT_WAITING_STATUS("예약 상태가 대기 상태가 아닙니다.", 400),
+    RESERVATION_WAITING_MEMBERS_EMPTY("이 날짜에 예약 대기자가 없습니다.", 400),
     RESERVATION_CANCEL_NOT_ALLOWED("예약 취소를 할 수 없는 상태입니다.", 400),
     RESERVATION_NOT_FOUND("예약 정보를 찾지 못하였습니다.", 404),
+    FAILED_TO_CONVERT_JSON("Failed to convert LocalDateTime list to JSON", 400),
+    FAILED_TO_CONVERT_LIST("Failed to convert LocalDateTime list to List", 400),
 
     // Session 관련 ErrorCode
+    SESSION_CREATE_FAILED("세션 생성에 실패하였습니다.", 400),
     SESSION_NOT_FOUND("세션 정보를 찾지 못하였습니다.", 404),
     SESSION_IS_ALREADY_CANCEL("이미 세션이 취소되었습니다.", 400),
-    SESSION_IS_ALREADY_COMPLETED("이미 끝난 세션은 취소할 수 없습니다.", 400),
+    SESSION_IS_ALREADY_END("이미 세션이 종료되었습니다.", 400),
 
     // Notification 관련 ErrorCode
     NOTIFICATION_NOT_FOUND("알림 정보를 찾지 못하였습니다.", 404),
@@ -44,7 +50,6 @@ public enum ErrorCode {
     NEED_REQUIRED_SMS_STATUS("유저의 상태가 소셜 로그인만 진행된 상태어야 합니다", 403),
 
     TOKEN_NOT_FOUND("토큰 정보를 찾지 못하였습니다.", 404),
-
 
     // Common ErrorCode
     INVALID_PHONE_NUMBER_FORMAT("유효하지 않은 전화번호 형식입니다.", 400),

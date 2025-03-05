@@ -1,7 +1,6 @@
 package spring.fitlinkbe.interfaces.controller.reservation.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -36,41 +35,33 @@ public class ReservationRequestDto {
 
     }
 
-    @Builder
-    public record ReserveSessions(
-            @NotEmpty(message = "예약 요청 리스트는 비어있을 수 없습니다.")
-            @Valid List<ReserveSession> reserveSessions) {
 
-        @Builder(toBuilder = true)
-        public record ReserveSession(
-                @NotNull(message = "유저 ID는 필수값 입니다.") Long memberId,
-                @NotNull(message = "트레이너 ID는 필수값 입니다.") Long trainerId,
-                @NotBlank(message = "이름은 필수값 입니다.") String name,
-                LocalDateTime date, int priority) {
+    @Builder(toBuilder = true)
+    public record ReserveSession(
+            @NotNull(message = "유저 ID는 필수값 입니다.") Long memberId,
+            @NotNull(message = "트레이너 ID는 필수값 입니다.") Long trainerId,
+            @NotBlank(message = "이름은 필수값 입니다.") String name,
+            @NotEmpty(message = "예약 요청 날짜는 비어있을 수 없습니다.")
+            List<LocalDateTime> dates) {
 
-            public ReservationCriteria.ReserveSession toCriteria() {
+        public ReservationCriteria.ReserveSession toCriteria() {
 
-                return ReservationCriteria.ReserveSession.builder()
-                        .trainerId(trainerId)
-                        .memberId(memberId)
-                        .name(name)
-                        .date(date)
-                        .priority(priority)
-                        .build();
+            return ReservationCriteria.ReserveSession.builder()
+                    .trainerId(trainerId)
+                    .memberId(memberId)
+                    .name(name)
+                    .dates(dates)
+                    .build();
+        }
+
+        @JsonIgnore
+        @AssertTrue(message = "현재 날짜보다 이전 날짜는 설정이 불가능 합니다.")
+        public boolean isNotAllowedBeforeDate() {
+            if (dates == null || dates.isEmpty()) {
+                return true; // 비어있는 경우는 다른 @NotEmpty에서 검증하므로 true 반환
             }
-
-            @JsonIgnore
-            @AssertTrue(message = "현재 날짜보다 이전 날짜는 설정이 불가능 합니다.")
-            private boolean isNotAllowedBeforeDate() {
-                if (date == null) {
-                    return false;
-                }
-                LocalDateTime nowDate = LocalDateTime.now();
-
-                return nowDate.isBefore(date);
-            }
+            LocalDateTime nowDate = LocalDateTime.now();
+            return dates.stream().noneMatch(date -> date.isBefore(nowDate));
         }
     }
-
-
 }

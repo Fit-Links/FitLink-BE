@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.reservation.ReservationFacade;
+import spring.fitlinkbe.application.reservation.criteria.ReservationResult;
+import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationRequestDto;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationResponseDto;
@@ -13,6 +15,7 @@ import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -34,9 +37,11 @@ public class ReservationController {
     public ApiResultResponse<List<ReservationResponseDto.GetList>> getReservations(@RequestParam LocalDate date,
                                                                                    @Login SecurityUser user) {
 
-        return ApiResultResponse.ok(reservationFacade.getReservations(date, user).reservations().stream()
-                .map(ReservationResponseDto.GetList::of).toList());
+        List<Reservation> result = reservationFacade.getReservations(date, user).reservations();
 
+        return ApiResultResponse.ok(result.stream()
+                .map(ReservationResponseDto.GetList::of)
+                .toList());
     }
 
     /**
@@ -53,6 +58,28 @@ public class ReservationController {
         return ApiResultResponse.ok(ReservationResponseDto.GetDetail.of(
                 reservationFacade.getReservation(reservationId)));
 
+    }
+
+    /**
+     * 예약 상세 대기 조회
+     *
+     * @param reservationDate reservationDate 정보
+     * @return ApiResultResponse 예약 상세 대기 멤버 정보를 반환한다.
+     */
+
+    @GetMapping("/waiting-members/{reservationDate}")
+    public ApiResultResponse<List<ReservationResponseDto.GetWaitingMember>> getWaitingMembers(@PathVariable("reservationDate")
+                                                                                              @NotNull(message = "예약 날짜는 필수입니다.")
+                                                                                              LocalDateTime reservationDate,
+                                                                                              @Login SecurityUser user) {
+
+
+        List<ReservationResult.ReservationWaitingMember> result = reservationFacade.getWaitingMembers(reservationDate
+                , user);
+
+        return ApiResultResponse.ok(result.stream()
+                .map(ReservationResponseDto.GetWaitingMember::of)
+                .toList());
     }
 
     /**
@@ -74,20 +101,19 @@ public class ReservationController {
     /**
      * 직접 예약
      *
-     * @param request memberId, name, date, priority 정보
+     * @param request memberId, name, dates 정보
      * @return ApiResultResponse 예약이 된 reservationId 목록 정보를 반환한다.
      */
     @PostMapping
-    public ApiResultResponse<List<ReservationResponseDto.Success>> reserveSession(@RequestBody @Valid
-                                                                                  ReservationRequestDto.ReserveSessions
-                                                                                          request,
-                                                                                  @Login SecurityUser user
+    public ApiResultResponse<ReservationResponseDto.Success> reserveSession(@RequestBody @Valid
+                                                                            ReservationRequestDto.ReserveSession
+                                                                                    request,
+                                                                            @Login SecurityUser user
     ) {
 
-        return ApiResultResponse.ok(reservationFacade.reserveSession(request.reserveSessions()
-                        .stream().map(ReservationRequestDto.ReserveSessions.ReserveSession::toCriteria).toList(), user)
-                .reservations().stream().map(ReservationResponseDto.Success::of).toList());
+        Reservation result = reservationFacade.reserveSession(request.toCriteria(), user);
 
+        return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
 
     }
 }

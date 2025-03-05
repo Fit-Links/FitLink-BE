@@ -88,7 +88,7 @@ public class Notification {
                 .refType(ReferenceType.RESERVATION)
                 .notificationType(NotificationType.RESERVATION_APPROVE)
                 .personalDetail(memberDetail)
-                .name(NotificationType.RESERVATION_CANCEL.name)
+                .name(NotificationType.RESERVATION_APPROVE.name)
                 .content(content)
                 .isSent(true)
                 .isRead(false)

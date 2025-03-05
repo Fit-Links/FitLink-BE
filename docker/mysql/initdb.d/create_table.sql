@@ -87,7 +87,7 @@ CREATE TABLE workout_schedule
 (
     workout_schedule_id BIGINT NOT NULL AUTO_INCREMENT,
     member_id           BIGINT,
-    preference_times    VARCHAR(255),
+    preference_times    JSON,
     created_at          DATETIME(6),
     updated_at          DATETIME(6),
     PRIMARY KEY (workout_schedule_id)
@@ -140,12 +140,11 @@ CREATE TABLE reservation
     trainer_id       BIGINT,
     session_info_id  BIGINT,
     name             VARCHAR(255),
-    reservation_date DATETIME(6) NOT NULL,
+    reservation_dates JSON NOT NULL,
     change_date      DATETIME(6),
     status           ENUM ('FIXED_RESERVATION','DISABLED_TIME_RESERVATION', 'RESERVATION_WAITING','RESERVATION_APPROVED',
         'RESERVATION_CANCELLED', 'RESERVATION_REJECTED', 'RESERVATION_CHANGE_REQUEST'),
     cancel_reason    VARCHAR(255),
-    priority         INT,
     is_day_off       BOOLEAN,
     created_at       DATETIME(6),
     updated_at       DATETIME(6),
