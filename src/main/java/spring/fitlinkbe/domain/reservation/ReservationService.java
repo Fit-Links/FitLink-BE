@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_WAITING_MEMBERS_EMPTY;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.SESSION_CREATE_FAILED;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.DISABLED_TIME_RESERVATION;
@@ -46,6 +47,18 @@ public class ReservationService {
         return reservations.stream()
                 .filter(reservation -> reservation.isReservationInRange(startDate, endDate))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Reservation> getReservationsWithWaitingStatus(Long trainerId) {
+        List<Reservation> WaitingMembers = reservationRepository.getReservationsWithWaitingStatus(RESERVATION_WAITING,
+                trainerId);
+
+        if (WaitingMembers.isEmpty()) {
+            throw new CustomException(RESERVATION_WAITING_MEMBERS_EMPTY);
+        }
+
+        return WaitingMembers;
     }
 
     @Transactional(readOnly = true)
@@ -117,4 +130,6 @@ public class ReservationService {
         return reservationRepository.createSession(session)
                 .orElseThrow(() -> new CustomException(SESSION_CREATE_FAILED));
     }
+
+
 }

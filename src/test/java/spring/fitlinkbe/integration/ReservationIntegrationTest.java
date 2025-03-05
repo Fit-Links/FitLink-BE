@@ -558,7 +558,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("트레이너 예약 상세 대기 목록 조회 실패 - 예약 대기 상태가 아님")
+        @DisplayName("트레이너 예약 상세 대기 목록 조회 실패 - 예약 대기자 없음")
         void getReservationWithTrainerNoWaitingStatus() {
             // given
             PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
@@ -587,32 +587,16 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             reservationRepository.reserveSession(reservation1).orElseThrow();
 
-            Member member2 = testDataHandler.createMember();
-            SessionInfo sessionInfo2 = testDataHandler.createSessionInfo(member2, trainer);
-
-            Reservation reservation2 = Reservation.builder()
-                    .reservationDates(List.of(reserveDate))
-                    .trainer(trainer)
-                    .member(member2)
-                    .sessionInfo(sessionInfo2)
-                    .name(member2.getName())
-                    .dayOfWeek(reserveDate.getDayOfWeek())
-                    .status(RESERVATION_WAITING)
-                    .build();
-
-            reservationRepository.reserveSession(reservation2).orElseThrow();
-
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/waiting-members/"
                     + reserveDate, accessToken);
-
 
             // then
             assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
                 softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
                 softly.assertThat(result.body().jsonPath().getObject("msg", String.class))
-                        .contains("예약 상태가 대기 상태가 아닙니다.");
+                        .contains("이 날짜에 예약 대기자가 없습니다.");
                 softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.GetWaitingMember.class))
                         .isNull();
             });

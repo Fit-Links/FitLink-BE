@@ -24,6 +24,7 @@ public enum ErrorCode {
     SET_DISABLE_DATE_FAILED("예약 불가 설정에 실패하였습니다.", 400),
     RESERVATION_IS_ALREADY_CANCEL("이미 예약이 취소되었습니다.", 400),
     RESERVATION_IS_NOT_WAITING_STATUS("예약 상태가 대기 상태가 아닙니다.", 400),
+    RESERVATION_WAITING_MEMBERS_EMPTY("이 날짜에 예약 대기자가 없습니다.", 400),
     RESERVATION_CANCEL_NOT_ALLOWED("예약 취소를 할 수 없는 상태입니다.", 400),
     RESERVATION_NOT_FOUND("예약 정보를 찾지 못하였습니다.", 404),
     FAILED_TO_CONVERT_JSON("Failed to convert LocalDateTime list to JSON", 400),

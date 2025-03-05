@@ -70,10 +70,12 @@ public class ReservationController {
     @GetMapping("/waiting-members/{reservationDate}")
     public ApiResultResponse<List<ReservationResponseDto.GetWaitingMember>> getWaitingMembers(@PathVariable("reservationDate")
                                                                                               @NotNull(message = "예약 날짜는 필수입니다.")
-                                                                                              LocalDateTime reservationDate) {
+                                                                                              LocalDateTime reservationDate,
+                                                                                              @Login SecurityUser user) {
 
 
-        List<ReservationResult.ReservationWaitingMember> result = reservationFacade.getWaitingMembers(reservationDate);
+        List<ReservationResult.ReservationWaitingMember> result = reservationFacade.getWaitingMembers(reservationDate
+                , user);
 
         return ApiResultResponse.ok(result.stream()
                 .map(ReservationResponseDto.GetWaitingMember::of)

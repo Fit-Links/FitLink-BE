@@ -419,7 +419,8 @@ class ReservationControllerTest {
                             .personalDetail(PersonalDetail.builder().personalDetailId(2L).build())
                             .build();
 
-            when(reservationFacade.getWaitingMembers(any(LocalDateTime.class))).thenReturn(List.of(result));
+            when(reservationFacade.getWaitingMembers(any(LocalDateTime.class), any(SecurityUser.class)))
+                    .thenReturn(List.of(result));
 
             //when & then
             mockMvc.perform(get("/v1/reservations/waiting-members/%s".formatted(requestDate))
@@ -455,7 +456,8 @@ class ReservationControllerTest {
                             .personalDetail(PersonalDetail.builder().personalDetailId(2L).build())
                             .build();
 
-            when(reservationFacade.getWaitingMembers(any(LocalDateTime.class))).thenReturn(List.of(result));
+            when(reservationFacade.getWaitingMembers(any(LocalDateTime.class), any(SecurityUser.class)))
+                    .thenReturn(List.of(result));
 
             //when & then
             mockMvc.perform(get("/v1/reservations/waiting-members/%s".formatted(""))

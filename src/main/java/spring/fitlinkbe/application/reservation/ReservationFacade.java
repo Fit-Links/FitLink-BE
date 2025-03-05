@@ -102,9 +102,10 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public List<ReservationResult.ReservationWaitingMember> getWaitingMembers(LocalDateTime reservationDate) {
+    public List<ReservationResult.ReservationWaitingMember> getWaitingMembers(LocalDateTime reservationDate,
+                                                                              SecurityUser user) {
         // 예약 조회
-        List<Reservation> reservations = reservationService.getReservations();
+        List<Reservation> reservations = reservationService.getReservationsWithWaitingStatus(user.getTrainerId());
         // 예약 날짜 일치하는거 필터
         List<Reservation> filteredList = reservations.stream()
                 .filter((r) -> r.isReservationDateSame(r.getReservationDates(), reservationDate))

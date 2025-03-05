@@ -31,6 +31,14 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
+    public List<Reservation> getReservationsWithWaitingStatus(Reservation.Status status, Long trainerId) {
+        return reservationJpaRepository.findWaitingStatus(status, trainerId)
+                .stream()
+                .map(ReservationEntity::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<Reservation> getReservations(UserRole role, Long userId) {
         if (role == MEMBER) { //멤버의 경우
             return reservationJpaRepository.findByMember_MemberId(userId)

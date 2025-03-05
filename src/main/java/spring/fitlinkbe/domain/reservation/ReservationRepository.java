@@ -9,6 +9,8 @@ public interface ReservationRepository {
 
     List<Reservation> getReservations();
 
+    List<Reservation> getReservationsWithWaitingStatus(Reservation.Status status, Long trainerId);
+
     List<Reservation> getReservations(UserRole role, Long userId);
 
     List<Reservation> cancelReservations(List<Reservation> canceledReservations);

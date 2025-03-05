@@ -2,6 +2,7 @@ package spring.fitlinkbe.infra.reservation;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import spring.fitlinkbe.domain.reservation.Reservation;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,4 +30,12 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             "WHERE r.trainer.trainerId = :userId")
     List<ReservationEntity> findByTrainer_TrainerId(Long userId);
 
+    @Query("SELECT r FROM ReservationEntity r " +
+            "LEFT JOIN FETCH r.member " +
+            "LEFT JOIN FETCH r.trainer " +
+            "LEFT JOIN FETCH r.sessionInfo " +
+            "WHERE r.trainer.trainerId = :trainerId AND " +
+            "r.status = :status")
+    List<ReservationEntity> findWaitingStatus(Reservation.Status status,
+                                              Long trainerId);
 }
