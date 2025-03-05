@@ -906,8 +906,8 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             testDataHandler.createSession(member, trainer, Session.Status.SESSION_WAITING);
             testDataHandler.createSession(member, trainer, Session.Status.SESSION_WAITING);
             testDataHandler.createSession(member, trainer, Session.Status.SESSION_WAITING);
-            testDataHandler.createSession(member, trainer, Session.Status.NO_SHOW);
-            testDataHandler.createSession(member, trainer, Session.Status.NO_SHOW);
+            testDataHandler.createSession(member, trainer, Session.Status.SESSION_NOT_ATTEND);
+            testDataHandler.createSession(member, trainer, Session.Status.SESSION_NOT_ATTEND);
         }
 
     }

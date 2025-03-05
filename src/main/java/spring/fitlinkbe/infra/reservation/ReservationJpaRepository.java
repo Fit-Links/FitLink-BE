@@ -1,5 +1,7 @@
 package spring.fitlinkbe.infra.reservation;
 
+import jakarta.annotation.Nonnull;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import spring.fitlinkbe.domain.reservation.Reservation;
@@ -37,4 +39,10 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             "r.status = :status")
     List<ReservationEntity> findWaitingStatus(Reservation.Status status,
                                               Long trainerId);
+
+    @Override
+    @Nonnull
+    @EntityGraph(attributePaths = {"member", "trainer", "sessionInfo"})
+    List<ReservationEntity> findAll();
+
 }

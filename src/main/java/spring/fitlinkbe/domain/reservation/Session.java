@@ -27,8 +27,6 @@ public class Session {
         SESSION_WAITING, // 세션 대기
         SESSION_NOT_ATTEND, // 세션 불참석
         SESSION_COMPLETED, // 세션 완료
-
-        NO_SHOW // 노쇼
     }
 
     public void cancel(String message) {

@@ -252,15 +252,15 @@ public class TestDataHandler {
                 .member(member)
                 .trainer(trainer)
                 .status(Reservation.Status.RESERVATION_APPROVED)
-                .reservationDate(LocalDateTime.now())
+                .reservationDates(List.of(LocalDateTime.now()))
                 .build();
-        Reservation saved = reservationRepository.saveReservation(reservation).orElseThrow();
+        Reservation saved = reservationRepository.reserveSession(reservation).orElseThrow();
 
         Session session = Session.builder()
                 .reservation(saved)
                 .status(status)
                 .isCompleted(true)
                 .build();
-        return reservationRepository.saveSession(session).orElseThrow();
+        return reservationRepository.createSession(session).orElseThrow();
     }
 }
