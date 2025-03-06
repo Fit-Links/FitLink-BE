@@ -106,15 +106,6 @@ public class MemberController {
                 .count() == workoutSchedule.size();
     }
 
-    @GetMapping("/me/workout-schedule")
-    public ApiResultResponse<List<WorkoutScheduleDto.Response>> getWorkoutSchedule(@Login SecurityUser user) {
-        List<WorkoutScheduleResult.Response> result = memberFacade.getWorkoutSchedule(user.getMemberId());
-
-        return ApiResultResponse.ok(result.stream()
-                .map(WorkoutScheduleDto.Response::from)
-                .toList());
-    }
-
     @GetMapping("/me/sessions")
     public ApiResultResponse<CustomPageResponse<MemberSessionDto.SessionResponse>> getSessions(
             @Login SecurityUser user,

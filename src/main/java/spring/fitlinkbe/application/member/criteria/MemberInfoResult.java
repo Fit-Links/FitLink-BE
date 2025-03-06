@@ -3,9 +3,11 @@ package spring.fitlinkbe.application.member.criteria;
 import lombok.Builder;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
+import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class MemberInfoResult {
 
@@ -16,9 +18,10 @@ public class MemberInfoResult {
             Long trainerId,
             String trainerName,
             String profilePictureUrl,
-            SessionInfoResponse sessionInfo
+            SessionInfoResponse sessionInfo,
+            List<WorkoutScheduleResult.Response> workoutSchedules
     ) {
-        public static Response of(Member me, Trainer trainer, SessionInfo sessionInfo) {
+        public static Response of(Member me, Trainer trainer, SessionInfo sessionInfo, List<WorkoutSchedule> workoutSchedules) {
             return Response.builder()
                     .memberId(me.getMemberId())
                     .name(me.getName())
@@ -26,6 +29,7 @@ public class MemberInfoResult {
                     .trainerName(trainer != null ? trainer.getName() : null)
                     .profilePictureUrl(me.getProfilePictureUrl())
                     .sessionInfo(sessionInfo != null ? SessionInfoResponse.from(sessionInfo) : null)
+                    .workoutSchedules(workoutSchedules.stream().map(WorkoutScheduleResult.Response::from).toList())
                     .build();
         }
     }
