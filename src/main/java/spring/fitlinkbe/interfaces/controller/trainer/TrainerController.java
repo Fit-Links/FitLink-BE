@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 import spring.fitlinkbe.domain.trainer.TrainerService;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerDto;
+import spring.fitlinkbe.support.aop.RoleCheck;
 
 @RestController
 @RequiredArgsConstructor
+@RoleCheck(allowedRoles = {"TRAINER"})
 @RequestMapping("/v1/trainers")
 public class TrainerController {
     private final TrainerService trainerService;

@@ -31,8 +31,11 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
 
-        String accessToken = authTokenProvider.createAccessToken(securityUser.getStatus(), securityUser.getPersonalDetailId());
-        String refreshToken = authTokenProvider.createRefreshToken(securityUser.getPersonalDetailId());
+        String accessToken = authTokenProvider.createAccessToken(securityUser.getStatus(),
+                securityUser.getPersonalDetailId(),
+                securityUser.getUserRole());
+        String refreshToken = authTokenProvider.createRefreshToken(securityUser.getPersonalDetailId(),
+                securityUser.getUserRole());
 
         Token token = Token.builder()
                 .personalDetailId(securityUser.getPersonalDetailId())

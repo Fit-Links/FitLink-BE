@@ -20,6 +20,7 @@ import spring.fitlinkbe.interfaces.controller.member.dto.MemberDto;
 import spring.fitlinkbe.interfaces.controller.member.dto.MemberInfoDto;
 import spring.fitlinkbe.interfaces.controller.member.dto.MemberSessionDto;
 import spring.fitlinkbe.interfaces.controller.member.dto.WorkoutScheduleDto;
+import spring.fitlinkbe.support.aop.RoleCheck;
 import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
 import spring.fitlinkbe.support.validator.CollectionValidator;
@@ -28,6 +29,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RoleCheck(allowedRoles = {"MEMBER"})
 @RequestMapping("/v1/members")
 public class MemberController {
 

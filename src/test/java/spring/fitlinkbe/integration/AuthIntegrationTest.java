@@ -71,7 +71,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             // REQUIRED_SMS 상태의 유저가 있을 때
 
             PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
-            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                    personalDetail.getUserRole());
 
             // when
             // 멤버 등록 요청을 보낸다면
@@ -136,7 +137,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             // REQUIRED_SMS 상태의 유저가 있을 때
 
             PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
-            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                    personalDetail.getUserRole());
 
             // when
             // 운동 희망일의 요일이 중복되는 요청이 온다면
@@ -163,7 +165,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             // NORMAL 상태의 유저가 있을 때
 
             PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.NORMAL);
-            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                    personalDetail.getUserRole());
 
             // when
             // 멤버 등록 요청을 보낸다면
@@ -190,7 +193,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             // REQUIRED_SMS 상태의 유저가 있을 때
 
             PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
-            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                    personalDetail.getUserRole());
 
             // when
             // 필수값이 누락된 멤버 등록 요청을 보낸다면
@@ -342,7 +346,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             // REQUIRED_SMS 상태의 유저가 있을 때
 
             PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
-            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId()
+                    , personalDetail.getUserRole());
 
             // when
             // 트레이너 등록 요청을 보낸다면
@@ -389,7 +394,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             // REQUIRED_SMS 상태의 유저가 있을 때
 
             PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
-            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                    personalDetail.getUserRole());
 
             // when
             // 수업 가능 시간이 holiday, 시작 시간과 종료 시간이 null 인 트레이너 등록 요청을 보낸다면
@@ -417,7 +423,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             // NORMAL 상태의 유저가 있을 때
 
             PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.NORMAL);
-            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                    personalDetail.getUserRole());
 
             // when
             // 트레이너 등록 요청을 보낸다면
@@ -443,7 +450,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             // REQUIRED_SMS 상태의 유저가 있을 때
 
             PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
-            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                    personalDetail.getUserRole());
 
             // when
             // 수업 가능 시작 시간이 종료 시간보다 늦은 요청이 온다면
@@ -470,7 +478,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             // REQUIRED_SMS 상태의 유저가 있을 때
 
             PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
-            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                    personalDetail.getUserRole());
 
             // when
             // 수업 가능 시간의 요일이 중복되는 요청이 온다면
@@ -565,7 +574,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             // REQUIRED_SMS 상태의 유저가 있을 때
 
             PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
-            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                    personalDetail.getUserRole());
 
             // when
             // 필수값이 누락된 멤버 등록 요청을 보낸다면

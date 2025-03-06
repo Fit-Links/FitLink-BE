@@ -824,7 +824,8 @@ class ReservationControllerTest {
     private String getAccessToken(PersonalDetail personalDetail) {
 
         String accessToken = "mockedAccessToken";
-        when(authTokenProvider.createAccessToken(PersonalDetail.Status.NORMAL, personalDetail.getPersonalDetailId()))
+        when(authTokenProvider.createAccessToken(PersonalDetail.Status.NORMAL, personalDetail.getPersonalDetailId(),
+                personalDetail.getUserRole()))
                 .thenReturn(accessToken);
 
         when(authTokenProvider.getPersonalDetailIdFromAccessToken("mockedAccessToken"))

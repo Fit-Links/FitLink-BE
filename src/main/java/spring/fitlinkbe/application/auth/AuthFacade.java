@@ -33,8 +33,9 @@ public class AuthFacade {
         PersonalDetail personalDetail = trainerService.registerTrainer(personalDetailId, command, savedTrainer);
 
         // 토큰 생성 또는 업데이트
-        String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId);
-        String refreshToken = authTokenProvider.createRefreshToken(personalDetailId);
+        String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId,
+                personalDetail.getUserRole());
+        String refreshToken = authTokenProvider.createRefreshToken(personalDetailId, personalDetail.getUserRole());
 
         trainerService.saveAvailableTimes(command.toAvailableTimes(savedTrainer));
 
@@ -55,8 +56,9 @@ public class AuthFacade {
         PersonalDetail personalDetail = memberService.registerMember(personalDetailId, command, savedMember);
 
         // 토큰 생성 또는 업데이트
-        String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId);
-        String refreshToken = authTokenProvider.createRefreshToken(personalDetailId);
+        String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId,
+                personalDetail.getUserRole());
+        String refreshToken = authTokenProvider.createRefreshToken(personalDetailId, personalDetail.getUserRole());
 
         // workoutSchedule 업데이트
         memberService.saveWorkoutSchedules(command.toWorkoutSchedules(savedMember));

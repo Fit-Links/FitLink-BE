@@ -13,11 +13,13 @@ import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.interfaces.controller.auth.dto.AuthDto;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
+import spring.fitlinkbe.support.aop.RoleCheck;
 import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
 
 @RestController
 @RequiredArgsConstructor
+@RoleCheck(allowedRoles = {"TRAINER", "MEMBER"})
 @RequestMapping("/v1/auth")
 public class AuthController {
 

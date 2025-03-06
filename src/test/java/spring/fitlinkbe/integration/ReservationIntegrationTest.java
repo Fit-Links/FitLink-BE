@@ -84,11 +84,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             Map<String, String> params = new HashMap<>();
             params.put("date", LocalDate.now().toString());
 
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
@@ -147,11 +147,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             reservationRepository.reserveSession(reservation);
 
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
@@ -174,11 +174,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             Map<String, String> params = new HashMap<>();
             params.put("date", LocalDate.now().toString());
 
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
@@ -218,11 +218,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             Map<String, String> params = new HashMap<>();
             params.put("date", LocalDate.now().toString());
 
-            PersonalDetail personalDetails = personalDetailRepository.getMemberDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
@@ -262,11 +262,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             Map<String, String> params = new HashMap<>();
             params.put("date", LocalDate.now().toString());
 
-            PersonalDetail personalDetails = personalDetailRepository.getMemberDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
@@ -309,11 +309,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("트레이너는 예약 상세 목록을 조회한다.")
         void getReservationWithTrainer() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
@@ -352,11 +352,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("멤버가 예약 상세 목록을 조회한다.")
         void getReservationWithMember() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getMemberDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
@@ -395,11 +395,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("예약이 승낙이 됐다면, 세션 정보도 같이 상세 목록에 조회한다.")
         void getReservationWithApproved() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getMemberDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
@@ -448,11 +448,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("트레이너 예약 상세 대기 목록 조회 성공")
         void getReservationWaitingMembersWithTrainer() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
@@ -509,11 +509,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("트레이너 예약 상세 대기 목록 조회 실패 - reservationDate 정보 누락")
         void getReservationWithTrainerNoReservationDate() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
@@ -561,11 +561,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("트레이너 예약 상세 대기 목록 조회 실패 - 예약 대기자 없음")
         void getReservationWithTrainerNoWaitingStatus() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
@@ -611,11 +611,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("예약 불가 설정을 하면 이전의 있던 예약들은 취소되며, 예약 불가 설정한 예약은 저장됩니다.")
         void setDisabledReservation() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
@@ -658,11 +658,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("예약 불가 설정을 하면 이전의 확정된 예약들과 함께 세션도 취소되며, 예약 불가 설정한 예약은 저장됩니다.")
         void setDisabledReservationWithCancelSession() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
@@ -719,11 +719,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("예약 불가 설정한 시간에 취소할 예약이 없으면 예약 불가 설정한 예약만 저장됩니다.")
         void setOnlyDisabledReservation() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
@@ -754,11 +754,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("트레이너가 직접 예약 성공")
         void reserveSessionWithTrainer() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
@@ -802,11 +802,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("멤버가 직접 예약 성공")
         void reserveSessionWithMember() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getMemberDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
@@ -844,11 +844,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("멤버가 직접 예약 성공 - 우선 예약 포함 2개 예약")
         void reserveSessionWithMemberAndPriority() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getMemberDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             LocalDateTime requestDate1 = LocalDateTime.now().plusHours(3);
             LocalDateTime requestDate2 = LocalDateTime.now().plusHours(1);
@@ -888,11 +888,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("직접 예약 실패 - trainerID 부재")
         void reserveSessionNoTrainerId() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
@@ -921,11 +921,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("직접 예약 실패 - memberID 부재")
         void reserveSessionNoMemberId() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
@@ -954,11 +954,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("직접 예약 실패 - dates 부재")
         void reserveSessionNoDate() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
                     .trainerId(1L)
@@ -985,11 +985,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         @DisplayName("직접 예약 실패 - name 부재")
         void reserveSessionNoName() {
             // given
-            PersonalDetail personalDetails = personalDetailRepository.getTrainerDetail(1L)
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetails.getPersonalDetailId());
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 

@@ -11,6 +11,7 @@ import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationRequestDto;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationResponseDto;
+import spring.fitlinkbe.support.aop.RoleCheck;
 import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
 
@@ -20,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RoleCheck(allowedRoles = {"TRAINER", "MEMBER"})
 @RequestMapping("/v1/reservations")
 @Slf4j
 public class ReservationController {
@@ -66,7 +68,7 @@ public class ReservationController {
      * @param reservationDate reservationDate 정보
      * @return ApiResultResponse 예약 상세 대기 멤버 정보를 반환한다.
      */
-
+    @RoleCheck(allowedRoles = {"TRAINER"})
     @GetMapping("/waiting-members/{reservationDate}")
     public ApiResultResponse<List<ReservationResponseDto.GetWaitingMember>> getWaitingMembers(@PathVariable("reservationDate")
                                                                                               @NotNull(message = "예약 날짜는 필수입니다.")
@@ -88,6 +90,7 @@ public class ReservationController {
      * @param request 예약 불가 설정할 date 정보
      * @return ApiResultResponse 예약 불가 설정된 reservationId 정보를 반환한다.
      */
+    @RoleCheck(allowedRoles = {"TRAINER"})
     @PostMapping("/availability/disable")
     public ApiResultResponse<ReservationResponseDto.Success> setDisabledTime(@RequestBody @Valid
                                                                              ReservationRequestDto.SetDisabledTime
