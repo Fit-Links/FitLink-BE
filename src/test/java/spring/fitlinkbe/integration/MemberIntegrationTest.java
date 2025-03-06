@@ -470,7 +470,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
     @Nested
     @DisplayName("회원 PT 희망 시간 수정 API 테스트")
     public class MemberPtTimeUpdateTest {
-        private static final String MEMBER_PT_TIME_UPDATE_API = "/v1/members/workout-schedule";
+        private static final String MEMBER_PT_TIME_UPDATE_API = "/v1/members/me/workout-schedule";
 
         @Test
         @DisplayName("회원 PT 희망 시간 수정 성공 - PT 희망 시간이 없을 때")
