@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import spring.fitlinkbe.application.auth.AuthFacade;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
@@ -19,7 +20,7 @@ import spring.fitlinkbe.support.security.SecurityUser;
 
 @RestController
 @RequiredArgsConstructor
-@RoleCheck(allowedRoles = {"TRAINER", "MEMBER"})
+@RoleCheck(allowedRoles = {UserRole.TRAINER, UserRole.MEMBER})
 @RequestMapping("/v1/auth")
 public class AuthController {
 

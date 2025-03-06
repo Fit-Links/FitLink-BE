@@ -11,6 +11,7 @@ import spring.fitlinkbe.application.member.MemberFacade;
 import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
 import spring.fitlinkbe.application.member.criteria.MemberSessionResult;
 import spring.fitlinkbe.application.member.criteria.WorkoutScheduleResult;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.reservation.Session;
@@ -29,7 +30,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RoleCheck(allowedRoles = {"MEMBER"})
+@RoleCheck(allowedRoles = {UserRole.MEMBER})
 @RequestMapping("/v1/members")
 public class MemberController {
 

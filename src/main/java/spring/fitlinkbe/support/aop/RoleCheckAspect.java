@@ -7,6 +7,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.support.security.SecurityUser;
 
 import javax.security.sasl.AuthenticationException;
@@ -28,10 +29,10 @@ public class RoleCheckAspect {
         SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
 
         // 유저 역할(Role) 가져오기
-        String userRole = securityUser.getUserRole().name();
+        UserRole userRole = securityUser.getUserRole();
 
         // 요청된 API에서 허용하는 역할 목록
-        List<String> allowedRoles = List.of(roleCheck.allowedRoles());
+        List<UserRole> allowedRoles = List.of(roleCheck.allowedRoles());
 
         if (!allowedRoles.contains(userRole)) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
