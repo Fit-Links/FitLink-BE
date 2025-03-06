@@ -2,16 +2,23 @@ package spring.fitlinkbe.interfaces.controller.member;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.member.MemberFacade;
 import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
+import spring.fitlinkbe.application.member.criteria.MemberSessionResult;
 import spring.fitlinkbe.application.member.criteria.WorkoutScheduleResult;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
+import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
+import spring.fitlinkbe.interfaces.controller.common.dto.CustomPageResponse;
 import spring.fitlinkbe.interfaces.controller.member.dto.MemberDto;
 import spring.fitlinkbe.interfaces.controller.member.dto.MemberInfoDto;
+import spring.fitlinkbe.interfaces.controller.member.dto.MemberSessionDto;
 import spring.fitlinkbe.interfaces.controller.member.dto.WorkoutScheduleDto;
 import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
@@ -106,6 +113,17 @@ public class MemberController {
         return ApiResultResponse.ok(result.stream()
                 .map(WorkoutScheduleDto.Response::from)
                 .toList());
+    }
+
+    @GetMapping("/me/sessions")
+    public ApiResultResponse<CustomPageResponse<MemberSessionDto.SessionResponse>> getSessions(
+            @Login SecurityUser user,
+            @PageableDefault(size = 5) Pageable pageRequest,
+            @RequestParam(required = false) Session.Status status
+    ) {
+        Page<MemberSessionResult.SessionResponse> result = memberFacade.getSessions(user.getMemberId(), status, pageRequest);
+
+        return ApiResultResponse.ok(CustomPageResponse.of(result, MemberSessionDto.SessionResponse::from));
     }
 
     @InitBinder

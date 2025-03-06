@@ -1,9 +1,12 @@
 package spring.fitlinkbe.application.member;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
+import spring.fitlinkbe.application.member.criteria.MemberSessionResult;
 import spring.fitlinkbe.application.member.criteria.WorkoutScheduleCriteria;
 import spring.fitlinkbe.application.member.criteria.WorkoutScheduleResult;
 import spring.fitlinkbe.domain.common.exception.CustomException;
@@ -15,6 +18,8 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.notification.NotificationService;
+import spring.fitlinkbe.domain.reservation.ReservationService;
+import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
 
@@ -29,6 +34,7 @@ public class MemberFacade {
     private final MemberService memberService;
     private final TrainerService trainerService;
     private final NotificationService notificationService;
+    private final ReservationService reservationService;
 
     @Transactional
     public void connectTrainer(Long memberId, String trainerCode) {
@@ -140,5 +146,12 @@ public class MemberFacade {
                 .toList();
         memberService.deleteAllWorkoutSchedules(deletedWorkoutSchedules);
         workoutSchedules.removeAll(deletedWorkoutSchedules);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MemberSessionResult.SessionResponse> getSessions(Long memberId, Session.Status status, Pageable pageRequest) {
+        Page<Session> sessions = reservationService.getSessions(memberId, status, pageRequest);
+
+        return sessions.map(MemberSessionResult.SessionResponse::from);
     }
 }

@@ -148,16 +148,16 @@ class ReservationServiceTest {
         void getSession() {
             //given
             Session session = Session.builder()
-                    .reservationId(1L)
+                    .reservation(Reservation.builder().reservationId(1L).build())
                     .sessionId(1L)
                     .build();
 
-            when(reservationRepository.getSession(session.getReservationId()))
+            when(reservationRepository.getSession(session.getReservation().getReservationId()))
                     .thenReturn(Optional.of(session));
 
             //when
             Session result = reservationService.getSession(
-                    RESERVATION_APPROVED, session.getReservationId());
+                    RESERVATION_APPROVED, session.getReservation().getReservationId());
 
             //then
             assertThat(result.getSessionId()).isEqualTo(1L);

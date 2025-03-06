@@ -124,4 +124,10 @@ public class MemberService {
         workoutScheduleRepository.deleteAllByIds(deletedWorkoutSchedules.stream()
                 .map(WorkoutSchedule::getWorkoutScheduleId).toList());
     }
+
+    public void checkMemberExists(Long memberId) {
+        if (!memberRepository.exists(memberId)) {
+            throw new CustomException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+    }
 }

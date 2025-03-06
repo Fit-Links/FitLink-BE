@@ -3,6 +3,8 @@ package spring.fitlinkbe.domain.reservation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.enums.UserRole;
@@ -29,6 +31,7 @@ import static spring.fitlinkbe.domain.reservation.Reservation.getEndDate;
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final SessionRepository sessionRepository;
 
     @Transactional(readOnly = true)
     public List<Reservation> getReservations() {
@@ -80,6 +83,10 @@ public class ReservationService {
                 "세션 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(reservationId)));
     }
 
+    public Page<Session> getSessions(Long memberId, Session.Status status, Pageable pageRequest) {
+        return sessionRepository.getSessions(memberId, status, pageRequest);
+    }
+
     @Transactional
     public void cancelReservations(List<Reservation> reservations, String message) {
         // 예약 정보 취소
@@ -123,7 +130,7 @@ public class ReservationService {
     public Session createSession(Reservation savedReservation) {
 
         Session session = Session.builder()
-                .reservationId(savedReservation.getReservationId())
+                .reservation(savedReservation)
                 .status(Session.Status.SESSION_WAITING)
                 .build();
 
