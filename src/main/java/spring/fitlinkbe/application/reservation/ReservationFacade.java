@@ -11,6 +11,7 @@ import spring.fitlinkbe.domain.notification.NotificationService;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.reservation.Session;
+import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
 import spring.fitlinkbe.support.security.SecurityUser;
@@ -21,7 +22,7 @@ import java.util.List;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
-import static spring.fitlinkbe.domain.notification.Notification.Reason;
+import static spring.fitlinkbe.domain.notification.Notification.Reason.RESERVATION_REFUSE;
 
 @Component
 @RequiredArgsConstructor
@@ -36,7 +37,7 @@ public class ReservationFacade {
     public ReservationResult.Reservations getReservations(LocalDate date, SecurityUser user) {
 
         return ReservationResult.Reservations.from(reservationService
-                .getReservations(date, user.getUserRole(), user.getUserId()));
+                .getReservations(ReservationCommand.GetReservations.of(date, user.getUserRole(), user.getUserId())));
     }
 
     @Transactional(readOnly = true)
@@ -58,20 +59,8 @@ public class ReservationFacade {
         String cancelMessage = "예약 불가 설정";
         //1. 모든 예약 조회
         List<Reservation> reservations = reservationService.getReservations();
-        //2. 예약 불가능한 시간대나 현시간보다 뒤에 예약이 있나 확인
-        List<Reservation> duplicatedReservations = reservations.stream()
-                .filter(Reservation::isReservationAfterToday)
-                .map(reservation -> reservation.checkStatus() ? reservation : null)
-                .toList();
-        //2-1. 만약 그러한 예약들이 있다면 모두 취소 시킴
-        if (!duplicatedReservations.isEmpty()) {
-            reservationService.cancelReservations(duplicatedReservations, cancelMessage);
-            //2-2. 예약 취소한 멤버들에게 예약 취소됐다는 메시지 푸쉬
-            duplicatedReservations.forEach(reservation -> {
-                PersonalDetail memberDetail = memberService.getMemberDetail(reservation.getMember().getMemberId());
-                notificationService.sendCancelReservationNotification(reservation.getReservationId(), memberDetail, Reason.DAY_OFF);
-            });
-        }
+        //2. 이미 존재하는 예약 취소 절차 진행
+        cancelExistingReservations(reservations, cancelMessage);
         //3. 트레이너 정보 조회
         Trainer trainerInfo = trainerService.getTrainerInfo(user.getTrainerId());
         //4. 예약 불가능한 날짜 설정 및 결과 리턴
@@ -101,14 +90,13 @@ public class ReservationFacade {
         return savedReservation;
     }
 
-    @Transactional
-    public List<ReservationResult.ReservationWaitingMember> getWaitingMembers(LocalDateTime reservationDate,
-                                                                              SecurityUser user) {
+    @Transactional(readOnly = true)
+    public List<ReservationResult.ReservationWaitingMember> getWaitingMembers(LocalDateTime reservationDate, SecurityUser user) {
         // 예약 조회
         List<Reservation> reservations = reservationService.getReservationsWithWaitingStatus(user.getTrainerId());
         // 예약 날짜 일치하는거 필터
         List<Reservation> filteredList = reservations.stream()
-                .filter((r) -> r.isReservationDateSame(r.getReservationDates(), reservationDate))
+                .filter((r) -> r.isReservationDateSame(List.of(reservationDate)))
                 .filter(Reservation::isWaitingStatus) //만약 이 시간대 예약 대기 상태가 아닌게 발견되면 예외 던짐
                 .toList();
         // 예약들 마다 멤버 디테일 정보 조회 및 조합해서 리턴
@@ -116,5 +104,55 @@ public class ReservationFacade {
                 .map(reservation -> ReservationResult.ReservationWaitingMember.from(reservation,
                         memberService.getMemberDetail(reservation.getMember().getMemberId())))
                 .toList();
+    }
+
+    @Transactional
+    public ReservationResult.Reservations fixedReserveSession(ReservationCriteria.FixedReserveSession criteria,
+                                                              SecurityUser user) {
+        // 해당 시간에 예약이 있는지 조회
+        List<Reservation> reservations = reservationService
+                .getReservationThatTimes(criteria.toCommand(user));
+        // 만약 예약이 있다면 취소 진행
+        cancelExistingReservations(reservations, "트레이너의 고정 예약으로 인해 예약이 취소되었습니다.");
+        // 고정 예약 진행
+        List<Reservation> reservationDomains = criteria.toDomain(memberService.getSessionInfo(user.getTrainerId(),
+                criteria.memberId()), user);
+        List<Reservation> fixedReservation = reservationService.fixedReserveSessions(reservationDomains);
+        // 고정 예약 완료 정보 리턴
+        return ReservationResult.Reservations.from(fixedReservation);
+    }
+
+    @Transactional
+    public void checkFixedReserveSession() {
+        // 고정 예약 상태의 예약 조회
+        List<Reservation> fixedReservations = reservationService.getFixedReservations();
+
+        // 일주일 뒤에 시간으로 예약 도메인 생성
+        List<Reservation> newReservations = fixedReservations.stream()
+                .map(Reservation::toFixedDomain)
+                .toList();
+        // 일주일 뒤에 시간에 예약이 있다면(예약 대기 포함) 취소 절차 진행
+        newReservations.forEach((r) -> {
+            List<Reservation> getThatTimeReservations = reservationService.getReservationThatTimes(
+                    ReservationCommand.GetReservationThatTimes.builder()
+                            .trainerId(r.getTrainer().getTrainerId())
+                            .date(r.getReservationDates())
+                            .build());
+
+            cancelExistingReservations(getThatTimeReservations, "트레이너의 고정 예약으로 인해 예약이 취소되었습니다.");
+        });
+        // 고정 예약 진행
+        reservationService.fixedReserveSessions(newReservations);
+    }
+
+    private void cancelExistingReservations(List<Reservation> reservations, String cancelMsg) {
+        if (!reservations.isEmpty()) {
+            reservations.forEach(Reservation::checkPossibleReserveStatus);
+            // 만약 예약이 있다면, 그 예약들 모두 강제로 취소
+            reservationService.cancelReservations(reservations, cancelMsg);
+            // 취소했다면, 취소됐다는 알람 전송
+            reservations.forEach(r -> notificationService.sendCancelReservationNotification(r.getReservationId(),
+                    memberService.getMemberDetail(r.getMember().getMemberId()), RESERVATION_REFUSE));
+        }
     }
 }
