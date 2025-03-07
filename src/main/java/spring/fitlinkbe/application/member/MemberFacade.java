@@ -20,6 +20,7 @@ import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.notification.NotificationService;
 import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.reservation.Session;
+import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
 
@@ -150,7 +151,7 @@ public class MemberFacade {
 
     @Transactional(readOnly = true)
     public Page<MemberSessionResult.SessionResponse> getSessions(Long memberId, Session.Status status, Pageable pageRequest) {
-        Page<Session> sessions = reservationService.getSessions(memberId, status, pageRequest);
+        Page<Session> sessions = reservationService.getSessions(ReservationCommand.GetSessions.of(memberId, status, pageRequest));
 
         return sessions.map(MemberSessionResult.SessionResponse::from);
     }
