@@ -120,4 +120,25 @@ public class ReservationController {
         return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
 
     }
+
+    /**
+     * 고정 예약
+     *
+     * @param request memberId, name, dates 정보
+     * @return ApiResultResponse 고정 예약이 된 reservationId 목록 정보를 반환한다.
+     */
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
+    @PostMapping("/fixed-reservations")
+    public ApiResultResponse<List<ReservationResponseDto.Success>> fixedReserveSession(@RequestBody @Valid
+                                                                                       ReservationRequestDto.FixedReserveSession
+                                                                                               request,
+                                                                                       @Login SecurityUser user) {
+
+        ReservationResult.Reservations result = reservationFacade.fixedReserveSession(request.toCriteria(), user);
+
+        return ApiResultResponse.ok(result.reservations().stream()
+                .map(ReservationResponseDto.Success::of)
+                .toList());
+
+    }
 }
