@@ -3,6 +3,7 @@ package spring.fitlinkbe.infra.reservation;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.springframework.data.annotation.CreatedDate;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
 import spring.fitlinkbe.infra.common.sessioninfo.SessionInfoEntity;
@@ -55,16 +56,20 @@ public class ReservationEntity extends BaseTimeEntity {
 
     private boolean isDayOff;
 
-    public static ReservationEntity from(Reservation reservation) {
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    public static ReservationEntity from(Reservation reservation, EntityManager em) {
 
         return ReservationEntity.builder()
                 .reservationId(reservation.getReservationId() != null
                         ? reservation.getReservationId() : null)
-                .trainer(TrainerEntity.from(reservation.getTrainer()))
+                .trainer(reservation.getTrainer() != null
+                        ? em.getReference(TrainerEntity.class, reservation.getTrainer().getTrainerId()) : null)
                 .member(reservation.isReservationNotAllowed() ? null
-                        : MemberEntity.from(reservation.getMember()))
-                .sessionInfo(reservation.isReservationNotAllowed() ? null
-                        : SessionInfoEntity.from(reservation.getSessionInfo()))
+                        : em.getReference(MemberEntity.class, reservation.getMember().getMemberId()))
+                .sessionInfo((reservation.isReservationNotAllowed() || reservation.getSessionInfo() == null) ? null
+                        : em.getReference(SessionInfoEntity.class, reservation.getSessionInfo().getSessionInfoId()))
                 .name(reservation.getName())
                 .reservationDates(reservation.getReservationDates())
                 .changeDate(reservation.getChangeDate())
@@ -72,6 +77,7 @@ public class ReservationEntity extends BaseTimeEntity {
                 .status(reservation.getStatus())
                 .cancelReason(reservation.getCancelReason())
                 .isDayOff(reservation.isDayOff())
+                .createdAt(reservation.getCreatedAt())
                 .build();
     }
 
