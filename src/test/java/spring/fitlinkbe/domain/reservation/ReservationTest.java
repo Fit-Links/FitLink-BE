@@ -47,38 +47,6 @@ class ReservationTest {
     }
 
     @Test
-    @DisplayName("예약 불가능한 시간대로 설정 가능한 상태인지 확인하고, 맞다면 true를 반환한다.")
-    void checkStatus() {
-        //given
-        Reservation reservation = builder()
-                .reservationId(1L)
-                .status(RESERVATION_WAITING)
-                .build();
-
-        //when
-        boolean result = reservation.checkStatus();
-
-        //then
-        assertThat(result).isTrue();
-    }
-
-    @Test
-    @DisplayName("예약 불가능한 시간대로 설정 가능한 상태인지 확인하고, 아니라면 false를 반환한다.")
-    void checkStatusWithoutStatus() {
-        //given
-        Reservation reservation = builder()
-                .reservationId(1L)
-                .status(Status.DISABLED_TIME_RESERVATION)
-                .build();
-
-        //when
-        boolean result = reservation.checkStatus();
-
-        //then
-        assertThat(result).isFalse();
-    }
-
-    @Test
     @DisplayName("예약을 취소합니다.")
     void cancelReservation() {
         //given

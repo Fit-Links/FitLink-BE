@@ -4,7 +4,6 @@ package spring.fitlinkbe.domain.reservation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.enums.UserRole;
@@ -13,7 +12,6 @@ import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +22,7 @@ import static spring.fitlinkbe.domain.reservation.Reservation.Status;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.DISABLED_TIME_RESERVATION;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_WAITING;
 import static spring.fitlinkbe.domain.reservation.Reservation.getEndDate;
+import static spring.fitlinkbe.domain.reservation.Session.Status.SESSION_WAITING;
 
 @Service
 @RequiredArgsConstructor
@@ -36,16 +35,30 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public List<Reservation> getReservations() {
 
-        return reservationRepository.getReservations();
+        return reservationRepository.getReservations()
+                .stream().filter(Reservation::isAlreadyCancel)
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<Reservation> getReservations(LocalDate date, UserRole role, Long userId) {
+    public List<Reservation> getReservationThatTimes(ReservationCommand.GetReservationThatTimes
+                                                             command) {
+        List<Reservation> reservations = reservationRepository.getReservations(UserRole.TRAINER, command.trainerId());
 
-        LocalDateTime startDate = date.atStartOfDay();
-        LocalDateTime endDate = getEndDate(startDate, role);
+        // 해당 시간의 예약만 리턴
+        return reservations.stream()
+                .filter((reservation) -> reservation.isReservationDateSame(command.date()))
+                .filter(Reservation::isAlreadyCancel) // 이미 취소된 예약인지 확인
+                .toList();
+    }
 
-        List<Reservation> reservations = reservationRepository.getReservations(role, userId);
+    @Transactional(readOnly = true)
+    public List<Reservation> getReservations(ReservationCommand.GetReservations command) {
+
+        LocalDateTime startDate = command.date().atStartOfDay();
+        LocalDateTime endDate = getEndDate(startDate, command.role());
+
+        List<Reservation> reservations = reservationRepository.getReservations(command.role(), command.userId());
 
         return reservations.stream()
                 .filter(reservation -> reservation.isReservationInRange(startDate, endDate))
@@ -83,8 +96,9 @@ public class ReservationService {
                 "세션 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(reservationId)));
     }
 
-    public Page<Session> getSessions(Long memberId, Session.Status status, Pageable pageRequest) {
-        return sessionRepository.getSessions(memberId, status, pageRequest);
+    @Transactional(readOnly = true)
+    public Page<Session> getSessions(ReservationCommand.GetSessions command) {
+        return sessionRepository.getSessions(command.memberId(), command.status(), command.pageRequest());
     }
 
     @Transactional
@@ -92,7 +106,7 @@ public class ReservationService {
         // 예약 정보 취소
         reservations.forEach(reservation -> reservation.cancel(message));
         // 취소한 예약 정보 저장
-        reservationRepository.cancelReservations(reservations);
+        reservationRepository.saveReservations(reservations);
         // 세션 정보 찾기
         List<Session> sessions = reservations.stream()
                 .map(reservation -> reservationRepository.getSession(reservation.getReservationId()))
@@ -101,7 +115,7 @@ public class ReservationService {
         //세션 정보 취소
         sessions.forEach(session -> session.cancel(message));
         // 세션 취소 정보 저장
-        reservationRepository.cancelSessions(sessions);
+        reservationRepository.saveSessions(sessions);
     }
 
     @Transactional
@@ -119,6 +133,23 @@ public class ReservationService {
     }
 
     @Transactional
+    public List<Reservation> fixedReserveSessions(List<Reservation> reservations) {
+        // 고정 예약 진행
+        List<Reservation> savedReservations = reservationRepository.saveReservations(reservations);
+        // 세션 생성
+        List<Session> sessions = savedReservations.stream()
+                .map(reservation -> Session.builder()
+                        .reservation(reservation)
+                        .status(SESSION_WAITING)
+                        .build())
+                .toList();
+        // 세션 저장
+        reservationRepository.saveSessions(sessions);
+
+        return savedReservations;
+    }
+
+    @Transactional
     public Reservation reserveSession(Reservation reservation) {
         return reservationRepository.reserveSession(reservation)
                 .orElseThrow(() ->
@@ -131,7 +162,7 @@ public class ReservationService {
 
         Session session = Session.builder()
                 .reservation(savedReservation)
-                .status(Session.Status.SESSION_WAITING)
+                .status(SESSION_WAITING)
                 .build();
 
         return reservationRepository.createSession(session)
@@ -139,4 +170,8 @@ public class ReservationService {
     }
 
 
+    public List<Reservation> getFixedReservations() {
+        return reservationRepository.getFixedReservations();
+
+    }
 }

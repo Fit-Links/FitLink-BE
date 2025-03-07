@@ -7,13 +7,17 @@ import java.util.Optional;
 
 public interface ReservationRepository {
 
+    List<Reservation> getPlainReservations();
+
     List<Reservation> getReservations();
+
+    List<Reservation> getFixedReservations();
 
     List<Reservation> getReservationsWithWaitingStatus(Reservation.Status status, Long trainerId);
 
     List<Reservation> getReservations(UserRole role, Long userId);
 
-    List<Reservation> cancelReservations(List<Reservation> canceledReservations);
+    List<Reservation> saveReservations(List<Reservation> canceledReservations);
 
     Optional<Reservation> getReservation(Long reservationId);
 
@@ -23,6 +27,7 @@ public interface ReservationRepository {
 
     Optional<Session> createSession(Session session);
 
-    List<Session> cancelSessions(List<Session> sessions);
+    List<Session> saveSessions(List<Session> sessions);
+
 
 }
