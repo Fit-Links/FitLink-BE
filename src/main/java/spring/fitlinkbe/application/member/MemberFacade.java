@@ -5,10 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
-import spring.fitlinkbe.application.member.criteria.MemberSessionResult;
-import spring.fitlinkbe.application.member.criteria.WorkoutScheduleCriteria;
-import spring.fitlinkbe.application.member.criteria.WorkoutScheduleResult;
+import spring.fitlinkbe.application.member.criteria.*;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
@@ -158,10 +155,7 @@ public class MemberFacade {
 
     @Transactional(readOnly = true)
     public Page<MemberSessionResult.SessionResponse> getSessions(Long trainerId, Long memberId, Session.Status status, Pageable pageRequest) {
-        Optional<ConnectingInfo> connectingInfo = memberService.findConnectingInfo(trainerId, memberId);
-        if (connectingInfo.isEmpty() || !connectingInfo.get().isConnected()) {
-            throw new CustomException(ErrorCode.MEMBER_NOT_CONNECTED_TRAINER, "트레이너가 멤버와 연결되어 있지 않습니다.");
-        }
+        memberService.checkConnected(trainerId, memberId);
 
         ReservationCommand.GetSessions command = ReservationCommand.GetSessions.builder()
                 .memberId(memberId)
@@ -170,5 +164,17 @@ public class MemberFacade {
                 .build();
         Page<Session> sessions = reservationService.getSessions(command);
         return sessions.map(MemberSessionResult.SessionResponse::from);
+    }
+
+    @Transactional
+    public SessionInfoCriteria.Response updateSessionInfo(Long trainerId, Long memberId,
+                                  Long sessionInfoId, SessionInfoCriteria.UpdateRequest request) {
+        memberService.checkConnected(trainerId, memberId);
+        SessionInfo sessionInfo = memberService.getSessionInfo(sessionInfoId);
+
+        sessionInfo.update(request.remainingCount(), request.totalCount());
+        memberService.saveSessionInfo(sessionInfo);
+
+        return SessionInfoCriteria.Response.from(sessionInfo);
     }
 }

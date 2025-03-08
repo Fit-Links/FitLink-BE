@@ -116,6 +116,11 @@ public class MemberService {
                 .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND));
     }
 
+    public SessionInfo getSessionInfo(Long sessionInfoId) {
+        return sessionInfoRepository.getSessionInfo(sessionInfoId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND));
+    }
+
     public void savePersonalDetail(PersonalDetail personalDetail) {
         personalDetailRepository.savePersonalDetail(personalDetail);
     }
@@ -132,13 +137,18 @@ public class MemberService {
     }
 
     /**
-     * 해당 트레이너와 회원의 연결 정보 조회
+     * 멤버와 트레이너가 연결되어 있는지 확인
      *
-     * @param trainerId
-     * @param memberId
-     * @return
+     * @throws CustomException 연결되어 있지 않을 경우
      */
-    public Optional<ConnectingInfo> findConnectingInfo(Long trainerId, Long memberId) {
-        return connectingInfoRepository.findConnectingInfo(trainerId, memberId);
+    public void checkConnected(Long trainerId, Long memberId) {
+        Optional<ConnectingInfo> connectingInfo = connectingInfoRepository.findConnectingInfo(trainerId, memberId);
+        if (connectingInfo.isEmpty() || !connectingInfo.get().isConnected()) {
+            throw new CustomException(ErrorCode.MEMBER_NOT_CONNECTED_TRAINER, "트레이너가 멤버와 연결되어 있지 않습니다.");
+        }
+    }
+
+    public void saveSessionInfo(SessionInfo sessionInfo) {
+        sessionInfoRepository.saveSessionInfo(sessionInfo);
     }
 }
