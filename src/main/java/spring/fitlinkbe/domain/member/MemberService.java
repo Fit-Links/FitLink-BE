@@ -130,4 +130,15 @@ public class MemberService {
             throw new CustomException(ErrorCode.MEMBER_NOT_FOUND);
         }
     }
+
+    /**
+     * 해당 트레이너와 회원의 연결 정보 조회
+     *
+     * @param trainerId
+     * @param memberId
+     * @return
+     */
+    public Optional<ConnectingInfo> findConnectingInfo(Long trainerId, Long memberId) {
+        return connectingInfoRepository.findConnectingInfo(trainerId, memberId);
+    }
 }

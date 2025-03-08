@@ -115,7 +115,19 @@ public class MemberController {
             @PageableDefault(size = 5) Pageable pageRequest,
             @RequestParam(required = false) Session.Status status
     ) {
-        Page<MemberSessionResult.SessionResponse> result = memberFacade.getSessions(user.getMemberId(), status, pageRequest);
+        Page<MemberSessionResult.SessionResponse> result = memberFacade.getMySessions(user.getMemberId(), status, pageRequest);
+
+        return ApiResultResponse.ok(CustomPageResponse.of(result, MemberSessionDto.SessionResponse::from));
+    }
+
+    @GetMapping("{memberId}/sessions")
+    public ApiResultResponse<CustomPageResponse<MemberSessionDto.SessionResponse>> getSessions(
+            @Login SecurityUser user,
+            @PathVariable Long memberId,
+            @PageableDefault(size = 5) Pageable pageRequest,
+            @RequestParam(required = false) Session.Status status
+    ) {
+        Page<MemberSessionResult.SessionResponse> result = memberFacade.getSessions(user.getTrainerId(), memberId, status, pageRequest);
 
         return ApiResultResponse.ok(CustomPageResponse.of(result, MemberSessionDto.SessionResponse::from));
     }

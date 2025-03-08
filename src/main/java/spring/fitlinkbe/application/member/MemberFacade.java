@@ -145,9 +145,30 @@ public class MemberFacade {
     }
 
     @Transactional(readOnly = true)
-    public Page<MemberSessionResult.SessionResponse> getSessions(Long memberId, Session.Status status, Pageable pageRequest) {
-        Page<Session> sessions = reservationService.getSessions(ReservationCommand.GetSessions.of(memberId, status, pageRequest));
+    public Page<MemberSessionResult.SessionResponse> getMySessions(Long memberId, Session.Status status, Pageable pageRequest) {
+        ReservationCommand.GetSessions command = ReservationCommand.GetSessions.builder()
+                .memberId(memberId)
+                .status(status)
+                .pageRequest(pageRequest)
+                .build();
+        Page<Session> sessions = reservationService.getSessions(command);
 
+        return sessions.map(MemberSessionResult.SessionResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MemberSessionResult.SessionResponse> getSessions(Long trainerId, Long memberId, Session.Status status, Pageable pageRequest) {
+        Optional<ConnectingInfo> connectingInfo = memberService.findConnectingInfo(trainerId, memberId);
+        if (connectingInfo.isEmpty() || !connectingInfo.get().isConnected()) {
+            throw new CustomException(ErrorCode.MEMBER_NOT_CONNECTED_TRAINER, "트레이너가 멤버와 연결되어 있지 않습니다.");
+        }
+
+        ReservationCommand.GetSessions command = ReservationCommand.GetSessions.builder()
+                .memberId(memberId)
+                .status(status)
+                .pageRequest(pageRequest)
+                .build();
+        Page<Session> sessions = reservationService.getSessions(command);
         return sessions.map(MemberSessionResult.SessionResponse::from);
     }
 }
