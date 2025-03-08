@@ -11,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
+import spring.fitlinkbe.domain.common.SessionInfoRepository;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
@@ -24,10 +25,7 @@ import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.common.dto.CustomPageResponse;
-import spring.fitlinkbe.interfaces.controller.member.dto.MemberDto;
-import spring.fitlinkbe.interfaces.controller.member.dto.MemberInfoDto;
-import spring.fitlinkbe.interfaces.controller.member.dto.MemberSessionDto;
-import spring.fitlinkbe.interfaces.controller.member.dto.WorkoutScheduleDto;
+import spring.fitlinkbe.interfaces.controller.member.dto.*;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -44,6 +42,9 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     NotificationRepository notificationRepository;
+
+    @Autowired
+    SessionInfoRepository sessionInfoRepository;
 
     @Nested
     @DisplayName("멤버 트레이너 연결 요청 테스트")
@@ -988,6 +989,90 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.data()).isNull();
             });
         }
+    }
+
+    @Nested
+    @DisplayName("회원 PT 횟수 수정 테스트")
+    public class MemberSessionCountUpdateTest {
+        private static final String MEMBER_SESSION_COUNT_UPDATE_API = "/v1/members/{memberId}/session-info/{sessionInfoId}";
+
+        @Test
+        @DisplayName("회원 PT 횟수 수정 성공")
+        public void memberSessionCountUpdateSuccess() throws Exception {
+            // given
+            // 회원, 트레이너 정보가 있을 때
+            Member member = testDataHandler.createMember();
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+            testDataHandler.connectMemberAndTrainer(member, trainer);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+            SessionInfo sessionInfo = testDataHandler.createSessionInfo(member, trainer);
+
+            // when
+            // 트레이너가 회원 PT 횟수 수정 요청을 보낸다면
+            int remainingCount = 5;
+            int totalCount = 5;
+            String url = MEMBER_SESSION_COUNT_UPDATE_API.replace("{memberId}", member.getMemberId().toString())
+                    .replace("{sessionInfoId}", sessionInfo.getSessionInfoId().toString());
+            SessionInfoDto.UpdateRequest request = new SessionInfoDto.UpdateRequest(remainingCount, totalCount);
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = patch(url, requestBody, token);
+
+            // then
+            // PT 횟수가 수정된다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<SessionInfoDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                SessionInfoDto.Response data = response.data();
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(200);
+
+                softly.assertThat(data.sessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
+                softly.assertThat(data.remainingCount()).isEqualTo(remainingCount);
+                softly.assertThat(data.totalCount()).isEqualTo(totalCount);
+
+                SessionInfo updatedSessionInfo = sessionInfoRepository.getSessionInfo(sessionInfo.getSessionInfoId()).get();
+                softly.assertThat(updatedSessionInfo.getRemainingCount()).isEqualTo(remainingCount);
+                softly.assertThat(updatedSessionInfo.getTotalCount()).isEqualTo(totalCount);
+            });
+        }
+
+        @Test
+        @DisplayName("회원 PT 횟수 수정 실패 - 트레이너가 회원과 연결이 안되어 있을 때")
+        public void memberSessionCountUpdateFailByNotConnected() throws Exception {
+            // given
+            // 회원, 트레이너 정보가 있을 때
+            Member member = testDataHandler.createMember();
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+            SessionInfo sessionInfo = testDataHandler.createSessionInfo(member, trainer);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 회원과 연결이 안되어 있는 회원 PT 횟수 수정 요청을 보낸다면
+            int remainingCount = 5;
+            int totalCount = 5;
+            String url = MEMBER_SESSION_COUNT_UPDATE_API.replace("{memberId}", member.getMemberId().toString())
+                    .replace("{sessionInfoId}", sessionInfo.getSessionInfoId().toString());
+            SessionInfoDto.UpdateRequest request = new SessionInfoDto.UpdateRequest(remainingCount, totalCount);
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = patch(url, requestBody, token);
+
+            // then
+            // 연결 정보가 없다는 응답을 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.data()).isNull();
+            });
+        }
+
     }
 
     private void createSessions(Member member, Trainer trainer) {
