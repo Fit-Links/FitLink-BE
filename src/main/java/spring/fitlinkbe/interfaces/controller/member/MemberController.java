@@ -28,7 +28,6 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RoleCheck(allowedRoles = {UserRole.MEMBER})
 @RequestMapping("/v1/members")
 public class MemberController {
 
@@ -36,6 +35,7 @@ public class MemberController {
     private final CollectionValidator validator;
 
     @PostMapping("/connect")
+    @RoleCheck(allowedRoles = {UserRole.MEMBER})
     public ApiResultResponse<Object> connectTrainer(
             @Login SecurityUser user,
             @RequestBody @Valid MemberDto.MemberConnectRequest requestBody) {
@@ -45,6 +45,7 @@ public class MemberController {
     }
 
     @PostMapping("/disconnect")
+    @RoleCheck(allowedRoles = {UserRole.MEMBER})
     public ApiResultResponse<Object> disconnectTrainer(@Login SecurityUser user) {
         memberFacade.disconnectTrainer(user.getMemberId());
 
@@ -52,6 +53,7 @@ public class MemberController {
     }
 
     @GetMapping("/me")
+    @RoleCheck(allowedRoles = {UserRole.MEMBER})
     public ApiResultResponse<MemberInfoDto.Response> getMyInfo(@Login SecurityUser user) {
         MemberInfoResult.Response result = memberFacade.getMyInfo(user.getMemberId());
 
@@ -59,6 +61,7 @@ public class MemberController {
     }
 
     @PatchMapping("/me")
+    @RoleCheck(allowedRoles = {UserRole.MEMBER})
     public ApiResultResponse<MemberInfoDto.MemberUpdateResponse> updateMyInfo(
             @Login SecurityUser user,
             @RequestBody @Valid MemberInfoDto.MemberUpdateRequest requestBody) {
@@ -69,6 +72,7 @@ public class MemberController {
     }
 
     @GetMapping("/me/detail")
+    @RoleCheck(allowedRoles = {UserRole.MEMBER})
     public ApiResultResponse<MemberInfoDto.DetailResponse> getMyDetail(@Login SecurityUser user) {
         MemberInfoResult.DetailResponse result = memberFacade.getMyDetail(user.getMemberId());
 
@@ -76,6 +80,7 @@ public class MemberController {
     }
 
     @PutMapping("/me/workout-schedule")
+    @RoleCheck(allowedRoles = {UserRole.MEMBER})
     public ApiResultResponse<Object> updateWorkoutSchedule(
             @Login SecurityUser user,
             @RequestBody @Valid List<WorkoutScheduleDto.Request> requestBody
@@ -108,6 +113,7 @@ public class MemberController {
     }
 
     @GetMapping("/me/sessions")
+    @RoleCheck(allowedRoles = {UserRole.MEMBER})
     public ApiResultResponse<CustomPageResponse<MemberSessionDto.SessionResponse>> getSessions(
             @Login SecurityUser user,
             @PageableDefault(size = 5) Pageable pageRequest,
@@ -119,6 +125,7 @@ public class MemberController {
     }
 
     @GetMapping("{memberId}/sessions")
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
     public ApiResultResponse<CustomPageResponse<MemberSessionDto.SessionResponse>> getSessions(
             @Login SecurityUser user,
             @PathVariable Long memberId,
@@ -131,6 +138,7 @@ public class MemberController {
     }
 
     @PatchMapping("{memberId}/session-info/{sessionInfoId}")
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
     public ApiResultResponse<SessionInfoDto.Response> updateSessionInfo(
             @Login SecurityUser user,
             @PathVariable Long memberId,

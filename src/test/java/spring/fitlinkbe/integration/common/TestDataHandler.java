@@ -182,7 +182,8 @@ public class TestDataHandler {
 
     public String createTokenFromTrainer(Trainer trainer) {
         PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(trainer.getTrainerId()).orElseThrow();
-        return authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+        return authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                personalDetail.getUserRole());
     }
 
     public PersonalDetail getTrainerPersonalDetail(Long trainerId) {
