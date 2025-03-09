@@ -4,10 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
 import java.time.LocalDate;
+
+import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
+import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
 
 @Builder(toBuilder = true)
 @Getter
@@ -75,6 +79,10 @@ public class PersonalDetail {
         if (phoneNumber != null) {
             this.phoneNumber = new PhoneNumber(phoneNumber);
         }
+    }
+
+    public UserRole getUserRole() {
+        return trainerId == null ? MEMBER : TRAINER;
     }
 
     public enum Gender {

@@ -13,12 +13,12 @@ public class ReservationResponseDto {
 
 
     @Builder(toBuilder = true)
-    public record Success(Long reservationId, Reservation.Status status) {
+    public record Success(Long reservationId, String status) {
         public static ReservationResponseDto.Success of(Reservation reservation) {
 
             return Success.builder()
                     .reservationId(reservation.getReservationId())
-                    .status(reservation.getStatus())
+                    .status(reservation.getStatus().getName())
                     .build();
         }
     }
@@ -26,7 +26,7 @@ public class ReservationResponseDto {
     @Builder(toBuilder = true)
     public record GetList(Long reservationId, Long sessionInfoId,
                           boolean isDayOff, DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates,
-                          Reservation.Status status, MemberInfo memberInfo) {
+                          String status, MemberInfo memberInfo) {
 
         public static ReservationResponseDto.GetList of(Reservation reservation) {
 
@@ -37,7 +37,7 @@ public class ReservationResponseDto {
                     .isDayOff(reservation.isDayOff())
                     .dayOfWeek(reservation.getDayOfWeek())
                     .reservationDates(reservation.getReservationDates())
-                    .status(reservation.getStatus())
+                    .status(reservation.getStatus().getName())
                     .memberInfo(reservation.isReservationNotAllowed() ? null :
                             new MemberInfo(reservation.getMember().getMemberId(), reservation.getName()))
                     .build();

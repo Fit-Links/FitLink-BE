@@ -36,8 +36,6 @@ public class NotificationEntity {
 
     private Boolean isSent;
 
-    private Boolean isRead;
-
     private Boolean isProcessed;
 
     private LocalDateTime sendDate;
@@ -52,7 +50,6 @@ public class NotificationEntity {
                 .name(notification.getName())
                 .content(notification.getContent())
                 .isSent(notification.getIsSent())
-                .isRead(notification.getIsRead())
                 .isProcessed(notification.getIsProcessed())
                 .sendDate(notification.getSendDate())
                 .build();
@@ -68,7 +65,6 @@ public class NotificationEntity {
                 .name(name)
                 .content(content)
                 .isSent(isSent)
-                .isRead(isRead)
                 .isProcessed(isProcessed)
                 .sendDate(sendDate)
                 .build();

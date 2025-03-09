@@ -128,12 +128,17 @@ public class TestDataHandler {
 
     public void settingUserInfo() {
 
-        Trainer trainer = Trainer.builder().trainerCode("1234").build();
+        Trainer trainer = Trainer.builder()
+                .trainerCode("1234")
+                .name("트레이너황")
+                .build();
 
         Trainer savedTrainer = trainerRepository.saveTrainer(trainer).orElseThrow();
 
         Member member1 = Member.builder()
                 .name("김민수")
+                .birthDate(LocalDate.of(1995, 1, 1))
+                .phoneNumber(new PhoneNumber("01012345678"))
                 .trainer(savedTrainer)
                 .build();
 
@@ -171,7 +176,8 @@ public class TestDataHandler {
 
     public String createTokenFromMember(Member member) {
         PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(member.getMemberId()).orElseThrow();
-        return authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId());
+        return authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                personalDetail.getUserRole());
     }
 
     public PersonalDetail getTrainerPersonalDetail(Long trainerId) {

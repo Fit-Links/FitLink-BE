@@ -19,7 +19,6 @@ public class Notification {
     private String name;
     private String content;
     private Boolean isSent;
-    private Boolean isRead;
     private Boolean isProcessed;
     private LocalDateTime sendDate;
 
@@ -35,7 +34,6 @@ public class Notification {
                 .name(NotificationType.CONNECT.getName())
                 .content(content)
                 .isSent(true)
-                .isRead(false)
                 .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
@@ -52,7 +50,6 @@ public class Notification {
                 .name(NotificationType.DISCONNECT.getName())
                 .content(content)
                 .isSent(true)
-                .isRead(false)
                 .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
@@ -73,7 +70,6 @@ public class Notification {
                 .name(NotificationType.RESERVATION_CANCEL.getName())
                 .content(content)
                 .isSent(true)
-                .isRead(false)
                 .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
@@ -91,7 +87,6 @@ public class Notification {
                 .name(NotificationType.RESERVATION_APPROVE.name)
                 .content(content)
                 .isSent(true)
-                .isRead(false)
                 .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
@@ -109,13 +104,13 @@ public class Notification {
                 .name(NotificationType.RESERVATION_REQUESTED.name)
                 .content(content)
                 .isSent(true)
-                .isRead(false)
                 .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
     }
 
     @RequiredArgsConstructor
+    @Getter
     public enum ReferenceType {
         RESERVATION("예약"),
         SESSION("세션"),
@@ -153,7 +148,8 @@ public class Notification {
 
     @RequiredArgsConstructor
     public enum Reason {
-        DAY_OFF("연차");
+        DAY_OFF("연차"),
+        RESERVATION_REFUSE("예약 거절");
         private final String name;
     }
 }

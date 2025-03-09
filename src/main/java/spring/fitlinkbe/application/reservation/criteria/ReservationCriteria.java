@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
 
 public class ReservationCriteria {
 
@@ -36,9 +37,35 @@ public class ReservationCriteria {
                     .name(name)
                     .reservationDates(dates)
                     .dayOfWeek(dates.get(0).getDayOfWeek())
-                    .status(user.getUserRole() == MEMBER ? Reservation.Status.RESERVATION_WAITING
-                            : Reservation.Status.RESERVATION_APPROVED)
+                    .status(user.getUserRole() == MEMBER ? RESERVATION_WAITING
+                            : RESERVATION_APPROVED)
                     .build();
+        }
+    }
+
+    @Builder(toBuilder = true)
+    public record FixedReserveSession(List<LocalDateTime> reservationDates, Long memberId, String name) {
+
+        public ReservationCommand.GetReservationThatTimes toCommand(SecurityUser user) {
+
+            return ReservationCommand.GetReservationThatTimes.builder()
+                    .date(reservationDates)
+                    .trainerId(user.getTrainerId())
+                    .build();
+        }
+
+        public List<Reservation> toDomain(SessionInfo sessionInfo, SecurityUser user) {
+            return reservationDates.stream()
+                    .map((date) -> Reservation.builder()
+                            .member(Member.builder().memberId(memberId).build())
+                            .trainer(Trainer.builder().trainerId(user.getTrainerId()).build())
+                            .sessionInfo(sessionInfo)
+                            .name(name)
+                            .reservationDates(List.of(date))
+                            .dayOfWeek(date.getDayOfWeek())
+                            .status(FIXED_RESERVATION)
+                            .build())
+                    .toList();
         }
     }
 }

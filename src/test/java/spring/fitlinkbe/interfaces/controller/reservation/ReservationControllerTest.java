@@ -39,6 +39,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_NOT_FOUND;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_APPROVED;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_WAITING;
 
 @WebMvcTest(ReservationController.class)
 class ReservationControllerTest {
@@ -77,6 +79,7 @@ class ReservationControllerTest {
                     .reservationDates(List.of(LocalDateTime.now()))
                     .dayOfWeek(LocalDateTime.now().getDayOfWeek())
                     .name("홍길동")
+                    .status(RESERVATION_APPROVED)
                     .build();
 
             List<Reservation> response = List.of(reservation);  // 실제 예약 추가
@@ -121,6 +124,7 @@ class ReservationControllerTest {
                     .reservationDates(List.of(LocalDateTime.now()))
                     .dayOfWeek(LocalDateTime.now().getDayOfWeek())
                     .name("홍길동")
+                    .status(RESERVATION_WAITING)
                     .build();
 
             List<Reservation> response = List.of(reservation);  // 실제 예약 추가
@@ -495,6 +499,7 @@ class ReservationControllerTest {
 
             Reservation reservation = Reservation.builder()
                     .reservationId(1L)
+                    .status(RESERVATION_APPROVED)
                     .build();
 
             when(reservationFacade.setDisabledReservation(any(ReservationCriteria.SetDisabledTime.class)
@@ -518,7 +523,7 @@ class ReservationControllerTest {
         }
 
         @Test
-        @DisplayName("잘못된 형태의 날짜로 설정하면 예외를 반환한다.")
+        @DisplayName("예약 불가로 설정하고 싶은 날짜를 넣지 않으면 예외를 반환한다.")
         void setDisabledDateWithStrangeForm() throws Exception {
             //given
             ReservationRequestDto.SetDisabledTime request = ReservationRequestDto.SetDisabledTime.builder()
@@ -553,7 +558,7 @@ class ReservationControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(400))
                     .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.msg").value("현재 날짜보다 이전 날짜는 설정이 불가능 합니다."))
+                    .andExpect(jsonPath("$.msg").value("예약 날짜는 필수입니다."))
                     .andExpect(jsonPath("$.data").doesNotExist());
 
         }
@@ -594,7 +599,7 @@ class ReservationControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(400))
                     .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.msg").value("현재 날짜보다 이전 날짜는 설정이 불가능 합니다."))
+                    .andExpect(jsonPath("$.msg").value("현재 날짜보다 이전일 수 없습니다."))
                     .andExpect(jsonPath("$.data").doesNotExist());
 
         }
@@ -615,7 +620,8 @@ class ReservationControllerTest {
                     .dates(List.of(LocalDateTime.now().plusSeconds(2)))
                     .build();
 
-            Reservation reservation = Reservation.builder().reservationId(1L).build();
+            Reservation reservation = Reservation.builder().reservationId(1L)
+                    .status(RESERVATION_APPROVED).build();
 
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -658,7 +664,8 @@ class ReservationControllerTest {
                     .dates(List.of(LocalDateTime.now().plusSeconds(2)))
                     .build();
 
-            Reservation reservation = Reservation.builder().reservationId(1L).build();
+            Reservation reservation = Reservation.builder().reservationId(1L)
+                    .status(RESERVATION_WAITING).build();
 
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -820,11 +827,227 @@ class ReservationControllerTest {
 
     }
 
+    @Nested
+    @DisplayName("고정 세션 예약 Controller TEST")
+    class FixedReserveSessionControllerTest {
+
+        @Test
+        @DisplayName("트레이너가 고정 세션 예약 성공")
+        void fixedReserveSessionWithTrainer() throws Exception {
+            //given
+            ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
+                    .memberId(1L)
+                    .name("멤버1")
+                    .dates(List.of(LocalDateTime.now().plusSeconds(2)))
+                    .build();
+
+            Reservation reservation = Reservation.builder().reservationId(1L).status(RESERVATION_APPROVED).build();
+            ReservationResult.Reservations reservations = ReservationResult.Reservations.from(List.of(reservation));
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.fixedReserveSession(any(ReservationCriteria.FixedReserveSession.class),
+                    any(SecurityUser.class))).thenReturn(reservations);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/fixed-reservations")
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))  // OAuth2 인증
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.msg").value("OK"))
+                    .andExpect(jsonPath("$.data").isNotEmpty())
+                    .andExpect(jsonPath("$.data[0].reservationId").value(1L))
+                    .andExpect(jsonPath("$.data[0].status").value(RESERVATION_APPROVED.getName()));
+        }
+
+        @Test
+        @DisplayName("고정 세션 예약 실패 - memberID 정보 누락")
+        void reserveSessionWithNoMemberId() throws Exception {
+            //given
+            ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
+                    .name("멤버1")
+                    .dates(List.of(LocalDateTime.now().plusSeconds(2)))
+                    .build();
+
+            Reservation reservation = Reservation.builder().reservationId(1L).status(RESERVATION_APPROVED).build();
+            ReservationResult.Reservations reservations = ReservationResult.Reservations.from(List.of(reservation));
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.fixedReserveSession(any(ReservationCriteria.FixedReserveSession.class),
+                    any(SecurityUser.class))).thenReturn(reservations);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/fixed-reservations")
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))  // OAuth2 인증
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("유저 ID는 필수값 입니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+        @Test
+        @DisplayName("고정 세션 예약 실패 - name 정보 누락")
+        void reserveSessionWithNoName() throws Exception {
+            //given
+            ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
+                    .memberId(1L)
+                    .dates(List.of(LocalDateTime.now().plusSeconds(2)))
+                    .build();
+
+            Reservation reservation = Reservation.builder().reservationId(1L).status(RESERVATION_APPROVED).build();
+            ReservationResult.Reservations reservations = ReservationResult.Reservations.from(List.of(reservation));
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.fixedReserveSession(any(ReservationCriteria.FixedReserveSession.class),
+                    any(SecurityUser.class))).thenReturn(reservations);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/fixed-reservations")
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))  // OAuth2 인증
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("이름은 필수값 입니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+        @Test
+        @DisplayName("고정 세션 예약 실패 - dates 정보 누락")
+        void reserveSessionWithNoDates() throws Exception {
+            //given
+            ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
+                    .name("멤버1")
+                    .memberId(1L)
+                    .build();
+
+            Reservation reservation = Reservation.builder().reservationId(1L).status(RESERVATION_APPROVED).build();
+            ReservationResult.Reservations reservations = ReservationResult.Reservations.from(List.of(reservation));
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.fixedReserveSession(any(ReservationCriteria.FixedReserveSession.class),
+                    any(SecurityUser.class))).thenReturn(reservations);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/fixed-reservations")
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))  // OAuth2 인증
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("예약 요청 날짜는 비어있을 수 없습니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+        @Test
+        @DisplayName("고정 세션 예약 실패 - 현재 날짜보다 이전 dates 정보")
+        void reserveSessionWithBeforeDates() throws Exception {
+            //given
+            ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
+                    .name("멤버1")
+                    .memberId(1L)
+                    .dates(List.of(LocalDateTime.now().minusSeconds(2)))
+                    .build();
+
+            Reservation reservation = Reservation.builder().reservationId(1L).status(RESERVATION_APPROVED).build();
+            ReservationResult.Reservations reservations = ReservationResult.Reservations.from(List.of(reservation));
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.fixedReserveSession(any(ReservationCriteria.FixedReserveSession.class),
+                    any(SecurityUser.class))).thenReturn(reservations);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/fixed-reservations")
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))  // OAuth2 인증
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("현재 날짜보다 이전 날짜는 설정이 불가능 합니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+    }
+
 
     private String getAccessToken(PersonalDetail personalDetail) {
 
         String accessToken = "mockedAccessToken";
-        when(authTokenProvider.createAccessToken(PersonalDetail.Status.NORMAL, personalDetail.getPersonalDetailId()))
+        when(authTokenProvider.createAccessToken(PersonalDetail.Status.NORMAL, personalDetail.getPersonalDetailId(),
+                personalDetail.getUserRole()))
                 .thenReturn(accessToken);
 
         when(authTokenProvider.getPersonalDetailIdFromAccessToken("mockedAccessToken"))

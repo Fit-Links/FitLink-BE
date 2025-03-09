@@ -19,7 +19,7 @@ public class CustomException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return "[%s] %s".formatted(errorCode, msg);
+        return "%s".formatted(msg);
     }
 
     public int getStatus() {

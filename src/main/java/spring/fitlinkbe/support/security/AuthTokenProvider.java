@@ -7,6 +7,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.Status;
 
 import java.security.Key;
@@ -34,6 +35,7 @@ public class AuthTokenProvider {
 
     static final String CLAIM_KEY_STATUS = "status";
     static final String CLAIM_KEY_DETAIL_ID = "detailId";
+    static final String CLAIM_KEY_USER_ROLE = "userRole";
 
     @PostConstruct
     private void init() {
@@ -41,13 +43,14 @@ public class AuthTokenProvider {
         refreshKey = Keys.hmacShaKeyFor(refreshTokenSecret.getBytes());
     }
 
-    public String createAccessToken(Status status, Long personalDetailId) {
+    public String createAccessToken(Status status, Long personalDetailId, UserRole userRole) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + tokenExpiry);
 
         Map<String, Object> claims = Map.of(
                 CLAIM_KEY_STATUS, status,
-                CLAIM_KEY_DETAIL_ID, personalDetailId
+                CLAIM_KEY_DETAIL_ID, personalDetailId,
+                CLAIM_KEY_USER_ROLE, userRole
         );
 
         return Jwts.builder()
@@ -58,11 +61,12 @@ public class AuthTokenProvider {
                 .compact();
     }
 
-    public String createRefreshToken(Long personalDetailId) {
+    public String createRefreshToken(Long personalDetailId, UserRole userRole) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + refreshTokenExpiry);
 
-        Map<String, Object> claims = Map.of(CLAIM_KEY_DETAIL_ID, personalDetailId);
+        Map<String, Object> claims = Map.of(CLAIM_KEY_DETAIL_ID, personalDetailId,
+                CLAIM_KEY_USER_ROLE, userRole);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -95,5 +99,4 @@ public class AuthTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
 }

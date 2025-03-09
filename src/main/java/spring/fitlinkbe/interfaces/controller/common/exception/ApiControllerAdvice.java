@@ -3,6 +3,7 @@ package spring.fitlinkbe.interfaces.controller.common.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 
+import javax.security.sasl.AuthenticationException;
 import java.net.BindException;
 
 import static spring.fitlinkbe.support.utils.MessageConvertUtils.getErrorCustomMessage;
@@ -45,6 +47,20 @@ public class ApiControllerAdvice {
         log.error("MethodArgumentNotValidException is occurred! {}", e.getMessage());
         return ApiResultResponse.of(HttpStatus.BAD_REQUEST, false, getErrorCustomMessage(e),
                 null);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler(AuthenticationException.class)
+    public ApiResultResponse<Object> handlerAuthenticationException(AuthenticationException e) {
+        log.error("AuthenticationException is occurred! {}", e.getMessage());
+        return ApiResultResponse.of(HttpStatus.UNAUTHORIZED, false, e.getMessage(), null);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ApiResultResponse<Object> handlerAccessDeniedException(AccessDeniedException e) {
+        log.error("AccessDeniedException is occurred! {}", e.getMessage());
+        return ApiResultResponse.of(HttpStatus.FORBIDDEN, false, e.getMessage(), null);
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

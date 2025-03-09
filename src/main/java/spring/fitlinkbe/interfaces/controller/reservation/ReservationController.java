@@ -7,10 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.reservation.ReservationFacade;
 import spring.fitlinkbe.application.reservation.criteria.ReservationResult;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationRequestDto;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationResponseDto;
+import spring.fitlinkbe.support.aop.RoleCheck;
 import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
 
@@ -20,6 +22,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RoleCheck(allowedRoles = {UserRole.TRAINER, UserRole.MEMBER})
 @RequestMapping("/v1/reservations")
 @Slf4j
 public class ReservationController {
@@ -66,7 +69,7 @@ public class ReservationController {
      * @param reservationDate reservationDate 정보
      * @return ApiResultResponse 예약 상세 대기 멤버 정보를 반환한다.
      */
-
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
     @GetMapping("/waiting-members/{reservationDate}")
     public ApiResultResponse<List<ReservationResponseDto.GetWaitingMember>> getWaitingMembers(@PathVariable("reservationDate")
                                                                                               @NotNull(message = "예약 날짜는 필수입니다.")
@@ -88,6 +91,7 @@ public class ReservationController {
      * @param request 예약 불가 설정할 date 정보
      * @return ApiResultResponse 예약 불가 설정된 reservationId 정보를 반환한다.
      */
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
     @PostMapping("/availability/disable")
     public ApiResultResponse<ReservationResponseDto.Success> setDisabledTime(@RequestBody @Valid
                                                                              ReservationRequestDto.SetDisabledTime
@@ -114,6 +118,27 @@ public class ReservationController {
         Reservation result = reservationFacade.reserveSession(request.toCriteria(), user);
 
         return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
+
+    }
+
+    /**
+     * 고정 예약
+     *
+     * @param request memberId, name, dates 정보
+     * @return ApiResultResponse 고정 예약이 된 reservationId 목록 정보를 반환한다.
+     */
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
+    @PostMapping("/fixed-reservations")
+    public ApiResultResponse<List<ReservationResponseDto.Success>> fixedReserveSession(@RequestBody @Valid
+                                                                                       ReservationRequestDto.FixedReserveSession
+                                                                                               request,
+                                                                                       @Login SecurityUser user) {
+
+        ReservationResult.Reservations result = reservationFacade.fixedReserveSession(request.toCriteria(), user);
+
+        return ApiResultResponse.ok(result.reservations().stream()
+                .map(ReservationResponseDto.Success::of)
+                .toList());
 
     }
 }

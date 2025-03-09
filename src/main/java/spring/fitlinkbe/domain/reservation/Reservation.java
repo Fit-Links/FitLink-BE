@@ -1,10 +1,7 @@
 package spring.fitlinkbe.domain.reservation;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
@@ -19,6 +16,7 @@ import java.util.List;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.*;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
 
 @Builder(toBuilder = true)
 @Getter
@@ -39,21 +37,50 @@ public class Reservation {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public enum Status {
-        FIXED_RESERVATION, // 고정 예약
-        DISABLED_TIME_RESERVATION, // 예약 불가 시간 설정
-        RESERVATION_WAITING, // 예약 대기
-        RESERVATION_APPROVED, // 예약 확정
-        RESERVATION_CANCELLED, // 예약 취소
-        RESERVATION_REJECTED,  // 예약 거부
-        RESERVATION_CHANGE_REQUEST //예약 변경 요청
+    public Reservation toFixedDomain() {
+
+        return Reservation.builder()
+                .member(member)
+                .trainer(trainer)
+                .sessionInfo(sessionInfo)
+                .name(name)
+                .reservationDates(getAfterSevenDay())
+                .changeDate(changeDate)
+                .dayOfWeek(dayOfWeek)
+                .status(FIXED_RESERVATION)
+                .isDayOff(isDayOff)
+                .createdAt(createdAt)
+                .build();
     }
 
-    public boolean checkStatus() {
+    public List<LocalDateTime> getAfterSevenDay() {
+        return reservationDates.stream().map(date -> date.plusDays(7)).toList();
+    }
 
-        return (status != Status.DISABLED_TIME_RESERVATION &&
-                status != Status.RESERVATION_CANCELLED &&
-                status != Status.RESERVATION_REJECTED);
+
+    @RequiredArgsConstructor
+    @Getter
+    public enum Status {
+        FIXED_RESERVATION("고정 예약"), // 고정 예약
+        DISABLED_TIME_RESERVATION("예약 불가 설정"), // 예약 불가 시간 설정
+        RESERVATION_WAITING("예약 대기"), // 예약 대기
+        RESERVATION_APPROVED("예약 확정"), // 예약 확정
+        RESERVATION_CANCELLED("예약 취소"), // 예약 취소
+        RESERVATION_REFUSED("예약 거절"),  // 예약 거부
+        RESERVATION_CHANGE_REQUEST("예약 변경 요청"), //예약 변경 요청
+        RESERVATION_COMPLETED("예약 종료"); // 세션까지 완전 완료 되었을 때
+
+        private final String name;
+    }
+
+    public boolean isAlreadyCancel() {
+        return status != RESERVATION_CANCELLED && status != RESERVATION_REFUSED;
+    }
+
+    public void checkPossibleReserveStatus() {
+        if (status == DISABLED_TIME_RESERVATION || status == RESERVATION_COMPLETED) {
+            throw new CustomException(RESERVATION_NOT_ALLOWED);
+        }
     }
 
     public static LocalDateTime getEndDate(LocalDateTime startDate, UserRole userRole) {
@@ -61,24 +88,19 @@ public class Reservation {
                 : DateUtils.getTwoWeekAfterDate(startDate);
     }
 
-    public boolean isReservationAfterToday() {
-        LocalDateTime nowDate = LocalDateTime.now();
-
-        LocalDateTime reservationDate = getReservationDate();
-
-        return reservationDate.isAfter(nowDate);
-    }
-
-    public boolean isReservationDateSame(List<LocalDateTime> reservationDates, LocalDateTime requestDate) {
-
-        LocalDateTime truncatedRequestDate = requestDate.truncatedTo(ChronoUnit.HOURS);
-        return reservationDates.stream()
-                .map(date -> date.truncatedTo(ChronoUnit.HOURS))
-                .anyMatch(truncatedRequestDate::isEqual);
+    public boolean isReservationDateSame(List<LocalDateTime> requestDates) {
+        return requestDates
+                .stream()
+                .anyMatch(reqDate -> {
+                    LocalDateTime truncatedRequestDate = reqDate.truncatedTo(ChronoUnit.HOURS);
+                    return reservationDates.stream()
+                            .map(date -> date.truncatedTo(ChronoUnit.HOURS))
+                            .anyMatch(truncatedRequestDate::isEqual);
+                });
     }
 
     public boolean isWaitingStatus() {
-        if (status != Status.RESERVATION_WAITING) {
+        if (status != RESERVATION_WAITING) {
             throw new CustomException(RESERVATION_IS_NOT_WAITING_STATUS, "예약 상태가 대기 상태가 아닙니다.");
         }
 
@@ -105,19 +127,19 @@ public class Reservation {
     }
 
     public void cancel(String message) {
-        if (status == Status.RESERVATION_CANCELLED) {
+        if (status == RESERVATION_CANCELLED) {
             throw new CustomException(RESERVATION_IS_ALREADY_CANCEL);
         }
-        if (status == Status.DISABLED_TIME_RESERVATION || status == Status.RESERVATION_REJECTED) {
+        if (status == DISABLED_TIME_RESERVATION || status == RESERVATION_REFUSED) {
             throw new CustomException(RESERVATION_CANCEL_NOT_ALLOWED);
         }
         cancelReason = message;
-        status = Status.RESERVATION_CANCELLED;
+        status = RESERVATION_CANCELLED;
     }
 
     public boolean isReservationNotAllowed() {
 
-        return (isDayOff || (status == Status.DISABLED_TIME_RESERVATION));
+        return (isDayOff || (status == DISABLED_TIME_RESERVATION));
     }
 
 }

@@ -57,7 +57,8 @@ class ReservationServiceTest {
                     .thenReturn(List.of(reservation));
 
             //when
-            List<Reservation> result = reservationService.getReservations(startDdate, UserRole.TRAINER, 1L);
+            List<Reservation> result = reservationService.getReservations(
+                    ReservationCommand.GetReservations.of(startDdate, UserRole.TRAINER, 1L));
 
             //then
             assertThat(result).hasSize(1);
@@ -79,7 +80,8 @@ class ReservationServiceTest {
                     .thenReturn(List.of(reservation));
 
             //when
-            List<Reservation> result = reservationService.getReservations(startDdate, UserRole.MEMBER, 1L);
+            List<Reservation> result = reservationService.getReservations(
+                    ReservationCommand.GetReservations.of(startDdate, UserRole.MEMBER, 1L));
 
             //then
             assertThat(result).hasSize(1);
@@ -96,7 +98,8 @@ class ReservationServiceTest {
                     .thenReturn(List.of());
 
             //when
-            List<Reservation> result = reservationService.getReservations(startDdate, UserRole.TRAINER, 1L);
+            List<Reservation> result = reservationService.getReservations(
+                    ReservationCommand.GetReservations.of(startDdate, UserRole.TRAINER, 1L));
 
             //then
             assertThat(result).hasSize(0);
@@ -198,7 +201,7 @@ class ReservationServiceTest {
 
             String message = "예약 불가 설정";
 
-            when(reservationRepository.cancelReservations(List.of(reservation))).thenReturn(List.of(canceledReservation));
+            when(reservationRepository.saveReservations(List.of(reservation))).thenReturn(List.of(canceledReservation));
 
             //when
             reservationService.cancelReservations(List.of(reservation), message);
@@ -222,7 +225,7 @@ class ReservationServiceTest {
 
             String message = "예약 불가 설정";
 
-            when(reservationRepository.cancelReservations(List.of(reservation))).thenReturn(List.of(canceledReservation));
+            when(reservationRepository.saveReservations(List.of(reservation))).thenReturn(List.of(canceledReservation));
 
             //when
             reservationService.cancelReservations(List.of(reservation), message);

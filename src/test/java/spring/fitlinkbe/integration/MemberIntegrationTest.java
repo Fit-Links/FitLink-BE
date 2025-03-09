@@ -86,7 +86,6 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getRefType()).isEqualTo(Notification.ReferenceType.CONNECTING);
                 softly.assertThat(notification.getRefId()).isEqualTo(connectingInfo.getConnectingInfoId());
-                softly.assertThat(notification.getIsRead()).isFalse();
                 softly.assertThat(notification.getIsSent()).isTrue();
             });
         }

@@ -24,15 +24,25 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public List<Reservation> getReservations() {
 
-        return reservationJpaRepository.findAll()
+        return reservationJpaRepository.findAllAfterToday()
                 .stream()
                 .map(ReservationEntity::toDomain)
                 .toList();
     }
 
     @Override
-    public List<Reservation> getReservationsWithWaitingStatus(Reservation.Status status, Long trainerId) {
-        return reservationJpaRepository.findWaitingStatus(status, trainerId)
+    public List<Reservation> getFixedReservations() {
+
+        return reservationJpaRepository.findFixedStatus()
+                .stream()
+                .map(ReservationEntity::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<Reservation> getReservationsWithWaitingStatus(Long trainerId) {
+
+        return reservationJpaRepository.findWaitingStatus(trainerId)
                 .stream()
                 .map(ReservationEntity::toDomain)
                 .toList();
@@ -40,6 +50,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
 
     @Override
     public List<Reservation> getReservations(UserRole role, Long userId) {
+
         if (role == MEMBER) { //멤버의 경우
             return reservationJpaRepository.findByMember_MemberId(userId)
                     .stream()
@@ -54,9 +65,9 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
-    public List<Reservation> cancelReservations(List<Reservation> canceledReservations) {
+    public List<Reservation> saveReservations(List<Reservation> canceledReservations) {
         List<ReservationEntity> entities = canceledReservations.stream()
-                .map(ReservationEntity::from)
+                .map(r -> ReservationEntity.from(r, em))
                 .toList();
 
         List<ReservationEntity> savedEntities = reservationJpaRepository.saveAll(entities);
@@ -77,7 +88,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
 
     @Override
     public Optional<Reservation> reserveSession(Reservation reservation) {
-        ReservationEntity reservationEntity = reservationJpaRepository.save(ReservationEntity.from(reservation));
+        ReservationEntity reservationEntity = reservationJpaRepository.save(ReservationEntity.from(reservation, em));
 
         return Optional.of(reservationEntity.toDomain());
     }
@@ -99,7 +110,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
-    public List<Session> cancelSessions(List<Session> sessions) {
+    public List<Session> saveSessions(List<Session> sessions) {
         List<SessionEntity> entities = sessions.stream()
                 .map(session -> SessionEntity.from(session, em))
                 .toList();
