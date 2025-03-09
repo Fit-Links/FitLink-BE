@@ -24,7 +24,6 @@ import spring.fitlinkbe.domain.trainer.TrainerService;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -60,15 +59,15 @@ public class MemberFacade {
 
     @Transactional(readOnly = true)
     public MemberInfoResult.Response getMyInfo(Long memberId) {
-        ConnectingInfo connectingInfo = memberService.findConnectingInfo(memberId).orElse(null);
-        Optional<SessionInfo> sessionInfo = connectingInfo != null ? memberService
-                .findSessionInfo(connectingInfo.getTrainerId(), memberId) : Optional.empty();
+        ConnectingInfo connectingInfo = memberService.findConnectingInfo(memberId);
+        SessionInfo sessionInfo = connectingInfo != null ? memberService
+                .findSessionInfo(connectingInfo.getTrainerId(), memberId) : null;
 
         Member me = memberService.getMember(memberId);
 
         List<WorkoutSchedule> workoutSchedules = memberService.getWorkoutSchedules(memberId);
 
-        return MemberInfoResult.Response.of(me, connectingInfo, sessionInfo.orElse(null), workoutSchedules);
+        return MemberInfoResult.Response.of(me, connectingInfo, sessionInfo, workoutSchedules);
     }
 
     @Transactional
@@ -169,7 +168,7 @@ public class MemberFacade {
         memberService.checkConnected(trainerId, memberId);
         SessionInfo sessionInfo = memberService.getSessionInfo(sessionInfoId);
 
-        sessionInfo.update(request.totalCount(), request.remainingCount());
+        request.patch(sessionInfo);
         memberService.saveSessionInfo(sessionInfo);
 
         return SessionInfoCriteria.Response.from(sessionInfo);

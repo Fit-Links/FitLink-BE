@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
@@ -21,14 +23,28 @@ public class SessionInfo {
     private int remainingCount;
 
     /**
-     * 세션 정보 업데이트, totalCount 와 remainingCount 가 0 이상이면서 null 이 아닌 경우에만 업데이트
+     * 남은 PT 횟수 업데이트
+     *
+     * @param count 업데이트 할 횟수
+     * @throws spring.fitlinkbe.domain.common.exception.CustomException count 가 0보다 작을 경우
      */
-    public void update(Integer totalCount, Integer remainingCount) {
-        if (totalCount != null && totalCount >= 0) {
-            this.totalCount = totalCount;
+    public void updateRemainingCount(int count) {
+        if (count < 0) {
+            throw new CustomException(ErrorCode.INVALID_PARAMETER, "남은 횟수는 0보다 작을 수 없습니다. [count: %d]".formatted(count));
         }
-        if (remainingCount != null && remainingCount >= 0) {
-            this.remainingCount = remainingCount;
+        remainingCount = count;
+    }
+
+    /**
+     * 총 PT 횟수 업데이트 </br>
+     *
+     * @param count 업데이트 할 횟수
+     * @throws spring.fitlinkbe.domain.common.exception.CustomException count 가 0보다 작을 경우
+     */
+    public void updateTotalCount(int count) {
+        if (count < 0) {
+            throw new CustomException(ErrorCode.INVALID_PARAMETER, "총 횟수는 0보다 작을 수 없습니다. [count: %d]".formatted(count));
         }
+        totalCount = count;
     }
 }

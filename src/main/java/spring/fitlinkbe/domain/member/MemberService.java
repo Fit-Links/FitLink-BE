@@ -99,17 +99,22 @@ public class MemberService {
     /**
      * 해당 회원의 트레이너 연결 정보 조회 </br>
      * 요청 상태거나 연결된 상태만 조회
+     *
+     * @return 연결된 트레이너가 없을 경우 null 반환
      */
-    public Optional<ConnectingInfo> findConnectingInfo(Long memberId) {
-        return connectingInfoRepository.getConnectedInfo(memberId);
+    public ConnectingInfo findConnectingInfo(Long memberId) {
+        return connectingInfoRepository.getConnectedInfo(memberId).orElse(null);
     }
 
     public void saveConnectingInfo(ConnectingInfo connectingInfo) {
         connectingInfoRepository.save(connectingInfo);
     }
 
-    public Optional<SessionInfo> findSessionInfo(Long trainerId, Long memberId) {
-        return sessionInfoRepository.getSessionInfo(trainerId, memberId);
+    /**
+     * @return 연결된 트레이너가 없을 경우 null 반환
+     */
+    public SessionInfo findSessionInfo(Long trainerId, Long memberId) {
+        return sessionInfoRepository.getSessionInfo(trainerId, memberId).orElse(null);
     }
 
     public SessionInfo getSessionInfo(Long trainerId, Long memberId) {

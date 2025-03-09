@@ -11,6 +11,14 @@ public class SessionInfoCriteria {
 
             Integer totalCount
     ) {
+        public void patch(SessionInfo sessionInfo) {
+            if (remainingCount != null) {
+                sessionInfo.updateRemainingCount(remainingCount);
+            }
+            if (totalCount != null) {
+                sessionInfo.updateTotalCount(totalCount);
+            }
+        }
     }
 
     public record Response(
