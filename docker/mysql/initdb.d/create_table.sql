@@ -86,6 +86,7 @@ CREATE TABLE token
 CREATE TABLE workout_schedule
 (
     workout_schedule_id BIGINT NOT NULL AUTO_INCREMENT,
+    day_of_week       ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'),
     member_id           BIGINT,
     preference_times    JSON,
     created_at          DATETIME(6),
