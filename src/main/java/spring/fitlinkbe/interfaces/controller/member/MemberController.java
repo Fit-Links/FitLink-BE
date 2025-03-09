@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.member.MemberFacade;
 import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
 import spring.fitlinkbe.application.member.criteria.MemberSessionResult;
+import spring.fitlinkbe.application.member.criteria.SessionInfoCriteria;
 import spring.fitlinkbe.application.member.criteria.WorkoutScheduleResult;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
@@ -17,10 +18,7 @@ import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.common.dto.CustomPageResponse;
-import spring.fitlinkbe.interfaces.controller.member.dto.MemberDto;
-import spring.fitlinkbe.interfaces.controller.member.dto.MemberInfoDto;
-import spring.fitlinkbe.interfaces.controller.member.dto.MemberSessionDto;
-import spring.fitlinkbe.interfaces.controller.member.dto.WorkoutScheduleDto;
+import spring.fitlinkbe.interfaces.controller.member.dto.*;
 import spring.fitlinkbe.support.aop.RoleCheck;
 import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
@@ -30,8 +28,8 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RoleCheck(allowedRoles = {UserRole.MEMBER})
 @RequestMapping("/v1/members")
+@RoleCheck(allowedRoles = {UserRole.MEMBER})
 public class MemberController {
 
     private final MemberFacade memberFacade;
@@ -115,9 +113,35 @@ public class MemberController {
             @PageableDefault(size = 5) Pageable pageRequest,
             @RequestParam(required = false) Session.Status status
     ) {
-        Page<MemberSessionResult.SessionResponse> result = memberFacade.getSessions(user.getMemberId(), status, pageRequest);
+        Page<MemberSessionResult.SessionResponse> result = memberFacade.getMySessions(user.getMemberId(), status, pageRequest);
 
         return ApiResultResponse.ok(CustomPageResponse.of(result, MemberSessionDto.SessionResponse::from));
+    }
+
+    @GetMapping("{memberId}/sessions")
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
+    public ApiResultResponse<CustomPageResponse<MemberSessionDto.SessionResponse>> getSessions(
+            @Login SecurityUser user,
+            @PathVariable Long memberId,
+            @PageableDefault(size = 5) Pageable pageRequest,
+            @RequestParam(required = false) Session.Status status
+    ) {
+        Page<MemberSessionResult.SessionResponse> result = memberFacade.getSessions(user.getTrainerId(), memberId, status, pageRequest);
+
+        return ApiResultResponse.ok(CustomPageResponse.of(result, MemberSessionDto.SessionResponse::from));
+    }
+
+    @PatchMapping("{memberId}/session-info/{sessionInfoId}")
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
+    public ApiResultResponse<SessionInfoDto.Response> updateSessionInfo(
+            @Login SecurityUser user,
+            @PathVariable Long memberId,
+            @PathVariable Long sessionInfoId,
+            @RequestBody @Valid SessionInfoDto.UpdateRequest requestBody
+    ) {
+        SessionInfoCriteria.Response result = memberFacade.updateSessionInfo(user.getTrainerId(), memberId, sessionInfoId, requestBody.toCriteria());
+
+        return ApiResultResponse.ok(SessionInfoDto.Response.from(result));
     }
 
     @InitBinder

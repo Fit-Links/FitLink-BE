@@ -40,7 +40,7 @@ public class Notification {
     }
 
     public static Notification disconnectNotification(String memberName, PersonalDetail trainerDetail) {
-        String content = memberName + " 님과의 연동이 해제되었습니다.";
+        String content = memberName + " 님과의 연동 (또는 연동 요청) 이 취소되었습니다.";
 
         return Notification.builder()
                 .refId(null)

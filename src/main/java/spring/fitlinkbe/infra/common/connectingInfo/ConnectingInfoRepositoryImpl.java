@@ -33,4 +33,10 @@ public class ConnectingInfoRepositoryImpl implements ConnectingInfoRepository {
         return connectingInfoJpaRepository.findExistMemberConnectingInfo(memberId)
                 .map(ConnectingInfoEntity::toDomain);
     }
+
+    @Override
+    public Optional<ConnectingInfo> findConnectingInfo(Long trainerId, Long memberId) {
+        return connectingInfoJpaRepository.findByTrainer_TrainerIdAndMember_MemberId(trainerId, memberId)
+                .map(ConnectingInfoEntity::toDomain);
+    }
 }

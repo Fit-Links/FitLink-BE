@@ -5,10 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
-import spring.fitlinkbe.application.member.criteria.MemberSessionResult;
-import spring.fitlinkbe.application.member.criteria.WorkoutScheduleCriteria;
-import spring.fitlinkbe.application.member.criteria.WorkoutScheduleResult;
+import spring.fitlinkbe.application.member.criteria.*;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
@@ -27,7 +24,6 @@ import spring.fitlinkbe.domain.trainer.TrainerService;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -51,10 +47,7 @@ public class MemberFacade {
 
     @Transactional
     public void disconnectTrainer(Long memberId) {
-        ConnectingInfo connectingInfo = memberService.getConnectedInfo(memberId);
-        if (connectingInfo.isPending()) {
-            throw new CustomException(ErrorCode.DISCONNECT_AVAILABLE_AFTER_ACCEPTED);
-        }
+        ConnectingInfo connectingInfo = memberService.getConnectingInfo(memberId);
 
         Member member = memberService.getMember(memberId);
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(connectingInfo.getTrainer().getTrainerId());
@@ -66,15 +59,15 @@ public class MemberFacade {
 
     @Transactional(readOnly = true)
     public MemberInfoResult.Response getMyInfo(Long memberId) {
-        Optional<ConnectingInfo> connectingInfo = memberService.findConnectedInfo(memberId);
-        Optional<SessionInfo> sessionInfo = memberService.findSessionInfo(memberId);
+        ConnectingInfo connectingInfo = memberService.findConnectingInfo(memberId);
+        SessionInfo sessionInfo = connectingInfo != null ? memberService
+                .findSessionInfo(connectingInfo.getTrainerId(), memberId) : null;
 
         Member me = memberService.getMember(memberId);
-        Trainer trainer = connectingInfo.map(ConnectingInfo::getTrainer).orElse(null);
 
         List<WorkoutSchedule> workoutSchedules = memberService.getWorkoutSchedules(memberId);
 
-        return MemberInfoResult.Response.of(me, trainer, sessionInfo.orElse(null), workoutSchedules);
+        return MemberInfoResult.Response.of(me, connectingInfo, sessionInfo, workoutSchedules);
     }
 
     @Transactional
@@ -145,9 +138,39 @@ public class MemberFacade {
     }
 
     @Transactional(readOnly = true)
-    public Page<MemberSessionResult.SessionResponse> getSessions(Long memberId, Session.Status status, Pageable pageRequest) {
-        Page<Session> sessions = reservationService.getSessions(ReservationCommand.GetSessions.of(memberId, status, pageRequest));
+    public Page<MemberSessionResult.SessionResponse> getMySessions(Long memberId, Session.Status status, Pageable pageRequest) {
+        ReservationCommand.GetSessions command = ReservationCommand.GetSessions.builder()
+                .memberId(memberId)
+                .status(status)
+                .pageRequest(pageRequest)
+                .build();
+        Page<Session> sessions = reservationService.getSessions(command);
 
         return sessions.map(MemberSessionResult.SessionResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MemberSessionResult.SessionResponse> getSessions(Long trainerId, Long memberId, Session.Status status, Pageable pageRequest) {
+        memberService.checkConnected(trainerId, memberId);
+
+        ReservationCommand.GetSessions command = ReservationCommand.GetSessions.builder()
+                .memberId(memberId)
+                .status(status)
+                .pageRequest(pageRequest)
+                .build();
+        Page<Session> sessions = reservationService.getSessions(command);
+        return sessions.map(MemberSessionResult.SessionResponse::from);
+    }
+
+    @Transactional
+    public SessionInfoCriteria.Response updateSessionInfo(Long trainerId, Long memberId,
+                                                          Long sessionInfoId, SessionInfoCriteria.UpdateRequest request) {
+        memberService.checkConnected(trainerId, memberId);
+        SessionInfo sessionInfo = memberService.getSessionInfo(sessionInfoId);
+
+        request.patch(sessionInfo);
+        memberService.saveSessionInfo(sessionInfo);
+
+        return SessionInfoCriteria.Response.from(sessionInfo);
     }
 }

@@ -268,8 +268,8 @@ class ReservationControllerTest {
                             .header("Authorization", "Bearer " + accessToken)
                             .with(oauth2Login().oauth2User(user)))  // OAuth2 인증
                     .andDo(print())
-                    .andExpect(status().is5xxServerError())
-                    .andExpect(jsonPath("$.status").value(500))
+                    .andExpect(status().is2xxSuccessful())
+                    .andExpect(jsonPath("$.status").value(400))
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.data").isEmpty());
         }

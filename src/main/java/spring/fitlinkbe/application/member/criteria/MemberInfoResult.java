@@ -1,6 +1,7 @@
 package spring.fitlinkbe.application.member.criteria;
 
 import lombok.Builder;
+import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
@@ -17,16 +18,20 @@ public class MemberInfoResult {
             String name,
             Long trainerId,
             String trainerName,
+            ConnectingInfo.ConnectingStatus connectingStatus,
             String profilePictureUrl,
             SessionInfoResponse sessionInfo,
             List<WorkoutScheduleResult.Response> workoutSchedules
     ) {
-        public static Response of(Member me, Trainer trainer, SessionInfo sessionInfo, List<WorkoutSchedule> workoutSchedules) {
+        public static Response of(Member me, ConnectingInfo connectingInfo, SessionInfo sessionInfo, List<WorkoutSchedule> workoutSchedules) {
+            Trainer trainer = connectingInfo != null ? connectingInfo.getTrainer() : null;
+
             return Response.builder()
                     .memberId(me.getMemberId())
                     .name(me.getName())
                     .trainerId(trainer != null ? trainer.getTrainerId() : null)
                     .trainerName(trainer != null ? trainer.getName() : null)
+                    .connectingStatus(connectingInfo != null ? connectingInfo.getStatus() : null)
                     .profilePictureUrl(me.getProfilePictureUrl())
                     .sessionInfo(sessionInfo != null ? SessionInfoResponse.from(sessionInfo) : null)
                     .workoutSchedules(workoutSchedules.stream().map(WorkoutScheduleResult.Response::from).toList())

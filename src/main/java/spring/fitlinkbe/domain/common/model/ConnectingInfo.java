@@ -36,6 +36,14 @@ public class ConnectingInfo {
         this.status = ConnectingStatus.DISCONNECTED;
     }
 
+    public Boolean isConnected() {
+        return this.status == ConnectingStatus.CONNECTED;
+    }
+
+    public Long getTrainerId() {
+        return this.trainer.getTrainerId();
+    }
+
     public enum ConnectingStatus {
         REQUESTED, CONNECTED, REJECTED, DISCONNECTED
     }

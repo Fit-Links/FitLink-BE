@@ -90,29 +90,40 @@ public class MemberService {
     /**
      * 해당 회원의 트레이너 연결 정보 조회 </br>
      * 요청 상태거나 연결된 상태만 조회
-     *
-     * @param memberId
-     * @return
      */
-    public ConnectingInfo getConnectedInfo(Long memberId) {
+    public ConnectingInfo getConnectingInfo(Long memberId) {
         return connectingInfoRepository.getConnectedInfo(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_CONNECTED_TRAINER));
     }
 
-    public Optional<ConnectingInfo> findConnectedInfo(Long memberId) {
-        return connectingInfoRepository.getConnectedInfo(memberId);
+    /**
+     * 해당 회원의 트레이너 연결 정보 조회 </br>
+     * 요청 상태거나 연결된 상태만 조회
+     *
+     * @return 연결된 트레이너가 없을 경우 null 반환
+     */
+    public ConnectingInfo findConnectingInfo(Long memberId) {
+        return connectingInfoRepository.getConnectedInfo(memberId).orElse(null);
     }
 
     public void saveConnectingInfo(ConnectingInfo connectingInfo) {
         connectingInfoRepository.save(connectingInfo);
     }
 
-    public Optional<SessionInfo> findSessionInfo(Long memberId) {
-        return sessionInfoRepository.getSessionInfo(memberId);
+    /**
+     * @return 연결된 트레이너가 없을 경우 null 반환
+     */
+    public SessionInfo findSessionInfo(Long trainerId, Long memberId) {
+        return sessionInfoRepository.getSessionInfo(trainerId, memberId).orElse(null);
     }
 
     public SessionInfo getSessionInfo(Long trainerId, Long memberId) {
         return sessionInfoRepository.getSessionInfo(trainerId, memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND));
+    }
+
+    public SessionInfo getSessionInfo(Long sessionInfoId) {
+        return sessionInfoRepository.getSessionInfo(sessionInfoId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND));
     }
 
@@ -125,9 +136,19 @@ public class MemberService {
                 .map(WorkoutSchedule::getWorkoutScheduleId).toList());
     }
 
-    public void checkMemberExists(Long memberId) {
-        if (!memberRepository.exists(memberId)) {
-            throw new CustomException(ErrorCode.MEMBER_NOT_FOUND);
+    /**
+     * 멤버와 트레이너가 연결되어 있는지 확인
+     *
+     * @throws CustomException 연결되어 있지 않을 경우
+     */
+    public void checkConnected(Long trainerId, Long memberId) {
+        Optional<ConnectingInfo> connectingInfo = connectingInfoRepository.findConnectingInfo(trainerId, memberId);
+        if (connectingInfo.isEmpty() || !connectingInfo.get().isConnected()) {
+            throw new CustomException(ErrorCode.MEMBER_NOT_CONNECTED_TRAINER, "트레이너가 멤버와 연결되어 있지 않습니다.");
         }
+    }
+
+    public void saveSessionInfo(SessionInfo sessionInfo) {
+        sessionInfoRepository.saveSessionInfo(sessionInfo);
     }
 }
