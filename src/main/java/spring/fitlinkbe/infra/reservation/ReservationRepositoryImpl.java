@@ -8,12 +8,10 @@ import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationRepository;
 import spring.fitlinkbe.domain.reservation.Session;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
-import static spring.fitlinkbe.domain.reservation.Reservation.Status.FIXED_RESERVATION;
 
 @Repository
 @RequiredArgsConstructor
@@ -24,19 +22,9 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     private final EntityManager em;
 
     @Override
-    public List<Reservation> getPlainReservations() {
-
-        return reservationJpaRepository.findAll()
-                .stream()
-                .map(ReservationEntity::toDomain)
-                .toList();
-    }
-
-    @Override
     public List<Reservation> getReservations() {
-        LocalDateTime now = LocalDateTime.now().minusMinutes(1);
 
-        return reservationJpaRepository.findAllAfterToday(now)
+        return reservationJpaRepository.findAllAfterToday()
                 .stream()
                 .map(ReservationEntity::toDomain)
                 .toList();
@@ -44,19 +32,17 @@ public class ReservationRepositoryImpl implements ReservationRepository {
 
     @Override
     public List<Reservation> getFixedReservations() {
-        LocalDateTime now = LocalDateTime.now().minusSeconds(2);
 
-        return reservationJpaRepository.findFixedStatus(FIXED_RESERVATION, now)
+        return reservationJpaRepository.findFixedStatus()
                 .stream()
                 .map(ReservationEntity::toDomain)
                 .toList();
     }
 
     @Override
-    public List<Reservation> getReservationsWithWaitingStatus(Reservation.Status status, Long trainerId) {
-        LocalDateTime now = LocalDateTime.now().minusSeconds(2);
+    public List<Reservation> getReservationsWithWaitingStatus(Long trainerId) {
 
-        return reservationJpaRepository.findWaitingStatus(status, trainerId, now)
+        return reservationJpaRepository.findWaitingStatus(trainerId)
                 .stream()
                 .map(ReservationEntity::toDomain)
                 .toList();
@@ -64,16 +50,15 @@ public class ReservationRepositoryImpl implements ReservationRepository {
 
     @Override
     public List<Reservation> getReservations(UserRole role, Long userId) {
-        LocalDateTime now = LocalDateTime.now().minusSeconds(2);
 
         if (role == MEMBER) { //멤버의 경우
-            return reservationJpaRepository.findByMember_MemberId(userId, now)
+            return reservationJpaRepository.findByMember_MemberId(userId)
                     .stream()
                     .map(ReservationEntity::toDomain)
                     .toList();
         }
 
-        return reservationJpaRepository.findByTrainer_TrainerId(userId, now)
+        return reservationJpaRepository.findByTrainer_TrainerId(userId)
                 .stream()
                 .map(ReservationEntity::toDomain)
                 .toList();

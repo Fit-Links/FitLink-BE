@@ -67,8 +67,7 @@ public class ReservationService {
 
     @Transactional(readOnly = true)
     public List<Reservation> getReservationsWithWaitingStatus(Long trainerId) {
-        List<Reservation> WaitingMembers = reservationRepository.getReservationsWithWaitingStatus(RESERVATION_WAITING,
-                trainerId);
+        List<Reservation> WaitingMembers = reservationRepository.getReservationsWithWaitingStatus(trainerId);
 
         if (WaitingMembers.isEmpty()) {
             throw new CustomException(RESERVATION_WAITING_MEMBERS_EMPTY);

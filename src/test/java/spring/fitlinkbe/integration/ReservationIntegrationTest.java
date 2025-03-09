@@ -112,7 +112,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .name(member.getName())
                     .dayOfWeek(reqeustDate.getDayOfWeek())
                     .status(RESERVATION_APPROVED)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
             reservationRepository.reserveSession(reservation);
@@ -152,7 +152,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .trainer(trainer)
                     .isDayOff(true)
                     .status(DISABLED_TIME_RESERVATION)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
             reservationRepository.reserveSession(reservation);
@@ -250,7 +250,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .sessionInfo(sessionInfo)
                     .name(member.getName())
                     .dayOfWeek(reqeustDate.getDayOfWeek())
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
             reservationRepository.reserveSession(reservation);
@@ -482,7 +482,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .name(member1.getName())
                     .dayOfWeek(reserveDate.getDayOfWeek())
                     .status(RESERVATION_WAITING)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
             Reservation savedReservation1 = reservationRepository.reserveSession(reservation1).orElseThrow();
@@ -498,7 +498,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .name(member2.getName())
                     .dayOfWeek(reserveDate.getDayOfWeek())
                     .status(RESERVATION_WAITING)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
             Reservation savedReservation2 = reservationRepository.reserveSession(reservation2).orElseThrow();
@@ -694,7 +694,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .name(member.getName())
                     .dayOfWeek(reservationDate.getDayOfWeek())
                     .status(RESERVATION_WAITING)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
             Reservation savedReservation = reservationRepository.reserveSession(reservation).orElseThrow();
@@ -1147,7 +1147,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
                     .status(RESERVATION_APPROVED)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
             Reservation savedReservation = reservationRepository.reserveSession(reservation)
@@ -1309,7 +1309,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
                     .status(DISABLED_TIME_RESERVATION)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
             reservationRepository.reserveSession(reservation);
@@ -1352,7 +1352,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
                     .status(RESERVATION_COMPLETED)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
             reservationRepository.reserveSession(reservation);
@@ -1387,7 +1387,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
                     .status(FIXED_RESERVATION)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
             reservationRepository.reserveSession(reservation);
@@ -1418,7 +1418,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
                     .status(FIXED_RESERVATION)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
             reservationRepository.reserveSession(reservation);
@@ -1428,7 +1428,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
                     .status(DISABLED_TIME_RESERVATION)
-                    .createdAt(LocalDateTime.now())
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
             reservationRepository.reserveSession(reservation2);

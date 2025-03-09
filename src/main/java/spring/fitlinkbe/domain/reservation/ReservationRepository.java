@@ -7,13 +7,11 @@ import java.util.Optional;
 
 public interface ReservationRepository {
 
-    List<Reservation> getPlainReservations();
-
     List<Reservation> getReservations();
 
     List<Reservation> getFixedReservations();
 
-    List<Reservation> getReservationsWithWaitingStatus(Reservation.Status status, Long trainerId);
+    List<Reservation> getReservationsWithWaitingStatus(Long trainerId);
 
     List<Reservation> getReservations(UserRole role, Long userId);
 
