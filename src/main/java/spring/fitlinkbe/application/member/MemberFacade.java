@@ -48,10 +48,7 @@ public class MemberFacade {
 
     @Transactional
     public void disconnectTrainer(Long memberId) {
-        ConnectingInfo connectingInfo = memberService.getConnectedInfo(memberId);
-        if (connectingInfo.isPending()) {
-            throw new CustomException(ErrorCode.DISCONNECT_AVAILABLE_AFTER_ACCEPTED);
-        }
+        ConnectingInfo connectingInfo = memberService.getConnectingInfo(memberId);
 
         Member member = memberService.getMember(memberId);
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(connectingInfo.getTrainer().getTrainerId());
@@ -63,15 +60,15 @@ public class MemberFacade {
 
     @Transactional(readOnly = true)
     public MemberInfoResult.Response getMyInfo(Long memberId) {
-        Optional<ConnectingInfo> connectingInfo = memberService.findConnectedInfo(memberId);
-        Optional<SessionInfo> sessionInfo = memberService.findSessionInfo(memberId);
+        ConnectingInfo connectingInfo = memberService.findConnectingInfo(memberId).orElse(null);
+        Optional<SessionInfo> sessionInfo = connectingInfo != null ? memberService
+                .findSessionInfo(connectingInfo.getTrainerId(), memberId) : Optional.empty();
 
         Member me = memberService.getMember(memberId);
-        Trainer trainer = connectingInfo.map(ConnectingInfo::getTrainer).orElse(null);
 
         List<WorkoutSchedule> workoutSchedules = memberService.getWorkoutSchedules(memberId);
 
-        return MemberInfoResult.Response.of(me, trainer, sessionInfo.orElse(null), workoutSchedules);
+        return MemberInfoResult.Response.of(me, connectingInfo, sessionInfo.orElse(null), workoutSchedules);
     }
 
     @Transactional
@@ -168,11 +165,11 @@ public class MemberFacade {
 
     @Transactional
     public SessionInfoCriteria.Response updateSessionInfo(Long trainerId, Long memberId,
-                                  Long sessionInfoId, SessionInfoCriteria.UpdateRequest request) {
+                                                          Long sessionInfoId, SessionInfoCriteria.UpdateRequest request) {
         memberService.checkConnected(trainerId, memberId);
         SessionInfo sessionInfo = memberService.getSessionInfo(sessionInfoId);
 
-        sessionInfo.update(request.remainingCount(), request.totalCount());
+        sessionInfo.update(request.totalCount(), request.remainingCount());
         memberService.saveSessionInfo(sessionInfo);
 
         return SessionInfoCriteria.Response.from(sessionInfo);

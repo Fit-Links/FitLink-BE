@@ -170,6 +170,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             ExtractableResponse<Response> result = post(MEMBER_DISCONNECT_API, token);
 
             // then
+            // 연결 정보가 정상적으로 삭제된다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
                 ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
@@ -191,7 +192,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("멤버 트레이너 연결 해제 요청 실패 - 이미 연결 요청 중일 때")
+        @DisplayName("멤버 트레이너 연결 해제 요청 성공 - 연결 요청 중일 때")
         public void memberDisconnectFailByRequested() throws Exception {
             // given
             // 멤버와 트레이너가 연결 요청 중일 때
@@ -205,15 +206,24 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             ExtractableResponse<Response> result = post(MEMBER_DISCONNECT_API, token);
 
             // then
-            // 연결 요청 중이라는 응답을 받는다
+            // 연결 정보가 정상적으로 삭제된다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
                 ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
                 softly.assertThat(response).isNotNull();
-                softly.assertThat(response.success()).isFalse();
-                softly.assertThat(response.status()).isEqualTo(409);
-                softly.assertThat(response.data()).isNull();
+
+                // 연결 정보가 삭제되었는지 확인
+                ConnectingInfo deletedConnectingInfo = connectingInfoRepository.getConnectingInfo(member.getMemberId(), trainer.getTrainerId());
+                softly.assertThat(deletedConnectingInfo).isNotNull();
+                softly.assertThat(deletedConnectingInfo.getStatus()).isEqualTo(ConnectingInfo.ConnectingStatus.DISCONNECTED);
+
+
+                // 알림 정보가 생성되었는지 확인
+                PersonalDetail trainerPersonalDetail = testDataHandler.getTrainerPersonalDetail(trainer.getTrainerId());
+                Notification notification = notificationRepository.getNotification(trainerPersonalDetail.getPersonalDetailId(),
+                        Notification.NotificationType.DISCONNECT);
+                softly.assertThat(notification).isNotNull();
             });
         }
 
@@ -1009,7 +1019,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
             // when
             // 트레이너가 회원 PT 횟수 수정 요청을 보낸다면
-            int remainingCount = 5;
+            int remainingCount = 3;
             int totalCount = 5;
             String url = MEMBER_SESSION_COUNT_UPDATE_API.replace("{memberId}", member.getMemberId().toString())
                     .replace("{sessionInfoId}", sessionInfo.getSessionInfoId().toString());
@@ -1051,7 +1061,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
             // when
             // 트레이너가 회원과 연결이 안되어 있는 회원 PT 횟수 수정 요청을 보낸다면
-            int remainingCount = 5;
+            int remainingCount = 3;
             int totalCount = 5;
             String url = MEMBER_SESSION_COUNT_UPDATE_API.replace("{memberId}", member.getMemberId().toString())
                     .replace("{sessionInfoId}", sessionInfo.getSessionInfoId().toString());

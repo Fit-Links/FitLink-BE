@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.AssertTrue;
 import lombok.Builder;
 import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
+import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +17,7 @@ public class MemberInfoDto {
             String name,
             Long trainerId,
             String trainerName,
+            ConnectingInfo.ConnectingStatus connectingStatus,
             String profilePictureUrl,
             SessionInfoResponse sessionInfo,
             List<WorkoutScheduleDto.Response> workoutSchedules
@@ -26,6 +28,7 @@ public class MemberInfoDto {
                     .name(result.name())
                     .trainerId(result.trainerId())
                     .trainerName(result.trainerName())
+                    .connectingStatus(result.connectingStatus())
                     .profilePictureUrl(result.profilePictureUrl())
                     .sessionInfo(result.sessionInfo() != null ? SessionInfoResponse.from(result.sessionInfo()) : null)
                     .workoutSchedules(result.workoutSchedules().stream().map(WorkoutScheduleDto.Response::from).toList())

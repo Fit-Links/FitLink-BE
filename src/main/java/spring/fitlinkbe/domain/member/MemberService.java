@@ -90,16 +90,17 @@ public class MemberService {
     /**
      * 해당 회원의 트레이너 연결 정보 조회 </br>
      * 요청 상태거나 연결된 상태만 조회
-     *
-     * @param memberId
-     * @return
      */
-    public ConnectingInfo getConnectedInfo(Long memberId) {
+    public ConnectingInfo getConnectingInfo(Long memberId) {
         return connectingInfoRepository.getConnectedInfo(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_CONNECTED_TRAINER));
     }
 
-    public Optional<ConnectingInfo> findConnectedInfo(Long memberId) {
+    /**
+     * 해당 회원의 트레이너 연결 정보 조회 </br>
+     * 요청 상태거나 연결된 상태만 조회
+     */
+    public Optional<ConnectingInfo> findConnectingInfo(Long memberId) {
         return connectingInfoRepository.getConnectedInfo(memberId);
     }
 
@@ -107,8 +108,8 @@ public class MemberService {
         connectingInfoRepository.save(connectingInfo);
     }
 
-    public Optional<SessionInfo> findSessionInfo(Long memberId) {
-        return sessionInfoRepository.getSessionInfo(memberId);
+    public Optional<SessionInfo> findSessionInfo(Long trainerId, Long memberId) {
+        return sessionInfoRepository.getSessionInfo(trainerId, memberId);
     }
 
     public SessionInfo getSessionInfo(Long trainerId, Long memberId) {
@@ -128,12 +129,6 @@ public class MemberService {
     public void deleteAllWorkoutSchedules(List<WorkoutSchedule> deletedWorkoutSchedules) {
         workoutScheduleRepository.deleteAllByIds(deletedWorkoutSchedules.stream()
                 .map(WorkoutSchedule::getWorkoutScheduleId).toList());
-    }
-
-    public void checkMemberExists(Long memberId) {
-        if (!memberRepository.exists(memberId)) {
-            throw new CustomException(ErrorCode.MEMBER_NOT_FOUND);
-        }
     }
 
     /**

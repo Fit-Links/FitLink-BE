@@ -40,6 +40,10 @@ public class ConnectingInfo {
         return this.status == ConnectingStatus.CONNECTED;
     }
 
+    public Long getTrainerId() {
+        return this.trainer.getTrainerId();
+    }
+
     public enum ConnectingStatus {
         REQUESTED, CONNECTED, REJECTED, DISCONNECTED
     }
