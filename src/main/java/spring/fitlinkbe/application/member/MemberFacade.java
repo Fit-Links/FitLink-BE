@@ -72,7 +72,9 @@ public class MemberFacade {
         Member me = memberService.getMember(memberId);
         Trainer trainer = connectingInfo.map(ConnectingInfo::getTrainer).orElse(null);
 
-        return MemberInfoResult.Response.of(me, trainer, sessionInfo.orElse(null));
+        List<WorkoutSchedule> workoutSchedules = memberService.getWorkoutSchedules(memberId);
+
+        return MemberInfoResult.Response.of(me, trainer, sessionInfo.orElse(null), workoutSchedules);
     }
 
     @Transactional
@@ -92,13 +94,6 @@ public class MemberFacade {
     public MemberInfoResult.DetailResponse getMyDetail(Long memberId) {
         Member me = memberService.getMember(memberId);
         return MemberInfoResult.DetailResponse.from(me);
-    }
-
-    public List<WorkoutScheduleResult.Response> getWorkoutSchedule(Long memberId) {
-        List<WorkoutSchedule> workoutSchedules = memberService.getWorkoutSchedules(memberId);
-
-        return workoutSchedules.stream().map(WorkoutScheduleResult.Response::from)
-                .sorted(Comparator.comparing(WorkoutScheduleResult.Response::dayOfWeek)).toList();
     }
 
     public List<WorkoutScheduleResult.Response> updateWorkoutSchedule(

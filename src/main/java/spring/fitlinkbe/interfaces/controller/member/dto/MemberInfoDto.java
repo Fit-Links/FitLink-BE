@@ -6,6 +6,7 @@ import lombok.Builder;
 import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class MemberInfoDto {
 
@@ -16,7 +17,8 @@ public class MemberInfoDto {
             Long trainerId,
             String trainerName,
             String profilePictureUrl,
-            SessionInfoResponse sessionInfo
+            SessionInfoResponse sessionInfo,
+            List<WorkoutScheduleDto.Response> workoutSchedules
     ) {
         public static Response from(MemberInfoResult.Response result) {
             return Response.builder()
@@ -26,6 +28,7 @@ public class MemberInfoDto {
                     .trainerName(result.trainerName())
                     .profilePictureUrl(result.profilePictureUrl())
                     .sessionInfo(result.sessionInfo() != null ? SessionInfoResponse.from(result.sessionInfo()) : null)
+                    .workoutSchedules(result.workoutSchedules().stream().map(WorkoutScheduleDto.Response::from).toList())
                     .build();
         }
     }

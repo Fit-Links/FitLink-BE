@@ -77,7 +77,7 @@ public class MemberController {
         return ApiResultResponse.ok(MemberInfoDto.DetailResponse.from(result));
     }
 
-    @PutMapping("/workout-schedule")
+    @PutMapping("/me/workout-schedule")
     public ApiResultResponse<Object> updateWorkoutSchedule(
             @Login SecurityUser user,
             @RequestBody @Valid List<WorkoutScheduleDto.Request> requestBody
@@ -107,15 +107,6 @@ public class MemberController {
                 .map(WorkoutScheduleDto.Request::dayOfWeek)
                 .distinct()
                 .count() == workoutSchedule.size();
-    }
-
-    @GetMapping("/workout-schedule")
-    public ApiResultResponse<List<WorkoutScheduleDto.Response>> getWorkoutSchedule(@Login SecurityUser user) {
-        List<WorkoutScheduleResult.Response> result = memberFacade.getWorkoutSchedule(user.getMemberId());
-
-        return ApiResultResponse.ok(result.stream()
-                .map(WorkoutScheduleDto.Response::from)
-                .toList());
     }
 
     @GetMapping("/me/sessions")

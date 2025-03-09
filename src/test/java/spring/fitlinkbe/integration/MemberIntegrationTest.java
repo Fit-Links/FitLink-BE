@@ -252,12 +252,13 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
         @DisplayName("멤버 내 정보 조회 성공")
         public void memberInfoSuccess() throws Exception {
             // given
-            // NORMAL 상태의 멤버, 트레이너, 세션 정보가 있을 때
+            // NORMAL 상태의 멤버, 트레이너, 세션 정보, PT 희망 시간 정보가 있을 때
             Member member = testDataHandler.createMember();
             Trainer trainer = testDataHandler.createTrainer("AB1423");
             SessionInfo sessionInfo = testDataHandler.createSessionInfo(member, trainer);
             String token = testDataHandler.createTokenFromMember(member);
             testDataHandler.connectMemberAndTrainer(member, trainer);
+            List<WorkoutSchedule> workoutSchedules = testDataHandler.createWorkoutSchedules(member);
 
             // when
             // 멤버가 자신의 정보를 조회한다면
@@ -282,6 +283,17 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(data.sessionInfo().sessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
                 softly.assertThat(data.sessionInfo().remainingCount()).isEqualTo(sessionInfo.getRemainingCount());
                 softly.assertThat(data.sessionInfo().totalCount()).isEqualTo(sessionInfo.getTotalCount());
+
+                softly.assertThat(data.workoutSchedules().size()).isEqualTo(workoutSchedules.size());
+                for (WorkoutScheduleDto.Response responseDto : data.workoutSchedules()) {
+                    WorkoutSchedule workoutSchedule = workoutSchedules.stream().filter(ws -> ws.getWorkoutScheduleId()
+                            .equals(responseDto.workoutScheduleId())).findFirst().orElseThrow();
+
+                    softly.assertThat(responseDto.workoutScheduleId()).isEqualTo(workoutSchedule.getWorkoutScheduleId());
+                    softly.assertThat(responseDto.dayOfWeek()).isEqualTo(workoutSchedule.getDayOfWeek());
+                    softly.assertThat(responseDto.preferenceTimes())
+                            .containsExactlyInAnyOrderElementsOf(workoutSchedule.getPreferenceTimes());
+                }
             });
         }
     }
@@ -397,79 +409,9 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
     }
 
     @Nested
-    @DisplayName("회원 PT 희망 시간 조회 API 테스트")
-    public class MemberPtTimeTest {
-        private static final String MEMBER_PT_TIME_API = "/v1/members/workout-schedule";
-
-        @Test
-        @DisplayName("회원 PT 희망 시간 조회 성공")
-        public void memberPtTimeSuccess() throws Exception {
-            // given
-            // 회원, 희망 시간 정보가 있을 때
-            Member member = testDataHandler.createMember();
-            String token = testDataHandler.createTokenFromMember(member);
-            List<WorkoutSchedule> workoutSchedules = testDataHandler.createWorkoutSchedules(member);
-
-            // when
-            // 회원이 PT 희망 시간을 조회한다면
-            ExtractableResponse<Response> result = get(MEMBER_PT_TIME_API, token);
-
-            // then
-            // PT 희망 시간을 응답한다
-            SoftAssertions.assertSoftly(softly -> {
-                softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<List<WorkoutScheduleDto.Response>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
-                });
-
-                List<WorkoutScheduleDto.Response> data = response.data();
-                softly.assertThat(response).isNotNull();
-                softly.assertThat(response.success()).isTrue();
-                softly.assertThat(response.status()).isEqualTo(200);
-
-                softly.assertThat(data.size()).isEqualTo(workoutSchedules.size());
-                for (WorkoutScheduleDto.Response responseDto : data) {
-                    WorkoutSchedule workoutSchedule = workoutSchedules.stream().filter(ws -> ws.getWorkoutScheduleId()
-                            .equals(responseDto.workoutScheduleId())).findFirst().orElseThrow();
-
-                    softly.assertThat(responseDto.workoutScheduleId()).isEqualTo(workoutSchedule.getWorkoutScheduleId());
-                    softly.assertThat(responseDto.dayOfWeek()).isEqualTo(workoutSchedule.getDayOfWeek());
-                    softly.assertThat(responseDto.preferenceTimes())
-                            .containsExactlyInAnyOrderElementsOf(workoutSchedule.getPreferenceTimes());
-                }
-            });
-        }
-
-        @Test
-        @DisplayName("회원 PT 희망 시간 조회 성공 - PT 희망 시간이 없을 때")
-        public void memberPtTimeSuccessByEmpty() throws Exception {
-            // given
-            // 회원이 있고, PT 희망 시간이 없을 때
-            Member member = testDataHandler.createMember();
-            String token = testDataHandler.createTokenFromMember(member);
-
-            // when
-            // 회원이 PT 희망 시간을 조회한다면
-            ExtractableResponse<Response> result = get(MEMBER_PT_TIME_API, token);
-
-            // then
-            // PT 희망 시간이 없다는 응답을 받는다
-            SoftAssertions.assertSoftly(softly -> {
-                softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<List<WorkoutScheduleDto.Response>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
-                });
-
-                softly.assertThat(response).isNotNull();
-                softly.assertThat(response.success()).isTrue();
-                softly.assertThat(response.status()).isEqualTo(200);
-                softly.assertThat(response.data()).isEmpty();
-            });
-        }
-    }
-
-    @Nested
     @DisplayName("회원 PT 희망 시간 수정 API 테스트")
     public class MemberPtTimeUpdateTest {
-        private static final String MEMBER_PT_TIME_UPDATE_API = "/v1/members/workout-schedule";
+        private static final String MEMBER_PT_TIME_UPDATE_API = "/v1/members/me/workout-schedule";
 
         @Test
         @DisplayName("회원 PT 희망 시간 수정 성공 - PT 희망 시간이 없을 때")
