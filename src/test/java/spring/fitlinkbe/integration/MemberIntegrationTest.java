@@ -1085,6 +1085,139 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
     }
 
+    @Nested
+    @DisplayName("내 회원 리스트 조회 api 테스트")
+    public class MemberListTest {
+        private static final String MEMBER_LIST_API = "/v1/members";
+
+        @Test
+        @DisplayName("내 회원 리스트 조회 성공")
+        public void memberListSuccess() throws Exception {
+            // given
+            // 트레이너, 회원 정보가 있을 때
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+
+            // 7명의 회원 생성
+            createMembers(trainer);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 회원 리스트를 조회할 때
+            String url = MEMBER_LIST_API;
+            ExtractableResponse<Response> result = get(url, token);
+
+            // then
+            // 회원 리스트를 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<CustomPageResponse<MemberInfoDto.SimpleResponse>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                CustomPageResponse<MemberInfoDto.SimpleResponse> data = response.data();
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(200);
+
+                softly.assertThat(data.getTotalElements()).isEqualTo(7);
+                softly.assertThat(data.getTotalPages()).isEqualTo(1);
+                softly.assertThat(data.getContent().size()).isEqualTo(7);
+            });
+        }
+
+        @Test
+        @DisplayName("내 회원 리스트 조회 성공 - 페이징 조회")
+        public void memberListSuccessByPaging() throws Exception {
+            // given
+            // 트레이너, 회원 정보가 있을 때
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+            // 7명의 회원 생성
+            createMembers(trainer);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 회원 리스트를 페이징 조회할 때
+            int page = 0;
+            int size = 3;
+            String url = MEMBER_LIST_API + "?page=" + page + "&size=" + size;
+            ExtractableResponse<Response> result = get(url, token);
+
+            // then
+            // 회원 리스트를 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<CustomPageResponse<MemberInfoDto.SimpleResponse>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                CustomPageResponse<MemberInfoDto.SimpleResponse> data = response.data();
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(200);
+
+                softly.assertThat(data.getTotalElements()).isEqualTo(7);
+                softly.assertThat(data.getTotalPages()).isEqualTo(3);
+                softly.assertThat(data.getContent().size()).isEqualTo(3);
+            });
+        }
+
+        @Test
+        @DisplayName("내 회원 리스트 조회 성공 - 키워드 검색")
+        public void memberListSuccessByKeyword() throws Exception {
+            // given
+            // 트레이너, 회원 정보가 있을 때
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+
+            // 7명의 회원 생성
+            createMembers(trainer);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 회원 리스트를 키워드로 검색할 때
+            String keyword = "member1";
+            String url = MEMBER_LIST_API + "?q=" + keyword;
+            ExtractableResponse<Response> result = get(url, token);
+
+            // then
+            // 회원 리스트를 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<CustomPageResponse<MemberInfoDto.SimpleResponse>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                CustomPageResponse<MemberInfoDto.SimpleResponse> data = response.data();
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(200);
+
+                softly.assertThat(data.getTotalElements()).isEqualTo(1);
+                softly.assertThat(data.getTotalPages()).isEqualTo(1);
+                softly.assertThat(data.getContent().size()).isEqualTo(1);
+            });
+        }
+    }
+
+    private void createMembers(Trainer trainer) {
+        Member member1 = testDataHandler.createMember("member1");
+        Member member2 = testDataHandler.createMember("member2");
+        Member member3 = testDataHandler.createMember("member3");
+        Member member4 = testDataHandler.createMember("member4");
+        Member member5 = testDataHandler.createMember("member5");
+        Member member6 = testDataHandler.createMember("member6");
+        Member member7 = testDataHandler.createMember("member7");
+
+        // 2명의 회원은 미연결
+        testDataHandler.createMember("member8");
+        testDataHandler.createMember("member9");
+
+
+        testDataHandler.connectMemberAndTrainer(member1, trainer);
+        testDataHandler.connectMemberAndTrainer(member2, trainer);
+        testDataHandler.connectMemberAndTrainer(member3, trainer);
+        testDataHandler.connectMemberAndTrainer(member4, trainer);
+        testDataHandler.connectMemberAndTrainer(member5, trainer);
+        testDataHandler.connectMemberAndTrainer(member6, trainer);
+        testDataHandler.connectMemberAndTrainer(member7, trainer);
+    }
+
     private void createSessions(Member member, Trainer trainer) {
         testDataHandler.createSession(member, trainer, Session.Status.SESSION_COMPLETED);
         testDataHandler.createSession(member, trainer, Session.Status.SESSION_COMPLETED);

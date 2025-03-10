@@ -12,6 +12,18 @@ import java.util.List;
 public class MemberInfoDto {
 
     @Builder
+    public record SimpleResponse(
+            Long memberId,
+            String name,
+            LocalDate birthDate,
+            String phoneNumber,
+            String profilePictureUrl,
+            SessionInfoResponse sessionInfo
+    ){
+
+    }
+
+    @Builder
     public record Response(
             Long memberId,
             String name,

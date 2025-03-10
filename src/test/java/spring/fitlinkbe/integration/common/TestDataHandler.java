@@ -77,6 +77,19 @@ public class TestDataHandler {
         return saved;
     }
 
+    public Member createMember(String name) {
+        Member member = Member.builder()
+                .name(name)
+                .birthDate(LocalDate.of(1995, 1, 1))
+                .phoneNumber(new PhoneNumber("01012345678"))
+                .isConnected(false)
+                .build();
+
+        Member saved = memberRepository.saveMember(member).orElseThrow();
+        createPersonalDetail(saved);
+        return saved;
+    }
+
     public Trainer createTrainer(String trainerCode) {
         Trainer trainer = Trainer.builder()
                 .trainerCode(trainerCode)
