@@ -24,6 +24,9 @@ import spring.fitlinkbe.domain.trainer.TrainerService;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -172,5 +175,16 @@ public class MemberFacade {
         memberService.saveSessionInfo(sessionInfo);
 
         return SessionInfoCriteria.Response.from(sessionInfo);
+    }
+
+    public Page<MemberInfoResult.SimpleResponse> getMembers(Long trainerId, Pageable pageRequest, String keyword) {
+        Page<Member> memberPage = memberService.getMembers(trainerId, pageRequest, keyword);
+
+        List<Long> memberIds = memberPage.getContent().stream().map(Member::getMemberId).toList();
+        List<SessionInfo> sessions = memberService.findAllSessionInfo(memberIds, trainerId);
+        Map<Long, SessionInfo> grouped = sessions.stream()
+                .collect(Collectors.toMap(SessionInfo::getMemberId, Function.identity()));
+
+        return memberPage.map(member -> MemberInfoResult.SimpleResponse.of(member, grouped.get(member.getMemberId())));
     }
 }

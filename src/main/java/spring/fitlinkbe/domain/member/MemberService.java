@@ -1,6 +1,8 @@
 package spring.fitlinkbe.domain.member;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
@@ -150,5 +152,16 @@ public class MemberService {
 
     public void saveSessionInfo(SessionInfo sessionInfo) {
         sessionInfoRepository.saveSessionInfo(sessionInfo);
+    }
+
+    /**
+     * 해당 트레이너의 회원 목록 조회
+     */
+    public Page<Member> getMembers(Long trainerId, Pageable pageRequest, String keyword) {
+        return memberRepository.getMembers(trainerId, pageRequest, keyword);
+    }
+
+    public List<SessionInfo> findAllSessionInfo(List<Long> memberIds, Long trainerId) {
+        return sessionInfoRepository.findAllSessionInfo(memberIds, trainerId);
     }
 }

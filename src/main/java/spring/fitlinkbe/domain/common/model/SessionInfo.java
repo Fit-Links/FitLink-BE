@@ -47,4 +47,8 @@ public class SessionInfo {
         }
         totalCount = count;
     }
+
+    public Long getMemberId() {
+        return member.getMemberId();
+    }
 }

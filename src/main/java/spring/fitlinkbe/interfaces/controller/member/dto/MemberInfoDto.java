@@ -20,7 +20,16 @@ public class MemberInfoDto {
             String profilePictureUrl,
             SessionInfoResponse sessionInfo
     ){
-
+        public static SimpleResponse from(MemberInfoResult.SimpleResponse result) {
+            return SimpleResponse.builder()
+                    .memberId(result.memberId())
+                    .name(result.name())
+                    .birthDate(result.birthDate())
+                    .phoneNumber(result.phoneNumber())
+                    .profilePictureUrl(result.profilePictureUrl())
+                    .sessionInfo(result.sessionInfo() != null ? SessionInfoResponse.from(result.sessionInfo()) : null)
+                    .build();
+        }
     }
 
     @Builder
