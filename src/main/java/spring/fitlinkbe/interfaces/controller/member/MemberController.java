@@ -156,6 +156,18 @@ public class MemberController {
         return ApiResultResponse.ok(CustomPageResponse.of(result, MemberInfoDto.SimpleResponse::from));
     }
 
+    @GetMapping("/{memberId}")
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
+    public ApiResultResponse<MemberInfoDto.Response> getMemberInfo(
+            @Login SecurityUser user,
+            @PathVariable Long memberId
+    ) {
+        MemberInfoResult.Response result = memberFacade.getMemberInfo(user.getTrainerId(), memberId);
+
+        return ApiResultResponse.ok(MemberInfoDto.Response.from(result));
+
+    }
+
     @InitBinder
     public void initBinder(WebDataBinder dataBinder) {
         Object target = dataBinder.getTarget();
