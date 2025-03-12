@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import spring.fitlinkbe.domain.common.SessionInfoRepository;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -54,5 +55,15 @@ public class SessionInfoRepositoryImpl implements SessionInfoRepository {
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public List<SessionInfo> findAllSessionInfo(List<Long> memberIds, Long trainerId) {
+        List<SessionInfoEntity> findEntities = sessionInfoJpaRepository
+                .findByMember_memberIdInAndTrainer_TrainerId(memberIds, trainerId);
+
+        return findEntities.stream()
+                .map(SessionInfoEntity::toDomain)
+                .toList();
     }
 }

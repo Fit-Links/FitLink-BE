@@ -1,8 +1,10 @@
 package spring.fitlinkbe.infra.common.sessioninfo;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SessionInfoJpaRepository extends JpaRepository<SessionInfoEntity, Long> {
@@ -20,4 +22,7 @@ public interface SessionInfoJpaRepository extends JpaRepository<SessionInfoEntit
     Optional<SessionInfoEntity> findByMemberIdJoinFetch(Long memberId);
 
     Optional<SessionInfoEntity> findByMember_memberIdAndTrainer_TrainerId(Long memberId, Long trainerId);
+
+    @EntityGraph(attributePaths = {"member", "trainer"})
+    List<SessionInfoEntity> findByMember_memberIdInAndTrainer_TrainerId(List<Long> memberIds, Long trainerId);
 }

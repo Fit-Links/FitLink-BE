@@ -1,6 +1,8 @@
 package spring.fitlinkbe.infra.member;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
@@ -35,6 +37,12 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public List<Member> getMembers() {
         return memberJpaRepository.findAll().stream().map(MemberEntity::toDomain).toList();
+    }
+
+    @Override
+    public Page<Member> getMembers(Long trainerId, Pageable pageRequest, String keyword) {
+        return memberJpaRepository.findAllMembers(trainerId, pageRequest, keyword)
+                .map(MemberEntity::toDomain);
     }
 
     @Override

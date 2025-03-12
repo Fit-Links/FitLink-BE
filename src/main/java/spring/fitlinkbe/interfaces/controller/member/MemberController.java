@@ -144,6 +144,18 @@ public class MemberController {
         return ApiResultResponse.ok(SessionInfoDto.Response.from(result));
     }
 
+    @GetMapping
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
+    public ApiResultResponse<CustomPageResponse<MemberInfoDto.SimpleResponse>> getMembers(
+            @Login SecurityUser user,
+            @PageableDefault Pageable pageRequest,
+            @RequestParam(required = false) String q
+    ) {
+        Page<MemberInfoResult.SimpleResponse> result = memberFacade.getMembers(user.getTrainerId(), pageRequest, q);
+
+        return ApiResultResponse.ok(CustomPageResponse.of(result, MemberInfoDto.SimpleResponse::from));
+    }
+
     @InitBinder
     public void initBinder(WebDataBinder dataBinder) {
         Object target = dataBinder.getTarget();

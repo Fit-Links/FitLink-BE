@@ -12,6 +12,27 @@ import java.util.List;
 public class MemberInfoDto {
 
     @Builder
+    public record SimpleResponse(
+            Long memberId,
+            String name,
+            LocalDate birthDate,
+            String phoneNumber,
+            String profilePictureUrl,
+            SessionInfoResponse sessionInfo
+    ){
+        public static SimpleResponse from(MemberInfoResult.SimpleResponse result) {
+            return SimpleResponse.builder()
+                    .memberId(result.memberId())
+                    .name(result.name())
+                    .birthDate(result.birthDate())
+                    .phoneNumber(result.phoneNumber())
+                    .profilePictureUrl(result.profilePictureUrl())
+                    .sessionInfo(result.sessionInfo() != null ? SessionInfoResponse.from(result.sessionInfo()) : null)
+                    .build();
+        }
+    }
+
+    @Builder
     public record Response(
             Long memberId,
             String name,

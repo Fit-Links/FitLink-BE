@@ -86,4 +86,25 @@ public class MemberInfoResult {
             );
         }
     }
+
+    @Builder
+    public record SimpleResponse(
+            Long memberId,
+            String name,
+            LocalDate birthDate,
+            String phoneNumber,
+            String profilePictureUrl,
+            SessionInfoResponse sessionInfo
+    ) {
+        public static SimpleResponse of(Member me, SessionInfo sessionInfo) {
+            return SimpleResponse.builder()
+                    .memberId(me.getMemberId())
+                    .name(me.getName())
+                    .birthDate(me.getBirthDate())
+                    .phoneNumber(me.getPhoneNumber())
+                    .profilePictureUrl(me.getProfilePictureUrl())
+                    .sessionInfo(sessionInfo != null ? SessionInfoResponse.from(sessionInfo) : null)
+                    .build();
+        }
+    }
 }

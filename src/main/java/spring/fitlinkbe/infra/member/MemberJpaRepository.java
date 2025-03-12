@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
-public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long> {
+public interface MemberJpaRepository extends JpaRepository<MemberEntity, Long>, MemberRepositoryCustom {
 
     @Query("SELECT m FROM MemberEntity m " +
             "LEFT JOIN FETCH m.trainer " +
