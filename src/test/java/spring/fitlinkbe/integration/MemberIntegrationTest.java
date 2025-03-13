@@ -973,6 +973,47 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
+        @DisplayName("회원 PT 내역 조회 성공 - 다른 트레이너와 진행한 PT 세션은 제외")
+        public void memberSessionSuccessByAnotherTrainer() throws Exception {
+            // given
+            // 회원, 트레이너, 세션 정보가 있을 때
+            Member member = testDataHandler.createMember();
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+            Trainer anotherTrainer = testDataHandler.createTrainer("CD1423");
+            testDataHandler.connectMemberAndTrainer(member, trainer);
+            testDataHandler.connectMemberAndTrainer(member, anotherTrainer);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            createSessions(member, trainer);
+            createSessions(member, anotherTrainer);
+
+            // when
+            // 트레이너가 회원 PT 내역을 조회할 때 다른 트레이너와 진행한 PT 세션은 제외한다
+            int page = 0;
+            int size = 10;
+            String url = MEMBER_SESSION_DETAIL_API.replace("{memberId}", member.getMemberId().toString()) + "?page=" + page + "&size=" + size;
+            ExtractableResponse<Response> result = get(url, token);
+
+            // then
+            // PT 내역을 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<CustomPageResponse<MemberSessionDto.SessionResponse>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                CustomPageResponse<MemberSessionDto.SessionResponse> data = response.data();
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(200);
+
+                softly.assertThat(data.getTotalElements()).isEqualTo(7);
+                softly.assertThat(data.getTotalPages()).isEqualTo(1);
+                softly.assertThat(data.getContent().size()).isEqualTo(7);
+            });
+        }
+
+
+        @Test
         @DisplayName("회원 PT 내역 조회 실패 - 트레이너와 연결이 안되어있는 멤버일 때")
         public void memberSessionFailByNotConnected() throws Exception {
             // given
