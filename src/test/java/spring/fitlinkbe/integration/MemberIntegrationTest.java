@@ -981,11 +981,10 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             Trainer trainer = testDataHandler.createTrainer("AB1423");
             Trainer anotherTrainer = testDataHandler.createTrainer("CD1423");
             testDataHandler.connectMemberAndTrainer(member, trainer);
-            testDataHandler.connectMemberAndTrainer(member, anotherTrainer);
             String token = testDataHandler.createTokenFromTrainer(trainer);
 
-            createSessions(member, trainer);
             createSessions(member, anotherTrainer);
+            createSessions(member, trainer);
 
             // when
             // 트레이너가 회원 PT 내역을 조회할 때 다른 트레이너와 진행한 PT 세션은 제외한다
