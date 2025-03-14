@@ -1272,6 +1272,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 });
 
                 softly.assertThat(response).isNotNull();
+                softly.assertThat(response.msg()).isEqualTo("트레이너가 멤버와 연결되어 있지 않습니다.");
                 softly.assertThat(response.success()).isFalse();
                 softly.assertThat(response.status()).isEqualTo(400);
                 softly.assertThat(response.data()).isNull();
