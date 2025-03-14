@@ -39,8 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_NOT_FOUND;
-import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_APPROVED;
-import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_WAITING;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
 
 @WebMvcTest(ReservationController.class)
 class ReservationControllerTest {
@@ -607,11 +606,11 @@ class ReservationControllerTest {
 
     @Nested
     @DisplayName("세션 예약 Controller TEST")
-    class ReserveSessionControllerTest {
+    class saveReservationControllerTest {
 
         @Test
         @DisplayName("트레이너가 세션 예약 성공")
-        void reserveSessionWithTrainer() throws Exception {
+        void saveReservationWithTrainer() throws Exception {
             //given
             ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
                     .trainerId(1L)
@@ -655,7 +654,7 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("멤버가 세션 예약 성공")
-        void reserveSessionWithMember() throws Exception {
+        void saveReservationWithMember() throws Exception {
             //given
             ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
                     .trainerId(1L)
@@ -698,7 +697,7 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("세션 예약 실패 - memberId 누락")
-        void reserveSessionWithNoMemberId() throws Exception {
+        void saveReservationWithNoMemberId() throws Exception {
             //given
 
             ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
@@ -741,7 +740,7 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("세션 예약 실패 - date 정보 누락")
-        void reserveSessionWithNoDate() throws Exception {
+        void saveReservationWithNoDate() throws Exception {
             //given
 
             ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
@@ -784,7 +783,7 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("세션 예약 실패 - name 정보 누락")
-        void reserveSessionWithNoName() throws Exception {
+        void saveReservationWithNoName() throws Exception {
             //given
             ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
                     .trainerId(1L)
@@ -829,11 +828,11 @@ class ReservationControllerTest {
 
     @Nested
     @DisplayName("고정 세션 예약 Controller TEST")
-    class FixedReserveSessionControllerTest {
+    class FixedSaveReservationControllerTest {
 
         @Test
         @DisplayName("트레이너가 고정 세션 예약 성공")
-        void fixedReserveSessionWithTrainer() throws Exception {
+        void FixedSaveReservationWithTrainer() throws Exception {
             //given
             ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
                     .memberId(1L)
@@ -877,7 +876,7 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("고정 세션 예약 실패 - memberID 정보 누락")
-        void reserveSessionWithNoMemberId() throws Exception {
+        void saveReservationWithNoMemberId() throws Exception {
             //given
             ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
                     .name("멤버1")
@@ -918,7 +917,7 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("고정 세션 예약 실패 - name 정보 누락")
-        void reserveSessionWithNoName() throws Exception {
+        void saveReservationWithNoName() throws Exception {
             //given
             ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
                     .memberId(1L)
@@ -959,7 +958,7 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("고정 세션 예약 실패 - dates 정보 누락")
-        void reserveSessionWithNoDates() throws Exception {
+        void saveReservationWithNoDates() throws Exception {
             //given
             ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
                     .name("멤버1")
@@ -1000,7 +999,7 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("고정 세션 예약 실패 - 현재 날짜보다 이전 dates 정보")
-        void reserveSessionWithBeforeDates() throws Exception {
+        void saveReservationWithBeforeDates() throws Exception {
             //given
             ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
                     .name("멤버1")
@@ -1040,6 +1039,137 @@ class ReservationControllerTest {
                     .andExpect(jsonPath("$.data").isEmpty());
         }
 
+    }
+
+    @Nested
+    @DisplayName("예약 취소 Controller TEST")
+    class CancelReservationControllerTest {
+
+        @Test
+        @DisplayName("트레이너가 예약 취소 성공")
+        void cancelReservationWithTrainer() throws Exception {
+            //given
+            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelReason("개인 사정으로 인한 취소")
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder().reservationId(reservationId).status(RESERVATION_CANCELLED).build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.cancelReservation(any(ReservationCriteria.CancelReservation.class),
+                    any(SecurityUser.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/cancel".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))  // OAuth2 인증
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.msg").value("OK"))
+                    .andExpect(jsonPath("$.data").isNotEmpty())
+                    .andExpect(jsonPath("$.data.reservationId").value(1L))
+                    .andExpect(jsonPath("$.data.status").value(RESERVATION_CANCELLED.getName()));
+        }
+
+        @Test
+        @DisplayName("멤버가 예약 취소 성공")
+        void cancelReservationWithMember() throws Exception {
+            //given
+            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelReason("개인 사정으로 인한 취소")
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder().reservationId(reservationId).status(RESERVATION_CANCEL_REQUEST).build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(1L)
+                    .trainerId(null)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.cancelReservation(any(ReservationCriteria.CancelReservation.class),
+                    any(SecurityUser.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/cancel".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))  // OAuth2 인증
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.msg").value("OK"))
+                    .andExpect(jsonPath("$.data").isNotEmpty())
+                    .andExpect(jsonPath("$.data.reservationId").value(1L))
+                    .andExpect(jsonPath("$.data.status").value(RESERVATION_CANCEL_REQUEST.getName()));
+        }
+
+        @Test
+        @DisplayName("예약 취소 실패 - 취소 사유 부재")
+        void cancelReservationWithNoReason() throws Exception {
+            //given
+            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder().reservationId(reservationId).status(RESERVATION_CANCEL_REQUEST).build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(1L)
+                    .trainerId(null)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.cancelReservation(any(ReservationCriteria.CancelReservation.class),
+                    any(SecurityUser.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/cancel".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))  // OAuth2 인증
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("400 BAD_REQUEST \"Validation failure\""))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
     }
 
 

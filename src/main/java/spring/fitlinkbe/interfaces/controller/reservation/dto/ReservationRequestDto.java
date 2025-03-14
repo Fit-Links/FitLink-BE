@@ -62,4 +62,16 @@ public class ReservationRequestDto {
                     .build();
         }
     }
+
+    @Builder(toBuilder = true)
+    public record CancelReservation(@NotEmpty(message = "취소 사유는 필수값 입니다.") String cancelReason) {
+
+        public ReservationCriteria.CancelReservation toCriteria(Long reservationId) {
+
+            return ReservationCriteria.CancelReservation.builder()
+                    .reservationId(reservationId)
+                    .cancelReason(cancelReason)
+                    .build();
+        }
+    }
 }

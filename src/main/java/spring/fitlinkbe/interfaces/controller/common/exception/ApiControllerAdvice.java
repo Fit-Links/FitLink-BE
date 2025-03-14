@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
@@ -68,6 +69,13 @@ public class ApiControllerAdvice {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ApiResultResponse<Object> handlerMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
         log.error("MethodArgumentTypeMismatchException is occurred! {}", e.getMessage());
+        return ApiResultResponse.of(HttpStatus.BAD_REQUEST, false, e.getMessage(), null);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ApiResultResponse<Object> handlerMethodValidationException(HandlerMethodValidationException e) {
+        log.error("HandlerMethodValidationException is occurred! {}", e.getMessage());
         return ApiResultResponse.of(HttpStatus.BAD_REQUEST, false, e.getMessage(), null);
     }
 
