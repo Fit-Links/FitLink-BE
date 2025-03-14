@@ -29,6 +29,11 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
+    public void sendCancelRequestReservationNotification(Long reservationId, String name, PersonalDetail memberDetail, Reason reason) {
+        Notification notification = cancelRequestReservationNotification(reservationId, name, memberDetail, reason);
+        notificationRepository.save(notification);
+    }
+
     public void sendApproveReservationNotification(Long reservationId, PersonalDetail memberDetail) {
         Notification notification = approveReservationNotification(reservationId, memberDetail);
         notificationRepository.save(notification);

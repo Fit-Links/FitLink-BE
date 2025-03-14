@@ -68,4 +68,14 @@ public class ReservationCriteria {
                     .toList();
         }
     }
+
+    @Builder(toBuilder = true)
+    public record CancelReservation(Long reservationId, String cancelReason) {
+        public ReservationCommand.CancelReservation toCommand() {
+            return ReservationCommand.CancelReservation.builder()
+                    .reservationId(reservationId)
+                    .cancelReason(cancelReason)
+                    .build();
+        }
+    }
 }

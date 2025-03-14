@@ -269,7 +269,7 @@ class ReservationServiceTest {
                     .status(DISABLED_TIME_RESERVATION)
                     .build();
 
-            when(reservationRepository.reserveSession(any(Reservation.class)))
+            when(reservationRepository.saveReservation(any(Reservation.class)))
                     .thenReturn(Optional.ofNullable(savedReservation));
 
             //when
@@ -283,11 +283,11 @@ class ReservationServiceTest {
 
     @Nested
     @DisplayName("세션 예약 Service TEST")
-    class ReserveSessionServiceTest {
+    class saveReservationServiceTest {
 
         @Test
         @DisplayName("세션 예약 성공")
-        void reserveSession() {
+        void saveReservation() {
             //given
             Reservation reservation = Reservation.builder()
                     .status(RESERVATION_WAITING)
@@ -298,7 +298,7 @@ class ReservationServiceTest {
                     .status(RESERVATION_WAITING)
                     .build();
 
-            when(reservationRepository.reserveSession(reservation))
+            when(reservationRepository.saveReservation(reservation))
                     .thenReturn(Optional.ofNullable(savedReservation));
 
             //when
@@ -311,9 +311,9 @@ class ReservationServiceTest {
 
         @Test
         @DisplayName("세션 예약 실패 - 예약 정보가 안넘어 왔을 때")
-        void reserveSessionNoReservationInfo() {
+        void saveReservationNoReservationInfo() {
             //given
-            when(reservationRepository.reserveSession(any(Reservation.class))).thenThrow(
+            when(reservationRepository.saveReservation(any(Reservation.class))).thenThrow(
                     new CustomException(RESERVATION_NOT_FOUND,
                             RESERVATION_NOT_FOUND.getMsg()));
 
@@ -328,11 +328,11 @@ class ReservationServiceTest {
 
     @Nested
     @DisplayName("세션 생성 Service TEST")
-    class CreateSessionServiceTest {
+    class saveSessionServiceTest {
 
         @Test
         @DisplayName("세션 생성 성공")
-        void createSession() {
+        void saveSession() {
             //given
             Reservation reservation = Reservation.builder()
                     .reservationId(1L)
@@ -343,11 +343,11 @@ class ReservationServiceTest {
                     .sessionId(1L)
                     .build();
 
-            when(reservationRepository.createSession(any(Session.class)))
+            when(reservationRepository.saveSession(any(Session.class)))
                     .thenReturn(Optional.ofNullable(session));
 
             //when
-            Session result = reservationService.createSession(reservation);
+            Session result = reservationService.saveSession(reservation);
 
             //then
             assertThat(result).isNotNull();
@@ -356,14 +356,14 @@ class ReservationServiceTest {
 
         @Test
         @DisplayName("세션 생성 실패 - 예약 정보가 안넘어 왔을 때")
-        void createSessionNoReservationInfo() {
+        void saveSessionNoReservationInfo() {
             //given
-            when(reservationRepository.createSession(any())).thenThrow(
+            when(reservationRepository.saveSession(any())).thenThrow(
                     new CustomException(SESSION_CREATE_FAILED,
                             SESSION_CREATE_FAILED.getMsg()));
 
             //when & then
-            assertThatThrownBy(() -> reservationService.createSession(Reservation.builder().build()))
+            assertThatThrownBy(() -> reservationService.saveSession(Reservation.builder().build()))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(SESSION_CREATE_FAILED);

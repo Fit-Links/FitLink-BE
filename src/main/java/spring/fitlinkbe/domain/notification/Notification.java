@@ -75,6 +75,26 @@ public class Notification {
                 .build();
     }
 
+    public static Notification cancelRequestReservationNotification(Long reservationId, String name,
+                                                                    PersonalDetail memberDetail, Reason reason) {
+        String content = "회원 %s 님의 %s를 요청하였습니다.".formatted(
+                name,
+                reason.name);
+
+        return Notification.builder()
+                .refId(reservationId)
+                .refType(ReferenceType.RESERVATION)
+                .notificationType(NotificationType.RESERVATION_CANCEL)
+                .personalDetail(memberDetail)
+                .name(NotificationType.RESERVATION_CANCEL.getName())
+                .content(content)
+                .isSent(true)
+                .isProcessed(false)
+                .sendDate(LocalDateTime.now())
+                .build();
+
+    }
+
     public static Notification approveReservationNotification(Long reservationId, PersonalDetail memberDetail) {
 
         String content = " %s 님의 예약이 승인되었습니다.".formatted(memberDetail.getName());
@@ -149,7 +169,9 @@ public class Notification {
     @RequiredArgsConstructor
     public enum Reason {
         DAY_OFF("연차"),
-        RESERVATION_REFUSE("예약 거절");
+        RESERVATION_REFUSE("예약 거절"),
+        RESERVATION_CANCEL("예약 취소"),
+        RESERVATION_CANCEL_REQUEST("예약 취소 요청");
         private final String name;
     }
 }

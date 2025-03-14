@@ -66,6 +66,7 @@ public class Reservation {
         RESERVATION_WAITING("예약 대기"), // 예약 대기
         RESERVATION_APPROVED("예약 확정"), // 예약 확정
         RESERVATION_CANCELLED("예약 취소"), // 예약 취소
+        RESERVATION_CANCEL_REQUEST("예약 취소 요청"), // 예약 취소
         RESERVATION_REFUSED("예약 거절"),  // 예약 거부
         RESERVATION_CHANGE_REQUEST("예약 변경 요청"), //예약 변경 요청
         RESERVATION_COMPLETED("예약 종료"); // 세션까지 완전 완료 되었을 때
@@ -134,7 +135,23 @@ public class Reservation {
             throw new CustomException(RESERVATION_CANCEL_NOT_ALLOWED);
         }
         cancelReason = message;
-        status = RESERVATION_CANCELLED;
+        this.status = RESERVATION_CANCELLED;
+    }
+
+    public void cancelRequest(String message) {
+        // 당일 예약 취소는 불가능 함
+        if (LocalDateTime.now().isAfter(reservationDates.get(0).minusDays(1).truncatedTo(ChronoUnit.DAYS).plusHours(23))) {
+            throw new CustomException(RESERVATION_CANCEL_NOT_ALLOWED, "당일 예약 취소 요청은 불가합니다.");
+        }
+        if (status == DISABLED_TIME_RESERVATION || status == RESERVATION_REFUSED) {
+            throw new CustomException(RESERVATION_CANCEL_NOT_ALLOWED);
+        }
+        if (status == RESERVATION_CANCELLED) {
+            throw new CustomException(RESERVATION_IS_ALREADY_CANCEL);
+        }
+        cancelReason = message;
+        this.status = RESERVATION_CANCEL_REQUEST;
+
     }
 
     public boolean isReservationNotAllowed() {

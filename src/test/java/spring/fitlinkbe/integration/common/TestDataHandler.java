@@ -279,13 +279,13 @@ public class TestDataHandler {
                 .status(Reservation.Status.RESERVATION_APPROVED)
                 .reservationDates(List.of(LocalDateTime.now()))
                 .build();
-        Reservation saved = reservationRepository.reserveSession(reservation).orElseThrow();
+        Reservation saved = reservationRepository.saveReservation(reservation).orElseThrow();
 
         Session session = Session.builder()
                 .reservation(saved)
                 .status(status)
                 .isCompleted(true)
                 .build();
-        return reservationRepository.createSession(session).orElseThrow();
+        return reservationRepository.saveSession(session).orElseThrow();
     }
 }

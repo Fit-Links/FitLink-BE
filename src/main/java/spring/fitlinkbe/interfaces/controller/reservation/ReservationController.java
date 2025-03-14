@@ -141,4 +141,25 @@ public class ReservationController {
                 .toList());
 
     }
+
+    /**
+     * 예약 취소
+     *
+     * @param request cancelReason 정보
+     * @return ApiResultResponse 취소된 reservationId 정보를 반환한다.
+     */
+    @PostMapping("/{reservationId}/cancel")
+    public ApiResultResponse<ReservationResponseDto.Success> cancelReservation(@PathVariable("reservationId")
+                                                                               @NotNull(message = "예약 ID는 필수값입니다.")
+                                                                               Long reservationId,
+                                                                               @Valid @RequestBody ReservationRequestDto.CancelReservation
+                                                                                       request,
+                                                                               @Login SecurityUser user
+    ) {
+
+        Reservation result = reservationFacade.cancelReservation(request.toCriteria(reservationId), user);
+
+        return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
+
+    }
 }

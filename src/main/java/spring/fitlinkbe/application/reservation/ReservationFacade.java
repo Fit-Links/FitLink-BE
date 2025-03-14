@@ -22,6 +22,7 @@ import java.util.List;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
+import static spring.fitlinkbe.domain.notification.Notification.Reason.RESERVATION_CANCEL_REQUEST;
 import static spring.fitlinkbe.domain.notification.Notification.Reason.RESERVATION_REFUSE;
 
 @Component
@@ -40,7 +41,7 @@ public class ReservationFacade {
                 .getReservations(ReservationCommand.GetReservations.of(date, user.getUserRole(), user.getUserId())));
     }
 
-    @Transactional(readOnly = true)
+
     public ReservationResult.ReservationDetail getReservation(Long reservationId) {
 
         //예약 상세 정보 조회
@@ -76,7 +77,7 @@ public class ReservationFacade {
 
         if (user.getUserRole() == TRAINER) {
             //만약 트레이너가 예약을 했다면, 바로 세션 생성
-            reservationService.createSession(savedReservation);
+            reservationService.saveSession(savedReservation);
             // 트레이너가 예약했다면 멤버에게 예약이 됐다는 알람 전송
             PersonalDetail memberDetail = memberService.getMemberDetail(reservation.getMember().getMemberId());
             notificationService.sendApproveReservationNotification(savedReservation.getReservationId(), memberDetail);
@@ -90,7 +91,6 @@ public class ReservationFacade {
         return savedReservation;
     }
 
-    @Transactional(readOnly = true)
     public List<ReservationResult.ReservationWaitingMember> getWaitingMembers(LocalDateTime reservationDate, SecurityUser user) {
         // 예약 조회
         List<Reservation> reservations = reservationService.getReservationsWithWaitingStatus(user.getTrainerId());
@@ -117,9 +117,30 @@ public class ReservationFacade {
         // 고정 예약 진행
         List<Reservation> reservationDomains = criteria.toDomain(memberService.getSessionInfo(user.getTrainerId(),
                 criteria.memberId()), user);
-        List<Reservation> fixedReservation = reservationService.fixedReserveSessions(reservationDomains);
+        List<Reservation> fixedReservation = reservationService.fixedReserveSession(reservationDomains);
         // 고정 예약 완료 정보 리턴
         return ReservationResult.Reservations.from(fixedReservation);
+    }
+
+    @Transactional
+    public Reservation cancelReservation(ReservationCriteria.CancelReservation criteria, SecurityUser user) {
+
+        //예약 정보를 취소 한다.
+        Reservation reservation = reservationService.cancelReservation(criteria.toCommand(), user);
+        //트레이너의 경우
+        if (user.getUserRole() == TRAINER) {
+            // 세션을 하나 복구한다.
+            memberService.restoreSession(reservation.getTrainer().getTrainerId(),
+                    reservation.getMember().getMemberId());
+            // 트레이너 -> 멤버 예약이 취소됐다는 알람 전송
+            notificationService.sendCancelReservationNotification(reservation.getReservationId(),
+                    memberService.getMemberDetail(reservation.getMember().getMemberId()), RESERVATION_REFUSE);
+            return reservation;
+        }
+        // 멤버 -> 트레이너에게 예약 취소됐다는 알림을 보낸다.
+        notificationService.sendCancelRequestReservationNotification(reservation.getReservationId(), reservation.getName(),
+                trainerService.getTrainerDetail(reservation.getTrainer().getTrainerId()), RESERVATION_CANCEL_REQUEST);
+        return reservation;
     }
 
     @Transactional
@@ -142,7 +163,7 @@ public class ReservationFacade {
             cancelExistingReservations(getThatTimeReservations, "트레이너의 고정 예약으로 인해 예약이 취소되었습니다.");
         });
         // 고정 예약 진행
-        reservationService.fixedReserveSessions(newReservations);
+        reservationService.fixedReserveSession(newReservations);
     }
 
     private void cancelExistingReservations(List<Reservation> reservations, String cancelMsg) {
@@ -155,4 +176,6 @@ public class ReservationFacade {
                     memberService.getMemberDetail(r.getMember().getMemberId()), RESERVATION_REFUSE));
         }
     }
+
+
 }

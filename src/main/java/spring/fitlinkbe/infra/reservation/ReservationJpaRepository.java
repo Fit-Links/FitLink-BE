@@ -18,17 +18,17 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             "LEFT JOIN FETCH r.member " +
             "LEFT JOIN FETCH r.trainer " +
             "LEFT JOIN FETCH r.sessionInfo " +
-            "WHERE r.member.memberId = :userId " +
+            "WHERE r.member.memberId = :memberId " +
             "AND r.createdAt > CURRENT_TIMESTAMP")
-    List<ReservationEntity> findByMember_MemberId(Long userId);
+    List<ReservationEntity> findByMember_MemberId(Long memberId);
 
     @Query("SELECT r FROM ReservationEntity r " +
             "LEFT JOIN FETCH r.member " +
             "LEFT JOIN FETCH r.trainer " +
             "LEFT JOIN FETCH r.sessionInfo " +
-            "WHERE r.trainer.trainerId = :userId " +
+            "WHERE r.trainer.trainerId = :trainerId " +
             "AND r.createdAt > CURRENT_TIMESTAMP")
-    List<ReservationEntity> findByTrainer_TrainerId(Long userId);
+    List<ReservationEntity> findByTrainer_TrainerId(Long trainerId);
 
     @Query("SELECT r FROM ReservationEntity r " +
             "LEFT JOIN FETCH r.member " +

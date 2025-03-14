@@ -87,7 +87,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
-    public Optional<Reservation> reserveSession(Reservation reservation) {
+    public Optional<Reservation> saveReservation(Reservation reservation) {
         ReservationEntity reservationEntity = reservationJpaRepository.save(ReservationEntity.from(reservation, em));
 
         return Optional.of(reservationEntity.toDomain());
@@ -103,7 +103,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
-    public Optional<Session> createSession(Session session) {
+    public Optional<Session> saveSession(Session session) {
         SessionEntity savedEntity = sessionJpaRepository.save(SessionEntity.from(session, em));
 
         return Optional.of(savedEntity.toDomain());

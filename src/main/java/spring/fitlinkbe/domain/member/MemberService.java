@@ -164,4 +164,13 @@ public class MemberService {
     public List<SessionInfo> findAllSessionInfo(List<Long> memberIds, Long trainerId) {
         return sessionInfoRepository.findAllSessionInfo(memberIds, trainerId);
     }
+
+    /**
+     * 세션 복구
+     */
+    public void restoreSession(Long trainerId, Long memberId) {
+        SessionInfo getSessionInfo = this.getSessionInfo(trainerId, memberId);
+        getSessionInfo.restoreSession();
+        this.saveSessionInfo(getSessionInfo);
+    }
 }

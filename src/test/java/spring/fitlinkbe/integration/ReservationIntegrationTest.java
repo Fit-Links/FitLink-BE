@@ -39,7 +39,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_NOT_ALLOWED;
 import static spring.fitlinkbe.domain.notification.Notification.NotificationType.*;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_CANCEL_REQUEST;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
+import static spring.fitlinkbe.domain.reservation.Session.Status.SESSION_WAITING;
 
 public class ReservationIntegrationTest extends BaseIntegrationTest {
 
@@ -115,7 +117,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
-            reservationRepository.reserveSession(reservation);
+            reservationRepository.saveReservation(reservation);
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
@@ -155,7 +157,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
-            reservationRepository.reserveSession(reservation);
+            reservationRepository.saveReservation(reservation);
 
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -207,7 +209,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .dayOfWeek(reqeustDate.getDayOfWeek())
                     .build();
 
-            reservationRepository.reserveSession(reservation);
+            reservationRepository.saveReservation(reservation);
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
@@ -253,7 +255,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
-            reservationRepository.reserveSession(reservation);
+            reservationRepository.saveReservation(reservation);
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
@@ -297,7 +299,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .dayOfWeek(reqeustDate.getDayOfWeek())
                     .build();
 
-            reservationRepository.reserveSession(reservation);
+            reservationRepository.saveReservation(reservation);
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
@@ -345,7 +347,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .status(RESERVATION_WAITING)
                     .build();
 
-            Reservation savedReservation = reservationRepository.reserveSession(reservation).orElseThrow();
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/"
@@ -388,7 +390,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .status(RESERVATION_WAITING)
                     .build();
 
-            Reservation savedReservation = reservationRepository.reserveSession(reservation).orElseThrow();
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/"
@@ -431,13 +433,13 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .status(RESERVATION_APPROVED)
                     .build();
 
-            Reservation savedReservation = reservationRepository.reserveSession(reservation).orElseThrow();
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
 
             Session session = Session.builder()
                     .reservation(savedReservation)
                     .build();
 
-            reservationRepository.createSession(session);
+            reservationRepository.saveSession(session);
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/"
@@ -485,7 +487,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
-            Reservation savedReservation1 = reservationRepository.reserveSession(reservation1).orElseThrow();
+            Reservation savedReservation1 = reservationRepository.saveReservation(reservation1).orElseThrow();
 
             Member member2 = testDataHandler.createMember();
             SessionInfo sessionInfo2 = testDataHandler.createSessionInfo(member2, trainer);
@@ -501,7 +503,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
-            Reservation savedReservation2 = reservationRepository.reserveSession(reservation2).orElseThrow();
+            Reservation savedReservation2 = reservationRepository.saveReservation(reservation2).orElseThrow();
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/waiting-members/"
@@ -547,7 +549,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .status(RESERVATION_WAITING)
                     .build();
 
-            reservationRepository.reserveSession(reservation1).orElseThrow();
+            reservationRepository.saveReservation(reservation1).orElseThrow();
 
             Member member2 = testDataHandler.createMember();
             SessionInfo sessionInfo2 = testDataHandler.createSessionInfo(member2, trainer);
@@ -562,7 +564,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .status(RESERVATION_WAITING)
                     .build();
 
-            reservationRepository.reserveSession(reservation2).orElseThrow();
+            reservationRepository.saveReservation(reservation2).orElseThrow();
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/waiting-members/", accessToken);
@@ -599,7 +601,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .status(RESERVATION_APPROVED)
                     .build();
 
-            reservationRepository.reserveSession(reservation1).orElseThrow();
+            reservationRepository.saveReservation(reservation1).orElseThrow();
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/waiting-members/"
@@ -646,7 +648,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .status(RESERVATION_WAITING)
                     .build();
 
-            reservationRepository.reserveSession(reservation).orElseThrow();
+            reservationRepository.saveReservation(reservation).orElseThrow();
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
@@ -697,13 +699,13 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
-            Reservation savedReservation = reservationRepository.reserveSession(reservation).orElseThrow();
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
 
             Session session = Session.builder()
                     .reservation(savedReservation)
                     .build();
 
-            reservationRepository.createSession(session);
+            reservationRepository.saveSession(session);
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
@@ -763,11 +765,11 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
     @Nested
     @DisplayName("직접 예약 Integration TEST")
-    class ReserveSessionIntegrationTest {
+    class saveReservationIntegrationTest {
 
         @Test
         @DisplayName("트레이너가 직접 예약 성공")
-        void reserveSessionWithTrainer() {
+        void saveReservationWithTrainer() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -803,7 +805,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 // 세션이 잘 생성됐는지 확인
                 Session session = reservationRepository.getSession(content.reservationId()).orElseThrow();
                 softly.assertThat(session).isNotNull();
-                softly.assertThat(session.getStatus()).isEqualTo(Session.Status.SESSION_WAITING);
+                softly.assertThat(session.getStatus()).isEqualTo(SESSION_WAITING);
 
                 // 알람이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
@@ -815,7 +817,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("멤버가 직접 예약 성공")
-        void reserveSessionWithMember() {
+        void saveReservationWithMember() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
                     .orElseThrow();
@@ -857,7 +859,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("멤버가 직접 예약 성공 - 우선 예약 포함 2개 예약")
-        void reserveSessionWithMemberAndPriority() {
+        void saveReservationWithMemberAndPriority() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
                     .orElseThrow();
@@ -901,7 +903,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("직접 예약 실패 - trainerID 부재")
-        void reserveSessionNoTrainerId() {
+        void saveReservationNoTrainerId() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -934,7 +936,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("직접 예약 실패 - memberID 부재")
-        void reserveSessionNoMemberId() {
+        void saveReservationNoMemberId() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -967,7 +969,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("직접 예약 실패 - dates 부재")
-        void reserveSessionNoDate() {
+        void saveReservationNoDate() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -998,7 +1000,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("직접 예약 실패 - name 부재")
-        void reserveSessionNoName() {
+        void saveReservationNoName() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -1032,10 +1034,10 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
     @Nested
     @DisplayName("고정 세션 예약 Integration TEST")
-    class FixedReserveSessionIntegrationTest {
+    class FixedSaveReservationIntegrationTest {
         @Test
         @DisplayName("트레이너가 고정 세션 예약 성공 - 예약 1개")
-        void fixedReserveSessionWithTrainer() {
+        void FixedSaveReservationWithTrainer() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -1070,14 +1072,14 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 // 세션이 잘 생성됐는지 확인
                 Session session = reservationRepository.getSession(content.get(0).reservationId()).orElseThrow();
                 softly.assertThat(session).isNotNull();
-                softly.assertThat(session.getStatus()).isEqualTo(Session.Status.SESSION_WAITING);
+                softly.assertThat(session.getStatus()).isEqualTo(SESSION_WAITING);
 
             });
         }
 
         @Test
         @DisplayName("트레이너가 고정 세션 예약 성공 - 예약 2개")
-        void twoFixedReserveSessionWithTrainer() {
+        void twoFixedSaveReservationWithTrainer() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -1115,18 +1117,18 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 // 세션이 잘 생성됐는지 확인
                 Session session1 = reservationRepository.getSession(content.get(0).reservationId()).orElseThrow();
                 softly.assertThat(session1).isNotNull();
-                softly.assertThat(session1.getStatus()).isEqualTo(Session.Status.SESSION_WAITING);
+                softly.assertThat(session1.getStatus()).isEqualTo(SESSION_WAITING);
 
                 Session session2 = reservationRepository.getSession(content.get(1).reservationId()).orElseThrow();
                 softly.assertThat(session2).isNotNull();
-                softly.assertThat(session2.getStatus()).isEqualTo(Session.Status.SESSION_WAITING);
+                softly.assertThat(session2.getStatus()).isEqualTo(SESSION_WAITING);
 
             });
         }
 
         @Test
         @DisplayName("트레이너가 고정 세션 예약 성공 - 기존에 존재하던 예약 취소")
-        void fixedReserveSessionWithCancelAlreadyReserveSession() {
+        void FixedSaveReservationWithCancelAlreadySaveReservation() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -1150,7 +1152,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
-            Reservation savedReservation = reservationRepository.reserveSession(reservation)
+            Reservation savedReservation = reservationRepository.saveReservation(reservation)
                     .orElseThrow();
 
             // when
@@ -1172,7 +1174,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 // 세션이 잘 생성됐는지 확인
                 Session session = reservationRepository.getSession(content.get(0).reservationId()).orElseThrow();
                 softly.assertThat(session).isNotNull();
-                softly.assertThat(session.getStatus()).isEqualTo(Session.Status.SESSION_WAITING);
+                softly.assertThat(session.getStatus()).isEqualTo(SESSION_WAITING);
 
                 // 기존 예약이 잘 취소됐는지 확인
                 Reservation originReservation = reservationRepository
@@ -1193,7 +1195,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("트레이너가 고정 세션 예약 실패 - 멤버 ID 누락")
-        void fixedReserveSessionWithNoMemberId() {
+        void FixedSaveReservationWithNoMemberId() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -1225,7 +1227,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("트레이너가 고정 세션 예약 실패 - 이름 누락")
-        void fixedReserveSessionWithNoName() {
+        void FixedSaveReservationWithNoName() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -1257,7 +1259,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("트레이너가 고정 세션 예약 실패 - date 누락")
-        void fixedReserveSessionWithNoDate() {
+        void FixedSaveReservationWithNoDate() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -1288,7 +1290,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("트레이너가 고정 세션 예약 실패 - 예약 불가 설정")
-        void fixedReserveSessionWithDisableTime() {
+        void FixedSaveReservationWithDisableTime() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -1312,7 +1314,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
-            reservationRepository.reserveSession(reservation);
+            reservationRepository.saveReservation(reservation);
 
             // when
             ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/fixed-reservations",
@@ -1331,7 +1333,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("트레이너가 고정 세션 예약 실패 - 이미 예약 종료")
-        void fixedReserveSessionAlreadyExited() {
+        void FixedSaveReservationAlreadyExited() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -1355,7 +1357,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
-            reservationRepository.reserveSession(reservation);
+            reservationRepository.saveReservation(reservation);
 
             // when
             ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/fixed-reservations",
@@ -1375,10 +1377,10 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
     @Nested
     @DisplayName("스케줄 고정 세션 예약 Integration TEST")
-    class ScheduledFixedReserveSessionIntegrationTest {
+    class ScheduledFixedSaveReservationIntegrationTest {
         @Test
         @DisplayName("스케줄 고정 세션 예약 성공")
-        void scheduledFixedReserveSession() {
+        void scheduledFixedSaveReservation() {
             // given
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
@@ -1390,7 +1392,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
-            reservationRepository.reserveSession(reservation);
+            reservationRepository.saveReservation(reservation);
 
             // when
             fixedReservationScheduler.fixedReserveSession();
@@ -1409,7 +1411,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("스케줄 고정 세션 예약 실패 - 예약 불가 설정")
-        void scheduledFixedReserveSessionSetDisableTime() {
+        void scheduledFixedSaveReservationSetDisableTime() {
             // given
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
@@ -1421,7 +1423,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
-            reservationRepository.reserveSession(reservation);
+            reservationRepository.saveReservation(reservation);
 
             Reservation reservation2 = Reservation.builder()
                     .reservationDates(List.of(requestDate.plusDays(7)))
@@ -1431,7 +1433,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
-            reservationRepository.reserveSession(reservation2);
+            reservationRepository.saveReservation(reservation2);
 
             //when & then
             assertThatThrownBy(() -> fixedReservationScheduler.fixedReserveSession())
@@ -1439,5 +1441,343 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .extracting("errorCode")
                     .isEqualTo(RESERVATION_NOT_ALLOWED);
         }
+    }
+
+    @Nested
+    @DisplayName("예약 취소 Integration TEST")
+    class CancelReservationIntegrationTest {
+        @Test
+        @DisplayName("트레이너가 예약 취소 성공")
+        void cancelReservationWithTrainer() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelReason("개인 사정")
+                    .build();
+
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(requestDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_APPROVED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_WAITING)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                //예약이 잘 취소 됐는지 확인
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+
+                ReservationResponseDto.Success content = result.body().jsonPath()
+                        .getObject("data", ReservationResponseDto.Success.class);
+
+                softly.assertThat(content.reservationId()).isEqualTo(1L);
+                softly.assertThat(content.status()).isEqualTo(RESERVATION_CANCELLED.getName());
+
+                // 알람이 잘 생성됐는지 확인
+                Notification notification = notificationRepository.getNotification(content.reservationId(),
+                        Notification.ReferenceType.RESERVATION);
+                softly.assertThat(notification).isNotNull();
+                softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_CANCEL);
+            });
+
+        }
+
+        @Test
+        @DisplayName("멤버가 예약 취소 요청 성공")
+        void cancelReservationWithMember() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelReason("개인 사정")
+                    .build();
+
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(requestDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_APPROVED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_WAITING)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                //예약이 잘 취소 됐는지 확인
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+
+                ReservationResponseDto.Success content = result.body().jsonPath()
+                        .getObject("data", ReservationResponseDto.Success.class);
+
+                softly.assertThat(content.reservationId()).isEqualTo(1L);
+                softly.assertThat(content.status()).isEqualTo(RESERVATION_CANCEL_REQUEST.getName());
+
+                // 알람이 잘 생성됐는지 확인
+                Notification notification = notificationRepository.getNotification(content.reservationId(),
+                        Notification.ReferenceType.RESERVATION);
+                softly.assertThat(notification).isNotNull();
+                softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_CANCEL);
+            });
+
+        }
+
+        @Test
+        @DisplayName("트레이너가 예약 취소 실패 - 예약 사유 부재")
+        void cancelReservationWithNoCancelReason() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelReason("")
+                    .build();
+
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(requestDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_APPROVED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_WAITING)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("400 BAD_REQUEST \"Validation failure\"");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+
+        }
+
+        @Test
+        @DisplayName("트레이너가 예약 취소 실패 - 없는 예약 취소 요청")
+        void cancelReservationWithNoExistReservation() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelReason("개인 사유")
+                    .build();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("예약 정보를 찾을 수 없습니다. [reservationId: 1]");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+
+        }
+
+        @Test
+        @DisplayName("트레이너가 예약 취소 실패 - 이미 취소된 예약 취소 시도")
+        void cancelReservationWithAlreadyCancelReservation() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelReason("개인 사유")
+                    .build();
+
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+
+            // 취소된 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(requestDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_CANCELLED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("이미 예약이 취소되었습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+
+        }
+
+        @Test
+        @DisplayName("트레이너가 예약 취소 실패 - 예약 취소 불가 상태 예약 취소 시도")
+        void cancelReservationWithCancelNotAllowed() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelReason("개인 사유")
+                    .build();
+
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+
+            // 예약 승인이 거절된 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(requestDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_REFUSED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("예약 취소를 할 수 없는 상태입니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+
+        }
+
+        @Test
+        @DisplayName("멤버가 예약 취소 요청 실패 - 당일 예약 취소 요청")
+        void cancelReservationWithRequestToday() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelReason("개인 사유")
+                    .build();
+
+            LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(requestDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_APPROVED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_WAITING)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("당일 예약 취소 요청은 불가합니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+
+        }
+
     }
 }

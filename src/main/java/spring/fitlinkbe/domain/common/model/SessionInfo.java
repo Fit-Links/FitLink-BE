@@ -51,4 +51,8 @@ public class SessionInfo {
     public Long getMemberId() {
         return member.getMemberId();
     }
+
+    public void restoreSession() {
+        remainingCount++;
+    }
 }

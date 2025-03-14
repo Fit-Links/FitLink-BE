@@ -17,15 +17,15 @@ public interface ReservationRepository {
 
     List<Reservation> saveReservations(List<Reservation> canceledReservations);
 
+    List<Session> saveSessions(List<Session> sessions);
+
     Optional<Reservation> getReservation(Long reservationId);
 
-    Optional<Reservation> reserveSession(Reservation reservations);
+    Optional<Reservation> saveReservation(Reservation reservation);
 
     Optional<Session> getSession(Long reservationId);
 
-    Optional<Session> createSession(Session session);
-
-    List<Session> saveSessions(List<Session> sessions);
+    Optional<Session> saveSession(Session session);
 
 
 }
