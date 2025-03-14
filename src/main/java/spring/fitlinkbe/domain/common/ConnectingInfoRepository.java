@@ -19,6 +19,7 @@ public interface ConnectingInfoRepository {
 
     /**
      * 해당 트레이너와 회원의 연결 정보를 가져온다.
+     *
      * @param trainerId
      * @param memberId
      * @return

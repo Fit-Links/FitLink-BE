@@ -19,7 +19,7 @@ public class MemberInfoDto {
             String phoneNumber,
             String profilePictureUrl,
             SessionInfoResponse sessionInfo
-    ){
+    ) {
         public static SimpleResponse from(MemberInfoResult.SimpleResponse result) {
             return SimpleResponse.builder()
                     .memberId(result.memberId())
