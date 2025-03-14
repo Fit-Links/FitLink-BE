@@ -27,6 +27,7 @@ public enum ErrorCode {
     RESERVATION_IS_FAILED("예약에 실패하였습니다.", 400),
     RESERVATION_NOT_ALLOWED("예약을 할 수 있는 상태가 아닙니다.", 400),
     SET_DISABLE_DATE_FAILED("예약 불가 설정에 실패하였습니다.", 400),
+    RESERVATION_CANCEL_FAILED("예약 취소에 실패하였습니다.", 400),
     RESERVATION_IS_ALREADY_CANCEL("이미 예약이 취소되었습니다.", 400),
     RESERVATION_IS_NOT_WAITING_STATUS("예약 상태가 대기 상태가 아닙니다.", 400),
     RESERVATION_WAITING_MEMBERS_EMPTY("이 날짜에 예약 대기자가 없습니다.", 400),

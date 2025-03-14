@@ -45,4 +45,9 @@ public class ReservationCommand {
                     .build();
         }
     }
+
+    @Builder(toBuilder = true)
+    public record CancelReservation(Long reservationId, String cancelReason) {
+
+    }
 }
