@@ -15,8 +15,8 @@ public class SessionRepositoryImpl implements SessionRepository {
     private final SessionJpaRepository sessionJpaRepository;
 
     @Override
-    public Page<Session> getSessions(Long memberId, Session.Status status, Pageable pageRequest) {
-        Page<SessionEntity> result = sessionJpaRepository.findSessions(memberId, status, pageRequest);
+    public Page<Session> getSessions(Long memberId, Long trainerId, Session.Status status, Pageable pageRequest) {
+        Page<SessionEntity> result = sessionJpaRepository.findSessions(memberId, trainerId, status, pageRequest);
 
         return result.map(SessionEntity::toDomain);
     }

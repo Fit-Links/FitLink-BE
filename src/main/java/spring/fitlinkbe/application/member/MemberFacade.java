@@ -159,6 +159,7 @@ public class MemberFacade {
 
         ReservationCommand.GetSessions command = ReservationCommand.GetSessions.builder()
                 .memberId(memberId)
+                .trainerId(trainerId)
                 .status(status)
                 .pageRequest(pageRequest)
                 .build();
