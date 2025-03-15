@@ -150,6 +150,14 @@ public class MemberService {
         }
     }
 
+    /**
+     * 연결된 정보 조회
+     * @return 해당 회원과 연동 완료된 (Connected) 상태의 연결 정보
+     */
+    public ConnectingInfo findConnectedInfo(Long memberId) {
+        return connectingInfoRepository.getConnectedInfo(memberId).orElse(null);
+    }
+
     public void saveSessionInfo(SessionInfo sessionInfo) {
         sessionInfoRepository.saveSessionInfo(sessionInfo);
     }
@@ -173,4 +181,5 @@ public class MemberService {
         getSessionInfo.restoreSession();
         this.saveSessionInfo(getSessionInfo);
     }
+
 }

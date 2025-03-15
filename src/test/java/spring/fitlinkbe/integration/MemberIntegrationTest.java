@@ -1195,6 +1195,91 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
         }
     }
 
+    @Nested
+    @DisplayName("내 특정 회원 조회 테스트")
+    public class MyMemberInfoTest {
+        private static final String MEMBER_INFO_API = "/v1/members/{memberId}";
+
+        @Test
+        @DisplayName("회원 정보 조회 성공")
+        public void memberInfoSuccess() throws Exception {
+            // given
+            // 회원, 트레이너, 세션 정보, PT 희망 시간 정보가 있을 때
+            Member member = testDataHandler.createMember();
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+            SessionInfo sessionInfo = testDataHandler.createSessionInfo(member, trainer);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+            testDataHandler.connectMemberAndTrainer(member, trainer);
+            List<WorkoutSchedule> workoutSchedules = testDataHandler.createWorkoutSchedules(member);
+
+            // when
+            // 트레이너가 자기 회원의 정보를 조회한다면
+            String url = MEMBER_INFO_API.replace("{memberId}", member.getMemberId().toString());
+            ExtractableResponse<Response> result = get(url, token);
+
+            // then
+            // 회원의 정보를 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<MemberInfoDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                MemberInfoDto.Response data = response.data();
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(200);
+                softly.assertThat(data.memberId()).isEqualTo(member.getMemberId());
+                softly.assertThat(data.name()).isEqualTo(member.getName());
+                softly.assertThat(data.profilePictureUrl()).isEqualTo(member.getProfilePictureUrl());
+                softly.assertThat(data.trainerName()).isEqualTo(trainer.getName());
+                softly.assertThat(data.trainerId()).isEqualTo(trainer.getTrainerId());
+                softly.assertThat(data.sessionInfo().sessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
+                softly.assertThat(data.sessionInfo().remainingCount()).isEqualTo(sessionInfo.getRemainingCount());
+                softly.assertThat(data.sessionInfo().totalCount()).isEqualTo(sessionInfo.getTotalCount());
+
+                softly.assertThat(data.workoutSchedules().size()).isEqualTo(workoutSchedules.size());
+                for (WorkoutScheduleDto.Response responseDto : data.workoutSchedules()) {
+                    WorkoutSchedule workoutSchedule = workoutSchedules.stream().filter(ws -> ws.getWorkoutScheduleId()
+                            .equals(responseDto.workoutScheduleId())).findFirst().orElseThrow();
+
+                    softly.assertThat(responseDto.workoutScheduleId()).isEqualTo(workoutSchedule.getWorkoutScheduleId());
+                    softly.assertThat(responseDto.dayOfWeek()).isEqualTo(workoutSchedule.getDayOfWeek());
+                    softly.assertThat(responseDto.preferenceTimes())
+                            .containsExactlyInAnyOrderElementsOf(workoutSchedule.getPreferenceTimes());
+                }
+            });
+        }
+
+        @Test
+        @DisplayName("회원 정보 조회 실패 - 트레이너와 연결이 안되어있는 멤버일 때")
+        public void memberInfoFailByNotConnected() throws Exception {
+            // given
+            // 회원, 트레이너 정보가 있을 때
+            Member member = testDataHandler.createMember();
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 연결되어 있지 않은 회원 정보를 조회할 때
+            String url = MEMBER_INFO_API.replace("{memberId}", member.getMemberId().toString());
+            ExtractableResponse<Response> result = get(url, token);
+
+            // then
+            // 연결 정보가 없다는 응답을 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.msg()).isEqualTo("트레이너가 멤버와 연결되어 있지 않습니다.");
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.data()).isNull();
+            });
+        }
+    }
+
     private void createMembers(Trainer trainer) {
         Member member1 = testDataHandler.createMember("member1");
         Member member2 = testDataHandler.createMember("member2");
