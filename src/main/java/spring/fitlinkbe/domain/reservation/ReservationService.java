@@ -99,7 +99,8 @@ public class ReservationService {
 
     @Transactional(readOnly = true)
     public Page<Session> getSessions(ReservationCommand.GetSessions command) {
-        return sessionRepository.getSessions(command.memberId(), command.status(), command.pageRequest());
+        return sessionRepository.getSessions(command.memberId(), command.trainerId(),
+                command.status(), command.pageRequest());
     }
 
     @Transactional

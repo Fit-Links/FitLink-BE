@@ -18,10 +18,14 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<SessionEntity> findSessions(Long memberId, Session.Status status, Pageable pageRequest) {
+    public Page<SessionEntity> findSessions(Long memberId, Long trainerId, Session.Status status, Pageable pageRequest) {
         List<SessionEntity> entityList = queryFactory.selectFrom(sessionEntity)
                 .join(sessionEntity.reservation).fetchJoin()
-                .where(eqMemberId(memberId).and(eqStatus(status)))
+                .where(
+                        eqMemberId(memberId),
+                        eqTrainingId(trainerId),
+                        eqStatus(status)
+                )
                 .orderBy(sessionEntity.createdAt.desc())
                 .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize())
@@ -29,13 +33,22 @@ public class SessionRepositoryCustomImpl implements SessionRepositoryCustom {
 
         Long totalCount = queryFactory.select(sessionEntity.count())
                 .from(sessionEntity)
-                .where(eqMemberId(memberId).and(eqStatus(status)))
+                .where(
+                        eqMemberId(memberId),
+                        eqTrainingId(trainerId),
+                        eqStatus(status)
+                )
                 .fetchOne();
+
         if (totalCount == null) {
             totalCount = 0L;
         }
 
         return new PageImpl<>(entityList, pageRequest, totalCount);
+    }
+
+    private BooleanExpression eqTrainingId(Long trainerId) {
+        return trainerId != null ? sessionEntity.reservation.trainer.trainerId.eq(trainerId) : null;
     }
 
     private BooleanExpression eqMemberId(Long memberId) {

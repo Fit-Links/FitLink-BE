@@ -35,7 +35,7 @@ public class ReservationCommand {
     }
 
     @Builder(toBuilder = true)
-    public record GetSessions(Long memberId, Session.Status status, Pageable pageRequest) {
+    public record GetSessions(Long memberId, Long trainerId, Session.Status status, Pageable pageRequest) {
         public static GetSessions of(Long memberId, Session.Status status, Pageable pageRequest) {
 
             return GetSessions.builder()
