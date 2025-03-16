@@ -47,6 +47,16 @@ public class ReservationCommand {
     }
 
     @Builder(toBuilder = true)
+    public record ApproveReservation(Long reservationId, LocalDateTime reservationDate) {
+
+    }
+
+    @Builder(toBuilder = true)
+    public record RefuseReservations(LocalDateTime reservationDate) {
+
+    }
+
+    @Builder(toBuilder = true)
     public record CancelReservation(Long reservationId, String cancelReason) {
 
     }
