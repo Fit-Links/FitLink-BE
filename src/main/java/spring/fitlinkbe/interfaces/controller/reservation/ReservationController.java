@@ -152,12 +152,35 @@ public class ReservationController {
     public ApiResultResponse<ReservationResponseDto.Success> cancelReservation(@PathVariable("reservationId")
                                                                                @NotNull(message = "예약 ID는 필수값입니다.")
                                                                                Long reservationId,
-                                                                               @Valid @RequestBody ReservationRequestDto.CancelReservation
+                                                                               @RequestBody @Valid
+                                                                               ReservationRequestDto.CancelReservation
                                                                                        request,
                                                                                @Login SecurityUser user
     ) {
 
         Reservation result = reservationFacade.cancelReservation(request.toCriteria(reservationId), user);
+
+        return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
+
+    }
+
+    /**
+     * 예약 승인
+     *
+     * @param request memberId 정보
+     * @return ApiResultResponse 승인된 reservationId 정보를 반환한다.
+     */
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
+    @PostMapping("/{reservationId}/approve")
+    public ApiResultResponse<ReservationResponseDto.Success> approveReservation(@PathVariable("reservationId")
+                                                                                @NotNull(message = "예약 ID는 필수값입니다.")
+                                                                                Long reservationId,
+                                                                                @RequestBody @Valid
+                                                                                ReservationRequestDto.ApproveReservation
+                                                                                        request,
+                                                                                @Login SecurityUser user
+    ) {
+        Reservation result = reservationFacade.approveReservation(request.toCriteria(reservationId), user);
 
         return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
 
