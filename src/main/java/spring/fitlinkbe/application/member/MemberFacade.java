@@ -92,6 +92,7 @@ public class MemberFacade {
         return MemberInfoResult.DetailResponse.from(me);
     }
 
+    @Transactional
     public List<WorkoutScheduleResult.Response> updateWorkoutSchedule(
             Long memberId,
             List<WorkoutScheduleCriteria.Request> request
@@ -177,6 +178,7 @@ public class MemberFacade {
         return SessionInfoCriteria.Response.from(sessionInfo);
     }
 
+    @Transactional(readOnly = true)
     public Page<MemberInfoResult.SimpleResponse> getMembers(Long trainerId, Pageable pageRequest, String keyword) {
         Page<Member> memberPage = memberService.getMembers(trainerId, pageRequest, keyword);
 
@@ -186,5 +188,18 @@ public class MemberFacade {
                 .collect(Collectors.toMap(SessionInfo::getMemberId, Function.identity()));
 
         return memberPage.map(member -> MemberInfoResult.SimpleResponse.of(member, grouped.get(member.getMemberId())));
+    }
+
+    @Transactional(readOnly = true)
+    public MemberInfoResult.Response getMemberInfo(Long trainerId, Long memberId) {
+        memberService.checkConnected(trainerId, memberId);
+
+        ConnectingInfo connectingInfo = memberService.findConnectedInfo(memberId);
+        SessionInfo sessionInfo = memberService.findSessionInfo(trainerId, memberId);
+        Member me = memberService.getMember(memberId);
+
+        List<WorkoutSchedule> workoutSchedules = memberService.getWorkoutSchedules(memberId);
+
+        return MemberInfoResult.Response.of(me, connectingInfo, sessionInfo, workoutSchedules);
     }
 }
