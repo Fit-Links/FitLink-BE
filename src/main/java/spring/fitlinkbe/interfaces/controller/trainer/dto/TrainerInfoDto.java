@@ -25,4 +25,18 @@ public class TrainerInfoDto {
                     .build();
         }
     }
+
+    public record TrainerUpdateRequest(
+            String name,
+            String phoneNumber
+    ) {
+    }
+
+    public record TrainerUpdateResponse(
+            Long trainerId,
+            String name,
+            String phoneNumber
+    ) {
+    }
+
 }
