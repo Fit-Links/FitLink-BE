@@ -1,5 +1,6 @@
 package spring.fitlinkbe.interfaces.controller.trainer.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import lombok.Builder;
 import spring.fitlinkbe.application.trainer.criteria.TrainerInfoResult;
 
@@ -30,13 +31,32 @@ public class TrainerInfoDto {
             String name,
             String phoneNumber
     ) {
+        public TrainerInfoResult.TrainerUpdateRequest toRequest() {
+            return TrainerInfoResult.TrainerUpdateRequest.builder()
+                    .name(name)
+                    .phoneNumber(phoneNumber)
+                    .build();
+        }
+
+        @AssertTrue(message = "이름과 전화번호 중 하나는 반드시 있어야 합니다.")
+        boolean isNameAndPhoneNumberNotNull() {
+            return name != null || phoneNumber != null;
+        }
     }
 
+    @Builder
     public record TrainerUpdateResponse(
             Long trainerId,
             String name,
             String phoneNumber
     ) {
+        public static TrainerUpdateResponse from(TrainerInfoResult.Response response) {
+            return TrainerUpdateResponse.builder()
+                    .trainerId(response.trainerId())
+                    .name(response.name())
+                    .phoneNumber(response.phoneNumber())
+                    .build();
+        }
     }
 
 }

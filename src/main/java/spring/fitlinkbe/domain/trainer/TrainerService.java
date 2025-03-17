@@ -53,4 +53,8 @@ public class TrainerService {
                 .orElseThrow(() -> new CustomException(TRAINER_IS_NOT_FOUND,
                         "트레이너 상세 정보를 찾을 수 없습니다. [trainerId: %d]".formatted(trainerId)));
     }
+
+    public void savePersonalDetail(PersonalDetail personalDetail) {
+        personalDetailRepository.savePersonalDetail(personalDetail);
+    }
 }

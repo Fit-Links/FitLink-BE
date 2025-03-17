@@ -26,4 +26,36 @@ public class TrainerInfoResult {
                     .build();
         }
     }
+
+    @Builder
+    public record TrainerUpdateRequest(
+            String name,
+            String phoneNumber
+    ) {
+        public void updateTrainer(Trainer trainer, PersonalDetail personalDetail) {
+            if (name != null) {
+                trainer.updateName(name);
+                personalDetail.updateName(name);
+            }
+
+            if (phoneNumber != null) {
+                personalDetail.updatePhoneNumber(phoneNumber);
+            }
+        }
+    }
+
+    @Builder
+    public record TrainerUpdateResponse(
+            Long trainerId,
+            String name,
+            String phoneNumber
+    ) {
+        public static Response of(Trainer trainer, PersonalDetail personalDetail) {
+            return Response.builder()
+                    .trainerId(trainer.getTrainerId())
+                    .name(personalDetail.getName())
+                    .phoneNumber(personalDetail.getPhoneNumber())
+                    .build();
+        }
+    }
 }

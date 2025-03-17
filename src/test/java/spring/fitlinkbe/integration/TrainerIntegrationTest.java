@@ -76,7 +76,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
 
             TrainerInfoDto.TrainerUpdateRequest updateRequest = new TrainerInfoDto.TrainerUpdateRequest("김민성", "01092321123");
             String requestBody = writeValueAsString(updateRequest);
-            ExtractableResponse<Response> result = patch(URL, token, requestBody);
+            ExtractableResponse<Response> result = patch(URL, requestBody, token);
 
             // then
             // 내 정보 수정이 성공한다
@@ -107,7 +107,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 트레이너가 내 정보 수정 요청을 한다면
             TrainerInfoDto.TrainerUpdateRequest updateRequest = new TrainerInfoDto.TrainerUpdateRequest("김민성", null);
             String requestBody = writeValueAsString(updateRequest);
-            ExtractableResponse<Response> result = patch(URL, token, requestBody);
+            ExtractableResponse<Response> result = patch(URL, requestBody, token);
 
             // then
             // 내 정보 수정이 성공한다
@@ -138,7 +138,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 트레이너가 내 정보 수정 요청을 한다면
             TrainerInfoDto.TrainerUpdateRequest updateRequest = new TrainerInfoDto.TrainerUpdateRequest(null, "01092321123");
             String requestBody = writeValueAsString(updateRequest);
-            ExtractableResponse<Response> result = patch(URL, token, requestBody);
+            ExtractableResponse<Response> result = patch(URL, requestBody, token);
 
             // then
             // 내 정보 수정이 성공한다
@@ -168,15 +168,20 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 트레이너가 내 정보 수정 요청을 한다면
             TrainerInfoDto.TrainerUpdateRequest updateRequest = new TrainerInfoDto.TrainerUpdateRequest(null, null);
             String requestBody = writeValueAsString(updateRequest);
-            ExtractableResponse<Response> result = patch(URL, token, requestBody);
+            ExtractableResponse<Response> result = patch(URL, requestBody, token);
 
             // then
             // 내 정보 수정이 실패한다
             SoftAssertions.assertSoftly(softly -> {
-                softly.assertThat(result.statusCode()).isEqualTo(400);
+                softly.assertThat(result.statusCode()).isEqualTo(200);
                 ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
+
                 softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.data()).isNull();
+                softly.assertThat(response.msg()).isEqualTo("이름과 전화번호 중 하나는 반드시 있어야 합니다.");
             });
         }
     }
