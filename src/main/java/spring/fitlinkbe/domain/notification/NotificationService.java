@@ -39,6 +39,11 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
+    public void sendRefuseReservationNotification(Long reservationId, PersonalDetail trainerDetail) {
+        Notification notification = refuseReservationNotification(reservationId, trainerDetail);
+        notificationRepository.save(notification);
+    }
+
     public void sendRequestReservationNotification(Reservation reservation, PersonalDetail trainerDetail) {
         Notification notification = requestReservationNotification(reservation, trainerDetail);
         notificationRepository.save(notification);

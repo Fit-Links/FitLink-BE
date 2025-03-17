@@ -78,4 +78,21 @@ public class ReservationCriteria {
                     .build();
         }
     }
+
+    @Builder(toBuilder = true)
+    public record ApproveReservation(Long reservationId, Long memberId, LocalDateTime reservationDate) {
+
+        public ReservationCommand.ApproveReservation toApproveReservationCommand() {
+            return ReservationCommand.ApproveReservation.builder()
+                    .reservationId(reservationId)
+                    .reservationDate(reservationDate)
+                    .build();
+        }
+
+        public ReservationCommand.RefuseReservations toRefuseReservationsCommand() {
+            return ReservationCommand.RefuseReservations.builder()
+                    .reservationDate(reservationDate)
+                    .build();
+        }
+    }
 }

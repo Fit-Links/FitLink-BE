@@ -166,6 +166,24 @@ public class ReservationFacade {
         reservationService.fixedReserveSession(newReservations);
     }
 
+    @Transactional
+    public Reservation approveReservation(ReservationCriteria.ApproveReservation criteria, SecurityUser user) {
+        Reservation approveReservation = reservationService.approveReservation(criteria.toApproveReservationCommand());
+
+        //예약 완료 알람 발송 트레이너 -> 멤버에게 예약 완료되었다는 알람 발송
+        notificationService.sendApproveReservationNotification(approveReservation.getReservationId(),
+                memberService.getMemberDetail(approveReservation.getMember().getMemberId()));
+
+        List<Reservation> refuseReservations = reservationService.refuseReservations(
+                criteria.toRefuseReservationsCommand(), user);
+
+        //예약 거절 알람 발송 트레이너 -> 멤버에게 예약 거절되었다는 알람 발송
+        refuseReservations.forEach((refuseReservation) -> notificationService.sendRefuseReservationNotification(refuseReservation.getReservationId(),
+                memberService.getMemberDetail(refuseReservation.getMember().getMemberId())));
+
+        return approveReservation;
+    }
+
     private void cancelExistingReservations(List<Reservation> reservations, String cancelMsg) {
         if (!reservations.isEmpty()) {
             reservations.forEach(Reservation::checkPossibleReserveStatus);

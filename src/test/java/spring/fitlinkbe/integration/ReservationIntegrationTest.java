@@ -1610,7 +1610,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
                 softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
-                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("400 BAD_REQUEST \"Validation failure\"");
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("취소 사유는 필수값 입니다.");
                 softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
             });
 
@@ -1777,6 +1777,353 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
             });
 
+        }
+
+    }
+
+    @Nested
+    @DisplayName("예약 승인 Integration TEST")
+    class ApproveReservationIntegrationTest {
+        @Test
+        @DisplayName("예약 승인 성공 - 동시간 다른 예약들이 없는 경우")
+        void approveReservationWithTrainer() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+            ReservationRequestDto.ApproveReservation request = ReservationRequestDto.ApproveReservation.builder()
+                    .memberId(1L)
+                    .reservationDate(reservationDate)
+                    .build();
+
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(reservationDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_WAITING)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/approve".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                //예약이 잘 승인됐는지 확인
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+
+                ReservationResponseDto.Success content = result.body().jsonPath()
+                        .getObject("data", ReservationResponseDto.Success.class);
+
+                softly.assertThat(content.reservationId()).isEqualTo(1L);
+                softly.assertThat(content.status()).isEqualTo(RESERVATION_APPROVED.getName());
+
+                // 알람이 잘 생성됐는지 확인
+                Notification notification = notificationRepository.getNotification(content.reservationId(),
+                        Notification.ReferenceType.RESERVATION);
+                softly.assertThat(notification).isNotNull();
+                softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_APPROVE);
+            });
+        }
+
+        @Test
+        @DisplayName("예약 승인 성공 - 동시간 다른 예약들은 거절 됨")
+        void approveReservationWithOtherReservationRefused() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+            ReservationRequestDto.ApproveReservation request = ReservationRequestDto.ApproveReservation.builder()
+                    .memberId(1L)
+                    .reservationDate(reservationDate)
+                    .build();
+
+
+            // 예약 생성
+            Reservation reservation1 = Reservation.builder()
+                    .reservationDates(List.of(reservationDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_WAITING)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            reservationRepository.saveReservation(reservation1).orElseThrow();
+
+
+            // 다른 멤버의 예약 생성
+            Member member = testDataHandler.createMember();
+
+            Reservation reservation2 = Reservation.builder()
+                    .reservationDates(List.of(reservationDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(member)
+                    .status(RESERVATION_WAITING)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            Reservation otherReservation = reservationRepository.saveReservation(reservation2).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/approve".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                //예약이 잘 승인됐는지 확인
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+
+                ReservationResponseDto.Success content = result.body().jsonPath()
+                        .getObject("data", ReservationResponseDto.Success.class);
+
+                softly.assertThat(content.reservationId()).isEqualTo(1L);
+                softly.assertThat(content.status()).isEqualTo(RESERVATION_APPROVED.getName());
+
+                // 알람이 잘 생성됐는지 확인
+                Notification notification = notificationRepository.getNotification(content.reservationId(),
+                        Notification.ReferenceType.RESERVATION);
+                softly.assertThat(notification).isNotNull();
+                softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_APPROVE);
+
+                // 다른 예약 상태가 거절 상태인지 확인
+                Reservation refuseReservation = reservationRepository
+                        .getReservation(otherReservation.getReservationId()).orElseThrow();
+                softly.assertThat(refuseReservation.getStatus()).isEqualTo(RESERVATION_REFUSED);
+
+                // 다른 예약 알람 내용이 거절 내용인지 확인
+                Notification notification2 = notificationRepository.getNotification(refuseReservation.getReservationId(),
+                        Notification.ReferenceType.RESERVATION);
+                softly.assertThat(notification2).isNotNull();
+                softly.assertThat(notification2.getNotificationType()).isEqualTo(RESERVATION_REFUSE);
+
+
+            });
+        }
+
+        @Test
+        @DisplayName("예약 승인 실패 - 멤버가 API 호출")
+        void approveReservationWithMember() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+            ReservationRequestDto.ApproveReservation request = ReservationRequestDto.ApproveReservation.builder()
+                    .memberId(1L)
+                    .reservationDate(reservationDate)
+                    .build();
+
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(reservationDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_WAITING)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/approve".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(403);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("접근 권한이 없습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+
+            });
+        }
+
+        @Test
+        @DisplayName("예약 승인 실패 - 멤버 ID 부재 ")
+        void approveReservationNoMemberId() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+            ReservationRequestDto.ApproveReservation request = ReservationRequestDto.ApproveReservation.builder()
+                    .reservationDate(reservationDate)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(reservationDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_WAITING)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/approve".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("유저 ID는 필수값 입니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+        }
+
+        @Test
+        @DisplayName("예약 승인 실패 - 예약 날짜 부재 ")
+        void approveReservationNoReservationDate() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+            ReservationRequestDto.ApproveReservation request = ReservationRequestDto.ApproveReservation.builder()
+                    .memberId(1L)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(reservationDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_WAITING)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/approve".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("요청 날짜는 비어있을 수 없습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+        }
+
+        @Test
+        @DisplayName("예약 승인 실패 - 이전 날짜 요청 ")
+        void approveReservationBeforeToday() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+            ReservationRequestDto.ApproveReservation request = ReservationRequestDto.ApproveReservation.builder()
+                    .memberId(1L)
+                    .reservationDate(LocalDateTime.now().minusSeconds(1))
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(reservationDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_WAITING)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/approve".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("현재 날짜보다 이전일 수 없습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+        }
+
+
+        @Test
+        @DisplayName("예약 승인 실패 - 이미 승인 된 예약 ")
+        void approveReservationAlreadyApprovedReservation() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+            ReservationRequestDto.ApproveReservation request = ReservationRequestDto.ApproveReservation.builder()
+                    .memberId(1L)
+                    .reservationDate(reservationDate)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(reservationDate))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_APPROVED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/approve".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("이미 예약이 승인 되었습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
         }
 
     }

@@ -127,6 +127,11 @@ public class Reservation {
         return dates.get(0).isAfter(dates.get(1)) ? dates.get(1) : dates.get(0);
     }
 
+    public void refuse() {
+
+        this.status = RESERVATION_REFUSED;
+    }
+
     public void cancel(String message) {
         if (status == RESERVATION_CANCELLED) {
             throw new CustomException(RESERVATION_IS_ALREADY_CANCEL);
@@ -137,6 +142,22 @@ public class Reservation {
         cancelReason = message;
         this.status = RESERVATION_CANCELLED;
     }
+
+    public void approve(LocalDateTime reservationDate) {
+        if (status == DISABLED_TIME_RESERVATION || status == RESERVATION_REFUSED) {
+            throw new CustomException(RESERVATION_APPROVE_NOT_ALLOWED);
+        }
+        if (status == RESERVATION_APPROVED) {
+            throw new CustomException(RESERVATION_IS_ALREADY_APPROVED);
+        }
+
+        if (reservationDates.size() > 1) {
+            reservationDates = List.of(reservationDate);
+        }
+
+        this.status = RESERVATION_APPROVED;
+    }
+
 
     public void cancelRequest(String message) {
         // 당일 예약 취소는 불가능 함

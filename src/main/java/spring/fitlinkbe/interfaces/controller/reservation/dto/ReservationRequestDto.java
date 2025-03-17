@@ -74,4 +74,19 @@ public class ReservationRequestDto {
                     .build();
         }
     }
+
+    @Builder(toBuilder = true)
+    public record ApproveReservation(@NotNull(message = "유저 ID는 필수값 입니다.") Long memberId,
+                                     @NotNull(message = "요청 날짜는 비어있을 수 없습니다.")
+                                     @FutureOrPresent(message = "현재 날짜보다 이전일 수 없습니다.")
+                                     LocalDateTime reservationDate) {
+        public ReservationCriteria.ApproveReservation toCriteria(Long reservationId) {
+
+            return ReservationCriteria.ApproveReservation.builder()
+                    .reservationId(reservationId)
+                    .memberId(memberId)
+                    .reservationDate(reservationDate)
+                    .build();
+        }
+    }
 }

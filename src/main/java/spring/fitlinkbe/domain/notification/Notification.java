@@ -112,6 +112,23 @@ public class Notification {
                 .build();
     }
 
+    public static Notification refuseReservationNotification(Long reservationId, PersonalDetail memberDetail) {
+
+        String content = " %s 님의 예약이 거절되었습니다.".formatted(memberDetail.getName());
+
+        return Notification.builder()
+                .refId(reservationId)
+                .refType(ReferenceType.RESERVATION)
+                .notificationType(NotificationType.RESERVATION_REFUSE)
+                .personalDetail(memberDetail)
+                .name(NotificationType.RESERVATION_REFUSE.name)
+                .content(content)
+                .isSent(true)
+                .isProcessed(false)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
     public static Notification requestReservationNotification(Reservation reservation, PersonalDetail trainerDetail) {
 
         String content = " %s 회원님이 PT 예약을 요청하였습니다.".formatted(reservation.getName());
@@ -154,6 +171,7 @@ public class Notification {
         RESERVATION_CHANGE_REQUEST_REFUSED("세션 변경 요청 거절", "세션 변경 요청이 거절 되었습니다"),
         RESERVATION_APPROVE("예약 승인", "예약이 승인되었습니다."),
         RESERVATION_CANCEL("예약 취소", "예약이 취소되었습니다."),
+        RESERVATION_REFUSE("예약 거절", "예약이 거절되었습니다."),
         SESSION_DEDUCTED("세션 차감", "세션이 1회 차감되었습니다"),
         SESSION_REMINDER("금일 세션 진행", "오늘 세션이 진행됩니다."),
         SESSION_CANCEL_REQUEST_APPROVED("세션 취소 요청 승인", "세션 취소 요청이 승인 되었습니다."),

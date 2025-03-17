@@ -76,7 +76,7 @@ public class ApiControllerAdvice {
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ApiResultResponse<Object> handlerMethodValidationException(HandlerMethodValidationException e) {
         log.error("HandlerMethodValidationException is occurred! {}", e.getMessage());
-        return ApiResultResponse.of(HttpStatus.BAD_REQUEST, false, e.getMessage(), null);
+        return ApiResultResponse.of(HttpStatus.BAD_REQUEST, false, getErrorCustomMessage(e), null);
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

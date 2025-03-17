@@ -1167,7 +1167,102 @@ class ReservationControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(400))
                     .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.msg").value("400 BAD_REQUEST \"Validation failure\""))
+                    .andExpect(jsonPath("$.msg").value("취소 사유는 필수값 입니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+    }
+
+
+    @Nested
+    @DisplayName("예약 승인 Controller TEST")
+    class ApproveReservationControllerTest {
+        @Test
+        @DisplayName("트레이너의 예약 승인 - 성공")
+        void approveReservation() throws Exception {
+            //given
+            ReservationRequestDto.ApproveReservation request = ReservationRequestDto.ApproveReservation.builder()
+                    .memberId(1L)
+                    .reservationDate(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(1L)
+                    .trainerId(null)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.approveReservation(any(ReservationCriteria.ApproveReservation.class),
+                    any(SecurityUser.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/approve".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.msg").value("OK"))
+                    .andExpect(jsonPath("$.data.status").value(RESERVATION_APPROVED.getName()));
+        }
+
+
+        @Test
+        @DisplayName("트레이너의 예약 실패 - 멤버 ID 부재")
+        void approveReservationWithNoMemberId() throws Exception {
+            //given
+            ReservationRequestDto.ApproveReservation request = ReservationRequestDto.ApproveReservation.builder()
+                    .reservationDate(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(1L)
+                    .trainerId(null)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.approveReservation(any(ReservationCriteria.ApproveReservation.class),
+                    any(SecurityUser.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/approve".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("유저 ID는 필수값 입니다."))
                     .andExpect(jsonPath("$.data").isEmpty());
         }
     }
