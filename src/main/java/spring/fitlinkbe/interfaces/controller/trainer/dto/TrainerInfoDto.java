@@ -59,4 +59,9 @@ public class TrainerInfoDto {
         }
     }
 
+    @Builder
+    public record TrainerCodeResponse(
+            String trainerCode
+    ){}
+
 }

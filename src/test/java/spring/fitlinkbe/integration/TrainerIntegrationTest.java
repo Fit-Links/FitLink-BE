@@ -186,4 +186,36 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
         }
     }
 
+    @Nested
+    @DisplayName("트레이너 코드 조회 테스트")
+    class GetTrainerCodeTest {
+        private static final String URL = "/v1/trainers/me/trainer-code";
+
+        @Test
+        @DisplayName("트레이너 코드 조회 성공")
+        void getTrainerCodeSuccess() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 코드 조회 요청을 한다면
+            ExtractableResponse<Response> result = get(URL, token);
+
+            // then
+            // 코드 조회가 성공한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response).isNotNull();
+
+                TrainerInfoDto.TrainerCodeResponse code = readValue(result.body().jsonPath().prettify(), TrainerInfoDto.TrainerCodeResponse.class);
+                softly.assertThat(code.trainerCode()).isEqualTo(trainerCode);
+            });
+        }
+    }
+
 }
