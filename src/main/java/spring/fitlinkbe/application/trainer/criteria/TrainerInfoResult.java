@@ -58,4 +58,15 @@ public class TrainerInfoResult {
                     .build();
         }
     }
+
+    @Builder
+    public record TrainerCodeResponse(
+            String trainerCode
+    ) {
+        public static TrainerCodeResponse from(String trainerCode) {
+            return TrainerCodeResponse.builder()
+                    .trainerCode(trainerCode)
+                    .build();
+        }
+    }
 }

@@ -33,4 +33,11 @@ public class TrainerController {
 
         return TrainerInfoDto.TrainerUpdateResponse.from(response);
     }
+
+    @GetMapping("/me/trainer-code")
+    public TrainerInfoDto.TrainerCodeResponse getTrainerCode(@Login SecurityUser user) {
+        TrainerInfoResult.TrainerCodeResponse response = trainerFacade.getTrainerCode(user.getTrainerId());
+
+        return TrainerInfoDto.TrainerCodeResponse.from(response);
+    }
 }

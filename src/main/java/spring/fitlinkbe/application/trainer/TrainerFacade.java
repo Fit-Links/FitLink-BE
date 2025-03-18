@@ -34,4 +34,10 @@ public class TrainerFacade {
 
         return TrainerInfoResult.TrainerUpdateResponse.of(trainer, personalDetail);
     }
+
+    public TrainerInfoResult.TrainerCodeResponse getTrainerCode(Long trainerId) {
+        Trainer trainer = trainerService.getTrainerInfo(trainerId);
+
+        return TrainerInfoResult.TrainerCodeResponse.from(trainer.getTrainerCode());
+    }
 }
