@@ -6,6 +6,7 @@ import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
@@ -26,6 +27,8 @@ public class AvailableTimeEntity extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private DayOfWeek dayOfWeek;
 
+    private LocalDate applyAt;
+
     private Boolean isHoliday;
 
     private Boolean unavailable;
@@ -40,6 +43,7 @@ public class AvailableTimeEntity extends BaseTimeEntity {
                 .trainer(TrainerEntity.from(availableTime.getTrainer()))
                 .dayOfWeek(availableTime.getDayOfWeek())
                 .isHoliday(availableTime.getIsHoliday())
+                .applyAt(availableTime.getApplyAt())
                 .unavailable(availableTime.getUnavailable())
                 .startTime(availableTime.getStartTime())
                 .endTime(availableTime.getEndTime())
@@ -55,6 +59,7 @@ public class AvailableTimeEntity extends BaseTimeEntity {
                 .unavailable(unavailable)
                 .startTime(startTime)
                 .endTime(endTime)
+                .applyAt(applyAt)
                 .createdAt(getCreatedAt())
                 .updatedAt(getUpdatedAt())
                 .build();
