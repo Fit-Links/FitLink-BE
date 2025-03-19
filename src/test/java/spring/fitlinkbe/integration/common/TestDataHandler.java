@@ -16,6 +16,7 @@ import spring.fitlinkbe.domain.member.WorkoutScheduleRepository;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationRepository;
 import spring.fitlinkbe.domain.reservation.Session;
+import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
@@ -287,5 +288,19 @@ public class TestDataHandler {
                 .isCompleted(true)
                 .build();
         return reservationRepository.saveSession(session).orElseThrow();
+    }
+
+    public void createAvailableTime(Trainer trainer, DayOfWeek dayOfWeek, LocalDate applyAt) {
+        AvailableTime availableTime = AvailableTime.builder()
+                .trainer(trainer)
+                .dayOfWeek(dayOfWeek)
+                .applyAt(applyAt)
+                .isHoliday(false)
+                .unavailable(false)
+                .startTime(LocalTime.of(10, 0))
+                .endTime(LocalTime.of(12, 0))
+                .build();
+
+        trainerRepository.saveAvailableTime(availableTime);
     }
 }

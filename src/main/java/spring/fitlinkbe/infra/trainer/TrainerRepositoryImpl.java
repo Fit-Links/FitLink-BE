@@ -78,6 +78,14 @@ public class TrainerRepositoryImpl implements TrainerRepository {
     }
 
     @Override
+    public AvailableTime saveAvailableTime(AvailableTime availableTime) {
+        AvailableTimeEntity savedEntity =
+                availableTimeJpaRepository.save(AvailableTimeEntity.from(availableTime));
+
+        return savedEntity.toDomain();
+    }
+
+    @Override
     public Trainer getTrainerByCode(String trainerCode) {
         return trainerJpaRepository.findByTrainerCode(trainerCode)
                 .orElseThrow(() -> new CustomException(ErrorCode.TRAINER_IS_NOT_FOUND)).toDomain();
