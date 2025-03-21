@@ -32,16 +32,6 @@ public class TrainerInfoResult {
             String name,
             String phoneNumber
     ) {
-        public void updateTrainer(Trainer trainer, PersonalDetail personalDetail) {
-            if (name != null) {
-                trainer.updateName(name);
-                personalDetail.updateName(name);
-            }
-
-            if (phoneNumber != null) {
-                personalDetail.updatePhoneNumber(phoneNumber);
-            }
-        }
     }
 
     @Builder

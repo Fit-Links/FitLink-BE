@@ -28,7 +28,14 @@ public class TrainerFacade {
         Trainer trainer = trainerService.getTrainerInfo(trainerId);
         PersonalDetail personalDetail = trainerService.getTrainerDetail(trainerId);
 
-        request.updateTrainer(trainer, personalDetail);
+        if (request.name() != null) {
+            trainer.updateName(request.name());
+            personalDetail.updateName(request.name());
+        }
+
+        if (request.phoneNumber() != null) {
+            personalDetail.updatePhoneNumber(request.phoneNumber());
+        }
         trainerService.saveTrainer(trainer);
         trainerService.savePersonalDetail(personalDetail);
 
