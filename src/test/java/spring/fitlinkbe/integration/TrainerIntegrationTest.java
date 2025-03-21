@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.trainer.AvailableTime;
+import spring.fitlinkbe.domain.trainer.AvailableTimeRepository;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
@@ -18,11 +20,16 @@ import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerInfoDto;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 
 public class TrainerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     TestDataHandler testDataHandler;
+
+    @Autowired
+    AvailableTimeRepository availableTimeRepository;
 
     @Nested
     @DisplayName("트레이너 내 정보 조회 테스트")
@@ -336,5 +343,172 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             testDataHandler.createAvailableTime(trainer, DayOfWeek.THURSDAY, date);
         }
     }
+
+    @Nested
+    @DisplayName("트레이너 수업 가능 시간 추가 테스트")
+    class AddTrainerAvailableTimesTest {
+        private static final String URL = "/v1/trainers/me/available-times";
+
+        @Test
+        @DisplayName("트레이너 수업 가능 시간 추가 성공 - 현재 적용된 날짜만 존재할 때 미래 날짜 추가")
+        void addTrainerAvailableTimesSuccess() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 수업 가능 시간 추가 요청을 한다면
+            LocalDate now = LocalDate.now();
+            AvailableTimesDto.AddRequest addRequest = getAvailableTimeAddRequest(now);
+            String requestBody = writeValueAsString(addRequest);
+            ExtractableResponse<Response> result = post(URL, requestBody, token);
+
+            // then
+            // 수업 가능 시간 추가가 성공한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(201);
+                softly.assertThat(response.data()).isNull();
+
+                List<AvailableTime> availableTimes = availableTimeRepository.getAvailableTimes(trainer.getTrainerId(), now);
+                softly.assertThat(availableTimes.size()).isEqualTo(4);
+                availableTimes.forEach(availableTime -> {
+                    softly.assertThat(availableTime.getTrainer().getTrainerId()).isEqualTo(trainer.getTrainerId());
+                    softly.assertThat(availableTime.getApplyAt()).isEqualTo(now);
+                });
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너 수업 가능 시간 추가 성공 - 미래에 적용될 날짜만 있을 때 현재 날짜 추가")
+        void addTrainerAvailableTimesSuccessWithScheduledDate() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // 미래에 적용될 수업 가능 시간 생성
+            LocalDate scheduledDate = LocalDate.now().plusDays(3);
+            testDataHandler.createAvailableTime(trainer, DayOfWeek.MONDAY, scheduledDate);
+
+            // when
+            // 트레이너가 수업 가능 시간 추가 요청을 한다면
+            LocalDate now = LocalDate.now();
+            AvailableTimesDto.AddRequest addRequest = getAvailableTimeAddRequest(now);
+            String requestBody = writeValueAsString(addRequest);
+            ExtractableResponse<Response> result = post(URL, requestBody, token);
+
+            // then
+            // 수업 가능 시간 추가가 성공한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(201);
+                softly.assertThat(response.data()).isNull();
+
+                List<AvailableTime> availableTimes = availableTimeRepository.getAvailableTimes(trainer.getTrainerId(), now);
+                softly.assertThat(availableTimes.size()).isEqualTo(4);
+                availableTimes.forEach(availableTime -> {
+                    softly.assertThat(availableTime.getTrainer().getTrainerId()).isEqualTo(trainer.getTrainerId());
+                    softly.assertThat(availableTime.getApplyAt()).isEqualTo(now);
+                });
+            });
+        }
+
+
+        @Test
+        @DisplayName("트레이너 수업 가능 시간 추가 실패 - 이미 적용된 수업 + 적용 대기중인 스케줄 존재")
+        void addTrainerAvailableTimesFailWithAlreadyApplied() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // 현재 적용된 수업 가능 시간 생성
+            testDataHandler.createAvailableTime(trainer, DayOfWeek.MONDAY, LocalDate.now());
+
+            // 미래에 적용될 수업 가능 시간 생성
+            LocalDate scheduledDate = LocalDate.now().plusDays(3);
+            testDataHandler.createAvailableTime(trainer, DayOfWeek.MONDAY, scheduledDate);
+
+            // when
+            // 트레이너가 수업 가능 시간 추가 요청을 한다면
+            LocalDate now = LocalDate.now().plusDays(4);
+            AvailableTimesDto.AddRequest addRequest = getAvailableTimeAddRequest(now);
+            String requestBody = writeValueAsString(addRequest);
+            ExtractableResponse<Response> result = post(URL, requestBody, token);
+
+            // then
+            // 수업 가능 시간 추가가 실패한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.data()).isNull();
+                softly.assertThat(response.msg()).isEqualTo("이미 적용된 수업 시간과 적용 대기중인 스케줄이 있습니다.");
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너 수업 가능 시간 추가 실패 - 적용 날짜가 오늘보다 전 날짜일 경우")
+        void addTrainerAvailableTimesFailWithPastDate() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 수업 가능 시간 추가 요청을 한다면
+            LocalDate pastDate = LocalDate.now().minusDays(1);
+            AvailableTimesDto.AddRequest addRequest = getAvailableTimeAddRequest(pastDate);
+            String requestBody = writeValueAsString(addRequest);
+            ExtractableResponse<Response> result = post(URL, requestBody, token);
+
+            // then
+            // 수업 가능 시간 추가가 실패한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.data()).isNull();
+                softly.assertThat(response.msg()).isEqualTo("적용 날짜는 오늘 이후여야 합니다.");
+            });
+        }
+
+
+        private AvailableTimesDto.AddRequest getAvailableTimeAddRequest(LocalDate applyAt) {
+            List<AvailableTimesDto.AvailableTimeRequest> availableTimes = List.of(
+                    new AvailableTimesDto.AvailableTimeRequest(DayOfWeek.MONDAY, false, LocalTime.of(9, 0), LocalTime.of(12, 0)),
+                    new AvailableTimesDto.AvailableTimeRequest(DayOfWeek.TUESDAY, false, LocalTime.of(9, 0), LocalTime.of(12, 0)),
+                    new AvailableTimesDto.AvailableTimeRequest(DayOfWeek.WEDNESDAY, false, LocalTime.of(9, 0), LocalTime.of(12, 0)),
+                    new AvailableTimesDto.AvailableTimeRequest(DayOfWeek.THURSDAY, false, LocalTime.of(9, 0), LocalTime.of(12, 0))
+            );
+
+            return new AvailableTimesDto.AddRequest(applyAt, availableTimes);
+        }
+    }
+
 
 }

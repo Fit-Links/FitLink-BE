@@ -66,5 +66,24 @@ public class AvailableTimesDto {
                     .build();
         }
     }
+
+    public record AddRequest(
+            LocalDate applyAt,
+            List<AvailableTimeRequest> scheduledChanges
+    ) {
+
+    }
+
+    public record AvailableTimeRequest(
+
+            DayOfWeek dayOfWeek,
+
+            Boolean isHoliday,
+
+            LocalTime startTime,
+
+            LocalTime endTime
+    ) {
+    }
 }
 
