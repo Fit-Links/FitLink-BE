@@ -3,10 +3,14 @@ package spring.fitlinkbe.application.trainer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import spring.fitlinkbe.application.trainer.criteria.AvailableTimesResult;
 import spring.fitlinkbe.application.trainer.criteria.TrainerInfoResult;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -46,5 +50,12 @@ public class TrainerFacade {
         Trainer trainer = trainerService.getTrainerInfo(trainerId);
 
         return TrainerInfoResult.TrainerCodeResponse.from(trainer.getTrainerCode());
+    }
+
+    public AvailableTimesResult.Response getAvailableTimes(Long trainerId) {
+        List<AvailableTime> currentSchedules = trainerService.getCurrentAvailableTimes(trainerId);
+        List<AvailableTime> scheduledSchedules = trainerService.getScheduledAvailableTimes(trainerId);
+
+        return AvailableTimesResult.Response.of(currentSchedules, scheduledSchedules);
     }
 }

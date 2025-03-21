@@ -322,7 +322,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
 
                 AvailableTimesDto.Response availableTimes = readValue(result.body().jsonPath().prettify(), AvailableTimesDto.Response.class);
 
-                softly.assertThat(availableTimes.currentSchedules()).isNull();
+                softly.assertThat(availableTimes.currentSchedules()).isEmpty();
                 softly.assertThat(availableTimes.scheduledChanges().schedules().size()).isEqualTo(4);
                 softly.assertThat(availableTimes.scheduledChanges().applyAt()).isEqualTo(scheduledDate);
             });

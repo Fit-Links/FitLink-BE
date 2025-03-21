@@ -1,6 +1,7 @@
 package spring.fitlinkbe.interfaces.controller.trainer.dto;
 
 import lombok.Builder;
+import spring.fitlinkbe.application.trainer.criteria.AvailableTimesResult;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -15,6 +16,14 @@ public class AvailableTimesDto {
 
             ScheduledChangeResponse scheduledChanges
     ) {
+        public static Response from(AvailableTimesResult.Response response) {
+            return Response.builder()
+                    .currentSchedules(response.currentSchedules().stream()
+                            .map(AvailableTimeResponse::from)
+                            .toList())
+                    .scheduledChanges(ScheduledChangeResponse.from(response.scheduledChanges()))
+                    .build();
+        }
     }
 
     @Builder
@@ -29,6 +38,15 @@ public class AvailableTimesDto {
 
             LocalTime endTime
     ) {
+        public static AvailableTimeResponse from(AvailableTimesResult.AvailableTimeResponse availableTimeResponse) {
+            return AvailableTimeResponse.builder()
+                    .availableTimeId(availableTimeResponse.availableTimeId())
+                    .dayOfWeek(availableTimeResponse.dayOfWeek())
+                    .isHoliday(availableTimeResponse.isHoliday())
+                    .startTime(availableTimeResponse.startTime())
+                    .endTime(availableTimeResponse.endTime())
+                    .build();
+        }
     }
 
     @Builder
@@ -37,6 +55,16 @@ public class AvailableTimesDto {
 
             List<AvailableTimeResponse> schedules
     ) {
+        public static ScheduledChangeResponse from(AvailableTimesResult.ScheduledChangeResponse scheduledChangeResponse) {
+            if (scheduledChangeResponse == null) return null;
+
+            return ScheduledChangeResponse.builder()
+                    .applyAt(scheduledChangeResponse.applyAt())
+                    .schedules(scheduledChangeResponse.schedules().stream()
+                            .map(AvailableTimeResponse::from)
+                            .toList())
+                    .build();
+        }
     }
 }
 

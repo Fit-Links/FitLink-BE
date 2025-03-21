@@ -8,6 +8,8 @@ import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.TRAINER_IS_NOT_FOUND;
@@ -19,6 +21,7 @@ public class TrainerService {
 
     private final TrainerRepository trainerRepository;
     private final PersonalDetailRepository personalDetailRepository;
+    private final AvailableTimeRepository availableTimeRepository;
 
     @Transactional(readOnly = true)
     public Trainer getTrainerInfo(Long trainerId) {
@@ -56,5 +59,23 @@ public class TrainerService {
 
     public void savePersonalDetail(PersonalDetail personalDetail) {
         personalDetailRepository.savePersonalDetail(personalDetail);
+    }
+
+    public List<AvailableTime> getCurrentAvailableTimes(Long trainerId) {
+        LocalDate currentAppliedDate = availableTimeRepository.getCurrentAppliedDate(trainerId);
+        if (currentAppliedDate == null) {
+            return Collections.emptyList();
+        }
+
+        return availableTimeRepository.getAvailableTimes(trainerId, currentAppliedDate);
+    }
+
+    public List<AvailableTime> getScheduledAvailableTimes(Long trainerId) {
+        LocalDate scheduledAppliedDate = availableTimeRepository.getScheduledAppliedDate(trainerId);
+        if (scheduledAppliedDate == null) {
+            return Collections.emptyList();
+        }
+
+        return availableTimeRepository.getAvailableTimes(trainerId, scheduledAppliedDate);
     }
 }
