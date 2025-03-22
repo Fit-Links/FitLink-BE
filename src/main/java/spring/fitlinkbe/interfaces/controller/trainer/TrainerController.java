@@ -1,31 +1,43 @@
 package spring.fitlinkbe.interfaces.controller.trainer;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import spring.fitlinkbe.application.trainer.TrainerFacade;
+import spring.fitlinkbe.application.trainer.criteria.TrainerInfoResult;
 import spring.fitlinkbe.domain.common.enums.UserRole;
-import spring.fitlinkbe.domain.trainer.TrainerService;
-import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
-import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerDto;
+import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerInfoDto;
 import spring.fitlinkbe.support.aop.RoleCheck;
+import spring.fitlinkbe.support.argumentresolver.Login;
+import spring.fitlinkbe.support.security.SecurityUser;
 
 @RestController
 @RequiredArgsConstructor
 @RoleCheck(allowedRoles = {UserRole.TRAINER})
 @RequestMapping("/v1/trainers")
 public class TrainerController {
-    private final TrainerService trainerService;
+    private final TrainerFacade trainerFacade;
 
-    @GetMapping("{trainerId}/me")
-    public ApiResultResponse<TrainerDto.Response> getTrainerInfo(@PathVariable("trainerId")
-                                                                 @NotNull(message = "유저 ID는 필수값 입니다.")
-                                                                 Long trainerId) {
+    @GetMapping("/me")
+    public TrainerInfoDto.Response getTrainerInfo(@Login SecurityUser user) {
+        TrainerInfoResult.Response response = trainerFacade.getTrainerInfo(user.getTrainerId());
 
-        return ApiResultResponse.ok(TrainerDto.Response.of(trainerService.getTrainerInfo(trainerId)));
-
+        return TrainerInfoDto.Response.from(response);
     }
 
+    @PatchMapping("/me")
+    public TrainerInfoDto.TrainerUpdateResponse updateTrainerInfo(
+            @Login SecurityUser user,
+            @Valid @RequestBody TrainerInfoDto.TrainerUpdateRequest request) {
+        TrainerInfoResult.Response response = trainerFacade.updateTrainerInfo(user.getTrainerId(), request.toRequest());
+
+        return TrainerInfoDto.TrainerUpdateResponse.from(response);
+    }
+
+    @GetMapping("/me/trainer-code")
+    public TrainerInfoDto.TrainerCodeResponse getTrainerCode(@Login SecurityUser user) {
+        TrainerInfoResult.TrainerCodeResponse response = trainerFacade.getTrainerCode(user.getTrainerId());
+
+        return TrainerInfoDto.TrainerCodeResponse.from(response);
+    }
 }

@@ -85,6 +85,14 @@ public class PersonalDetail {
         return trainerId == null ? MEMBER : TRAINER;
     }
 
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updatePhoneNumber(String phoneNumber) {
+        this.phoneNumber = new PhoneNumber(phoneNumber);
+    }
+
     public enum Gender {
         MALE, FEMALE
     }
