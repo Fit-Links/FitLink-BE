@@ -2,11 +2,13 @@ package spring.fitlinkbe.interfaces.controller.trainer;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.trainer.TrainerFacade;
 import spring.fitlinkbe.application.trainer.criteria.AvailableTimesResult;
 import spring.fitlinkbe.application.trainer.criteria.TrainerInfoResult;
 import spring.fitlinkbe.domain.common.enums.UserRole;
+import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.trainer.dto.AvailableTimesDto;
 import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerInfoDto;
 import spring.fitlinkbe.support.aop.RoleCheck;
@@ -48,5 +50,15 @@ public class TrainerController {
         AvailableTimesResult.Response response = trainerFacade.getAvailableTimes(user.getTrainerId());
 
         return AvailableTimesDto.Response.from(response);
+    }
+
+    @PostMapping("/me/available-times")
+    public ApiResultResponse<Object> saveAvailableTimes(
+            @Login SecurityUser user,
+            @Valid @RequestBody AvailableTimesDto.AddRequest request
+    ) {
+        trainerFacade.saveAvailableTimes(user.getTrainerId(), request.toCriteria());
+
+        return ApiResultResponse.of(HttpStatus.CREATED, true, null);
     }
 }

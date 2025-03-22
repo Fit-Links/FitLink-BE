@@ -3,13 +3,17 @@ package spring.fitlinkbe.application.trainer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import spring.fitlinkbe.application.trainer.criteria.AvailableTimeCriteria;
 import spring.fitlinkbe.application.trainer.criteria.AvailableTimesResult;
 import spring.fitlinkbe.application.trainer.criteria.TrainerInfoResult;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Component
@@ -57,5 +61,32 @@ public class TrainerFacade {
         List<AvailableTime> scheduledSchedules = trainerService.getScheduledAvailableTimes(trainerId);
 
         return AvailableTimesResult.Response.of(currentSchedules, scheduledSchedules);
+    }
+
+    @Transactional
+    public void saveAvailableTimes(Long trainerId, AvailableTimeCriteria.AddRequest criteria) {
+        Trainer trainer = trainerService.getTrainerInfo(trainerId);
+
+        if (criteria.applyAt().equals(LocalDate.now())) {
+            saveCurrentApplyAvailableTimes(trainer, criteria);
+        } else {
+            saveScheduledAvailableTimes(trainer, criteria);
+        }
+    }
+
+    private void saveCurrentApplyAvailableTimes(Trainer trainer, AvailableTimeCriteria.AddRequest criteria) {
+        if (!trainerService.getCurrentAvailableTimes(trainer.getTrainerId()).isEmpty()) {
+            throw new CustomException(ErrorCode.ALREADY_APPLIED_AVAILABLE_TIMES);
+        }
+        List<AvailableTime> availableTimes = criteria.toAvailableTimes(trainer);
+        trainerService.saveAvailableTimes(availableTimes);
+    }
+
+    private void saveScheduledAvailableTimes(Trainer trainer, AvailableTimeCriteria.AddRequest criteria) {
+        if (!trainerService.getScheduledAvailableTimes(trainer.getTrainerId()).isEmpty()) {
+            throw new CustomException(ErrorCode.ALREADY_SCHEDULED_AVAILABLE_TIMES);
+        }
+        List<AvailableTime> availableTimes = criteria.toAvailableTimes(trainer);
+        trainerService.saveAvailableTimes(availableTimes);
     }
 }
