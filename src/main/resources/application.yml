@@ -150,6 +150,7 @@ spring:
         default_batch_fetch_size: 500
 logging:
   level:
+    com.zaxxer.hikari: debug
     org:
       web: debug
       hibernate:
