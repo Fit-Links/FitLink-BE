@@ -18,6 +18,12 @@ import java.util.List;
 public class AuthDto {
 
     @Builder
+    public record EmailAuthTokenResponse(
+            String verificationToken
+    ){}
+
+
+    @Builder
     public record Response(String accessToken, String refreshToken) {
 
         public static Response from(AuthCommand.Response so) {

@@ -704,4 +704,59 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         }
 
     }
+
+
+    @Nested
+    @DisplayName("회원 이메일 인증 API 테스트")
+    public class EmailAuthTest {
+        private static final String EMAIL_AUTH_API = "/v1/auth/email-verification-token";
+
+        @Test
+        @DisplayName("회원 이메일 인증 코드 발급 성공")
+        public void sendEmailAuthCodeTest() throws Exception {
+            // given
+            // REQUIRED_SMS 상태의 유저가 있을 때
+            Member member = testDataHandler.createMember(PersonalDetail.Status.REQUIRED_SMS);
+            String accessToken = testDataHandler.createTokenFromMember(member);
+
+            // when
+            // 이메일 인증 코드 발급 요청을 보낸다면
+            ExtractableResponse<Response> result = post(EMAIL_AUTH_API, null, accessToken);
+
+            // then
+            // 요청에 성공해야 한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AuthDto.EmailAuthTokenResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.data().verificationToken()).isNotNull();
+            });
+        }
+
+        @Test
+        @DisplayName("회원 이메일 인증 코드 발급 실패 - 회원의 상태가 REQUIRED_SMS 가 아닌 경우")
+        public void sendEmailAuthCodeFailBecauseOfNotRequiredSmsStatus() throws Exception {
+            // given
+            // NORMAL 상태의 유저가 있을 때
+            Member member = testDataHandler.createMember(PersonalDetail.Status.NORMAL);
+            String accessToken = testDataHandler.createTokenFromMember(member);
+
+            // when
+            // 이메일 인증 코드 발급 요청을 보낸다면
+            ExtractableResponse<Response> result = post(EMAIL_AUTH_API, null, accessToken);
+
+            // then
+            // 에러를 반환한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AuthDto.EmailAuthTokenResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.status()).isEqualTo(403);
+                softly.assertThat(response.success()).isFalse();
+            });
+        }
+    }
 }
