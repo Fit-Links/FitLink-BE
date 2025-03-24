@@ -40,6 +40,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_NOT_FOUND;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
+import static spring.fitlinkbe.domain.reservation.Session.Status.SESSION_COMPLETED;
+import static spring.fitlinkbe.domain.reservation.Session.Status.SESSION_NOT_ATTEND;
 
 @WebMvcTest(ReservationController.class)
 class ReservationControllerTest {
@@ -1267,6 +1269,187 @@ class ReservationControllerTest {
         }
     }
 
+    @Nested
+    @DisplayName("진행한 PT 처리 Controller TEST")
+    class CompleteSessionControllerTest {
+        @Test
+        @DisplayName("트레이너의 PT 처리 성공 - 참석 O")
+        void completeSessionJoin() throws Exception {
+            //given
+            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+                    .isJoin(true)
+                    .memberId(1L)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Session result = Session.builder()
+                    .sessionId(1L)
+                    .status(SESSION_COMPLETED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.completeSession(any(ReservationCriteria.CompleteSession.class),
+                    any(SecurityUser.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/sessions/complete".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.msg").value("OK"))
+                    .andExpect(jsonPath("$.data.status").value(SESSION_COMPLETED.getName()));
+        }
+
+        @Test
+        @DisplayName("트레이너의 PT 처리 성공 - 참석 X")
+        void completeSessionNotJoin() throws Exception {
+            //given
+            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+                    .isJoin(false)
+                    .memberId(1L)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Session result = Session.builder()
+                    .sessionId(1L)
+                    .status(SESSION_NOT_ATTEND)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.completeSession(any(ReservationCriteria.CompleteSession.class),
+                    any(SecurityUser.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/sessions/complete".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.msg").value("OK"))
+                    .andExpect(jsonPath("$.data.status").value(SESSION_NOT_ATTEND.getName()));
+        }
+
+        @Test
+        @DisplayName("트레이너의 PT 처리 실패 - 참석 여부 부재")
+        void completeSessionWithNoJoin() throws Exception {
+            //given
+            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+                    .memberId(1L)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Session result = Session.builder()
+                    .sessionId(1L)
+                    .status(SESSION_COMPLETED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.completeSession(any(ReservationCriteria.CompleteSession.class),
+                    any(SecurityUser.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/sessions/complete".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("참석 여부는 필수값 입니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+        @Test
+        @DisplayName("트레이너의 PT 처리 실패 - 멤버 ID 부재")
+        void completeSessionWithNoMemberId() throws Exception {
+            //given
+            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+                    .isJoin(true)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Session result = Session.builder()
+                    .sessionId(1L)
+                    .status(SESSION_COMPLETED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.completeSession(any(ReservationCriteria.CompleteSession.class),
+                    any(SecurityUser.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/sessions/complete".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("유저 ID는 필수값 입니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+    }
 
     private String getAccessToken(PersonalDetail personalDetail) {
 

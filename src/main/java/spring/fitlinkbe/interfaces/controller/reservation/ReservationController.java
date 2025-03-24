@@ -9,6 +9,7 @@ import spring.fitlinkbe.application.reservation.ReservationFacade;
 import spring.fitlinkbe.application.reservation.criteria.ReservationResult;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.reservation.Reservation;
+import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationRequestDto;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationResponseDto;
@@ -183,6 +184,28 @@ public class ReservationController {
         Reservation result = reservationFacade.approveReservation(request.toCriteria(reservationId), user);
 
         return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
+
+    }
+
+    /**
+     * 진행한 PT 처리
+     *
+     * @param request isJoin 정보
+     * @return ApiResultResponse 진행한 sessionId 결과를 반환한다.
+     */
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
+    @PostMapping("{reservationId}/sessions/complete")
+    public ApiResultResponse<ReservationResponseDto.SuccessSession> completeSession(@PathVariable("reservationId")
+                                                                                    @NotNull(message = "예약 ID는 필수값입니다.")
+                                                                                    Long reservationId,
+                                                                                    @RequestBody @Valid
+                                                                                    ReservationRequestDto.CompleteSession
+                                                                                            request,
+                                                                                    @Login SecurityUser user
+    ) {
+        Session result = reservationFacade.completeSession(request.toCriteria(reservationId), user);
+
+        return ApiResultResponse.ok(ReservationResponseDto.SuccessSession.of(result));
 
     }
 }

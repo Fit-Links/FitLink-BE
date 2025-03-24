@@ -3,6 +3,7 @@ package spring.fitlinkbe.interfaces.controller.reservation.dto;
 import lombok.Builder;
 import spring.fitlinkbe.application.reservation.criteria.ReservationResult;
 import spring.fitlinkbe.domain.reservation.Reservation;
+import spring.fitlinkbe.domain.reservation.Session;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -19,6 +20,17 @@ public class ReservationResponseDto {
             return Success.builder()
                     .reservationId(reservation.getReservationId())
                     .status(reservation.getStatus().getName())
+                    .build();
+        }
+    }
+
+    @Builder(toBuilder = true)
+    public record SuccessSession(Long sessionId, String status) {
+        public static ReservationResponseDto.SuccessSession of(Session session) {
+
+            return SuccessSession.builder()
+                    .sessionId(session.getSessionId())
+                    .status(session.getStatus().getName())
                     .build();
         }
     }
