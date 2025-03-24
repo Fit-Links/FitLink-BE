@@ -95,4 +95,23 @@ public class ReservationCriteria {
                     .build();
         }
     }
+
+    @Builder(toBuilder = true)
+    public record CompleteSession(Long memberId, Long reservationId, Boolean isJoin) {
+        public ReservationCommand.CompleteSession toCompleteSessionCommand() {
+
+            return ReservationCommand.CompleteSession.builder()
+                    .reservationId(reservationId)
+                    .isJoin(isJoin)
+                    .build();
+        }
+
+        public ReservationCommand.CompleteReservation toCompleteReservationCommand() {
+            return ReservationCommand.CompleteReservation.builder()
+                    .reservationId(reservationId)
+                    .memberId(memberId)
+                    .build();
+        }
+    }
+
 }

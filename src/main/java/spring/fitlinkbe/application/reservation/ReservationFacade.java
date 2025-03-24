@@ -184,6 +184,21 @@ public class ReservationFacade {
         return approveReservation;
     }
 
+    @Transactional
+    public Session completeSession(ReservationCriteria.CompleteSession criteria, SecurityUser user) {
+        // 세션 처리
+        Session completedSession = reservationService.completeSession(criteria.toCompleteSessionCommand());
+        // 세션 하나 차감
+        memberService.deductSession(user.getTrainerId(), criteria.memberId());
+        // 예약 완료 처리
+        reservationService.completeReservation(criteria.toCompleteReservationCommand(), user);
+        // 알람 전송 트레이너 -> 멤버에게 세션이 완료되서 차감 되었다는 알람 발송
+        notificationService.sendCompleteSessionNotification(completedSession.getSessionId(),
+                memberService.getMemberDetail(criteria.memberId()));
+
+        return completedSession;
+    }
+
     private void cancelExistingReservations(List<Reservation> reservations, String cancelMsg) {
         if (!reservations.isEmpty()) {
             reservations.forEach(Reservation::checkPossibleReserveStatus);
@@ -194,6 +209,4 @@ public class ReservationFacade {
                     memberService.getMemberDetail(r.getMember().getMemberId()), RESERVATION_REFUSE));
         }
     }
-
-
 }
