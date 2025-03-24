@@ -2,10 +2,7 @@ package spring.fitlinkbe.interfaces.controller.auth;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.auth.AuthFacade;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.enums.UserRole;
@@ -52,6 +49,21 @@ public class AuthController {
         return ApiResultResponse.ok(AuthDto.Response.from(result));
     }
 
+    @GetMapping("/email-verification-token")
+    public ApiResultResponse<AuthDto.EmailAuthTokenResponse> getEmailVerificationToken(
+            @Login SecurityUser user
+    ) {
+        checkUserStatusOrThrow(user);
+        String verificationToken = authFacade.getEmailVerificationToken(user.getPersonalDetailId());
+
+        return ApiResultResponse.ok(new AuthDto.EmailAuthTokenResponse(verificationToken));
+    }
+
+    /**
+     * 유저의 상태가 REQUIRED_SMS 상태인지 확인
+     *
+     * @throws CustomException REQUIRED_SMS 상태가 아닐 경우
+     */
     private void checkUserStatusOrThrow(SecurityUser user) {
         if (user.getStatus() != PersonalDetail.Status.REQUIRED_SMS) {
             throw new CustomException(ErrorCode.NEED_REQUIRED_SMS_STATUS);

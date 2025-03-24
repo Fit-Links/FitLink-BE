@@ -87,7 +87,7 @@ public class TestDataHandler {
                 .build();
 
         Member saved = memberRepository.saveMember(member).orElseThrow();
-        createPersonalDetail(status, member.getMemberId());
+        createPersonalDetail(status, saved.getMemberId());
         return saved;
     }
 

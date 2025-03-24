@@ -721,7 +721,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
 
             // when
             // 이메일 인증 코드 발급 요청을 보낸다면
-            ExtractableResponse<Response> result = post(EMAIL_AUTH_API, null, accessToken);
+            ExtractableResponse<Response> result = get(EMAIL_AUTH_API, accessToken);
 
             // then
             // 요청에 성공해야 한다
@@ -745,7 +745,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
 
             // when
             // 이메일 인증 코드 발급 요청을 보낸다면
-            ExtractableResponse<Response> result = post(EMAIL_AUTH_API, null, accessToken);
+            ExtractableResponse<Response> result = get(EMAIL_AUTH_API, accessToken);
 
             // then
             // 에러를 반환한다
