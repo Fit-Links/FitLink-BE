@@ -60,4 +60,12 @@ public class ReservationCommand {
     public record CancelReservation(Long reservationId, String cancelReason) {
 
     }
+
+    @Builder(toBuilder = true)
+    public record CompleteSession(Long reservationId, Boolean isJoin) {
+    }
+
+    @Builder(toBuilder = true)
+    public record CompleteReservation(Long reservationId, Long memberId) {
+    }
 }

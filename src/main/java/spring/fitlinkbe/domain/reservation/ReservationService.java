@@ -226,6 +226,32 @@ public class ReservationService {
     }
 
     @Transactional
+    public Session completeSession(ReservationCommand.CompleteSession command) {
+
+        Session getSession = reservationRepository.getSession(command.reservationId()).orElseThrow(() ->
+                new CustomException(ErrorCode.SESSION_NOT_FOUND,
+                        "세션 정보를 찾지 못하였습니다. [reservationId: %d].".formatted(command.reservationId())));
+
+        getSession.complete(command.isJoin());
+
+        return reservationRepository.saveSession(getSession).orElseThrow(() ->
+                new CustomException(ErrorCode.SESSION_CREATE_FAILED));
+
+    }
+
+    @Transactional
+    public Reservation completeReservation(ReservationCommand.CompleteReservation command, SecurityUser user) {
+        Reservation getReservation = reservationRepository.getReservation(command.reservationId()).orElseThrow(() ->
+                new CustomException(ErrorCode.RESERVATION_NOT_FOUND,
+                        "예약 정보를 찾지 못하였습니다. [reservationId: %d].".formatted(command.reservationId())));
+
+        getReservation.complete(user.getTrainerId(), command.memberId());
+
+        return reservationRepository.saveReservation(getReservation).orElseThrow(() ->
+                new CustomException(ErrorCode.RESERVATION_IS_FAILED));
+    }
+
+    @Transactional
     public Session saveSession(Reservation savedReservation) {
 
         Session session = Session.builder()

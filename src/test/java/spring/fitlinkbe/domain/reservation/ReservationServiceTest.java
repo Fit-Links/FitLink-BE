@@ -9,8 +9,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
 import spring.fitlinkbe.domain.trainer.Trainer;
+import spring.fitlinkbe.support.security.SecurityUser;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -367,6 +370,212 @@ class ReservationServiceTest {
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(SESSION_CREATE_FAILED);
+        }
+    }
+
+    @Nested
+    @DisplayName("세션 완료 Service TEST")
+    class completeSessionServiceTest {
+
+        @Test
+        @DisplayName("세션 완료 성공")
+        void completeSession() {
+            //given
+            ReservationCommand.CompleteSession command = ReservationCommand.CompleteSession.builder()
+                    .reservationId(1L)
+                    .isJoin(true)
+                    .build();
+
+            Session session = Session.builder()
+                    .sessionId(1L)
+                    .status(Session.Status.SESSION_WAITING)
+                    .build();
+
+            Session completedSession = Session.builder()
+                    .sessionId(1L)
+                    .status(Session.Status.SESSION_COMPLETED)
+                    .build();
+
+            when(reservationRepository.getSession(command.reservationId()))
+                    .thenReturn(Optional.ofNullable(session));
+
+            when(reservationRepository.saveSession(session))
+                    .thenReturn(Optional.ofNullable(completedSession));
+
+            //when
+            Session result = reservationService.completeSession(command);
+
+            //then
+            assertThat(result).isNotNull();
+            assertThat(result.getSessionId()).isEqualTo(1L);
+            assertThat(result.getStatus()).isEqualTo(Session.Status.SESSION_COMPLETED);
+        }
+
+        @Test
+        @DisplayName("세션 완료 실패 - 세션 정보 없음")
+        void completeSessionNoSessionInfo() {
+            //given
+            ReservationCommand.CompleteSession command = ReservationCommand.CompleteSession.builder()
+                    .reservationId(1L)
+                    .isJoin(true)
+                    .build();
+
+            when(reservationRepository.getSession(any(Long.class))).thenThrow(
+                    new CustomException(SESSION_NOT_FOUND));
+
+            //when & then
+            assertThatThrownBy(() -> reservationService.completeSession(command))
+                    .isInstanceOf(CustomException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(SESSION_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("세션 완료 실패 - 이미 세션 완료")
+        void completeSessionAlreadySessionCompleted() {
+            //given
+            ReservationCommand.CompleteSession command = ReservationCommand.CompleteSession.builder()
+                    .reservationId(1L)
+                    .isJoin(true)
+                    .build();
+
+            Session session = Session.builder()
+                    .sessionId(1L)
+                    .status(Session.Status.SESSION_COMPLETED)
+                    .build();
+
+
+            when(reservationRepository.getSession(command.reservationId()))
+                    .thenReturn(Optional.ofNullable(session));
+
+            //when & then
+            assertThatThrownBy(() -> reservationService.completeSession(command))
+                    .isInstanceOf(CustomException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(SESSION_IS_ALREADY_END);
+        }
+    }
+
+    @Nested
+    @DisplayName("예약 완료 Service TEST")
+    class completeReservationServiceTest {
+
+        @Test
+        @DisplayName("예약 완료 성공")
+        void completeReservation() {
+            //given
+            ReservationCommand.CompleteReservation command = ReservationCommand.CompleteReservation.builder()
+                    .reservationId(1L)
+                    .memberId(1L)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            Reservation reservation = Reservation.builder()
+                    .reservationId(1L)
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            Reservation compltedReservation = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_COMPLETED)
+                    .build();
+
+
+            when(reservationRepository.getReservation(command.reservationId()))
+                    .thenReturn(Optional.ofNullable(reservation));
+
+            when(reservationRepository.saveReservation(reservation))
+                    .thenReturn(Optional.ofNullable(compltedReservation));
+
+            //when
+            Reservation result = reservationService.completeReservation(command, user);
+
+            //then
+            assertThat(result).isNotNull();
+            assertThat(result.getReservationId()).isEqualTo(1L);
+            assertThat(result.getStatus()).isEqualTo(RESERVATION_COMPLETED);
+        }
+
+        @Test
+        @DisplayName("예약 완료 실패 - 예약 정보 없음")
+        void completeReservationNoReservationInfo() {
+            //given
+            ReservationCommand.CompleteReservation command = ReservationCommand.CompleteReservation.builder()
+                    .reservationId(1L)
+                    .memberId(1L)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            when(reservationRepository.getReservation(any(Long.class))).thenThrow(
+                    new CustomException(RESERVATION_NOT_FOUND));
+
+
+            //when & then
+            assertThatThrownBy(() -> reservationService.completeReservation(command, user))
+                    .isInstanceOf(CustomException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(RESERVATION_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("예약 완료 실패 - 다른 예약 정보 수정")
+        void completeReservationCompleteOtherReservationInfo() {
+            //given
+            ReservationCommand.CompleteReservation command = ReservationCommand.CompleteReservation.builder()
+                    .reservationId(1L)
+                    .memberId(1L)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            Reservation reservation = Reservation.builder()
+                    .reservationId(1L)
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(2L).build())
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            Reservation compltedReservation = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_COMPLETED)
+                    .build();
+
+            when(reservationRepository.getReservation(command.reservationId()))
+                    .thenReturn(Optional.ofNullable(reservation));
+
+            when(reservationRepository.saveReservation(reservation))
+                    .thenReturn(Optional.ofNullable(compltedReservation));
+
+            //when & then
+            assertThatThrownBy(() -> reservationService.completeReservation(command, user))
+                    .isInstanceOf(CustomException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(RESERVATION_COMPLETE_NOT_ALLOWED);
         }
     }
 }

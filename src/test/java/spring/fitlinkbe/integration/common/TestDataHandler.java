@@ -183,6 +183,7 @@ public class TestDataHandler {
         SessionInfo sessionInfo = SessionInfo.builder()
                 .trainer(trainer)
                 .member(member)
+                .remainingCount(10)
                 .build();
 
         sessionInfoRepository.saveSessionInfo(sessionInfo);
@@ -296,7 +297,6 @@ public class TestDataHandler {
                 .dayOfWeek(dayOfWeek)
                 .applyAt(applyAt)
                 .isHoliday(false)
-                .unavailable(false)
                 .startTime(LocalTime.of(10, 0))
                 .endTime(LocalTime.of(12, 0))
                 .build();

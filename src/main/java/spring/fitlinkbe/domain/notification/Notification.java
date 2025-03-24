@@ -146,6 +146,23 @@ public class Notification {
                 .build();
     }
 
+    public static Notification completeSessionNotification(Long sessionId, PersonalDetail memberDetail) {
+
+        String content = " PT 완료로 횟수가 1회 차감되었습니다.";
+
+        return Notification.builder()
+                .refId(sessionId)
+                .refType(ReferenceType.SESSION)
+                .notificationType(NotificationType.SESSION_DEDUCTED)
+                .personalDetail(memberDetail)
+                .name(NotificationType.SESSION_DEDUCTED.name)
+                .content(content)
+                .isSent(true)
+                .isProcessed(false)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
     @RequiredArgsConstructor
     @Getter
     public enum ReferenceType {

@@ -132,6 +132,18 @@ public class Reservation {
         this.status = RESERVATION_REFUSED;
     }
 
+    public void complete(Long trainerId, Long memberId) {
+        if (!trainerId.equals(trainer.getTrainerId()) || !memberId.equals(member.getMemberId())) {
+            throw new CustomException(RESERVATION_COMPLETE_NOT_ALLOWED);
+        }
+
+        if (this.status == RESERVATION_COMPLETED) {
+            throw new CustomException(RESERVATION_IS_ALREADY_COMPLETED);
+        }
+
+        this.status = RESERVATION_COMPLETED;
+    }
+
     public void cancel(String message) {
         if (status == RESERVATION_CANCELLED) {
             throw new CustomException(RESERVATION_IS_ALREADY_CANCEL);

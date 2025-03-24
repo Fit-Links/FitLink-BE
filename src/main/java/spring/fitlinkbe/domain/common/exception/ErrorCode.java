@@ -27,12 +27,15 @@ public enum ErrorCode {
     // Reservation 관련 ErrorCode
 
     RESERVATION_IS_FAILED("예약에 실패하였습니다.", 400),
+
     RESERVATION_NOT_ALLOWED("예약을 할 수 있는 상태가 아닙니다.", 400),
     SET_DISABLE_DATE_FAILED("예약 불가 설정에 실패하였습니다.", 400),
     RESERVATION_CANCEL_FAILED("예약 취소에 실패하였습니다.", 400),
     RESERVATION_IS_ALREADY_CANCEL("이미 예약이 취소되었습니다.", 400),
     RESERVATION_IS_NOT_WAITING_STATUS("예약 상태가 대기 상태가 아닙니다.", 400),
     RESERVATION_WAITING_MEMBERS_EMPTY("이 날짜에 예약 대기자가 없습니다.", 400),
+    RESERVATION_COMPLETE_NOT_ALLOWED("다른 사람의 예약을 완료시킬 수 없습니다.", 400),
+    RESERVATION_IS_ALREADY_COMPLETED("이미 예약이 완료되었습니다.", 400),
     RESERVATION_CANCEL_NOT_ALLOWED("예약 취소를 할 수 없는 상태입니다.", 400),
     RESERVATION_REFUSE_NOT_ALLOWED("예약 거절을 할 수 없는 상태입니다.", 400),
     RESERVATION_APPROVE_NOT_ALLOWED("예약 확정을 할 수 없는 상태입니다.", 400),
@@ -46,6 +49,7 @@ public enum ErrorCode {
     SESSION_NOT_FOUND("세션 정보를 찾지 못하였습니다.", 404),
     SESSION_IS_ALREADY_CANCEL("이미 세션이 취소되었습니다.", 400),
     SESSION_IS_ALREADY_END("이미 세션이 종료되었습니다.", 400),
+    SESSION_REMAINING_COUNT_NOT_VALID("세션 남은 횟수가 0보다 작습니다", 400),
 
     // Notification 관련 ErrorCode
     NOTIFICATION_NOT_FOUND("알림 정보를 찾지 못하였습니다.", 404),
