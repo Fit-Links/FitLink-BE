@@ -86,7 +86,7 @@ CREATE TABLE token
 CREATE TABLE workout_schedule
 (
     workout_schedule_id BIGINT NOT NULL AUTO_INCREMENT,
-    day_of_week       ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'),
+    day_of_week         ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'),
     member_id           BIGINT,
     preference_times    JSON,
     created_at          DATETIME(6),
@@ -100,7 +100,7 @@ CREATE TABLE available_time
     available_time_id BIGINT NOT NULL AUTO_INCREMENT,
     trainer_id        BIGINT,
     is_holiday        BOOLEAN,
-    unavailable       BOOLEAN,
+    apply_at          DATETIME(6),
     day_of_week       ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'),
     start_time        TIME,
     end_time          TIME,
@@ -136,19 +136,19 @@ CREATE TABLE session
 -- 예약 정보 테이블
 CREATE TABLE reservation
 (
-    reservation_id   BIGINT      NOT NULL AUTO_INCREMENT,
-    member_id        BIGINT,
-    trainer_id       BIGINT,
-    session_info_id  BIGINT,
-    name             VARCHAR(255),
-    reservation_dates JSON NOT NULL,
-    change_date      DATETIME(6),
-    status           ENUM ('FIXED_RESERVATION','DISABLED_TIME_RESERVATION', 'RESERVATION_WAITING','RESERVATION_APPROVED',
+    reservation_id    BIGINT NOT NULL AUTO_INCREMENT,
+    member_id         BIGINT,
+    trainer_id        BIGINT,
+    session_info_id   BIGINT,
+    name              VARCHAR(255),
+    reservation_dates JSON   NOT NULL,
+    change_date       DATETIME(6),
+    status            ENUM ('FIXED_RESERVATION','DISABLED_TIME_RESERVATION', 'RESERVATION_WAITING','RESERVATION_APPROVED',
         'RESERVATION_CANCELLED', 'RESERVATION_REFUSED', 'RESERVATION_CHANGE_REQUEST', 'RESERVATION_COMPLETED'),
-    cancel_reason    VARCHAR(255),
-    is_day_off       BOOLEAN,
-    created_at       DATETIME(6),
-    updated_at       DATETIME(6),
+    cancel_reason     VARCHAR(255),
+    is_day_off        BOOLEAN,
+    created_at        DATETIME(6),
+    updated_at        DATETIME(6),
     PRIMARY KEY (reservation_id)
 );
 

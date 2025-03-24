@@ -31,8 +31,6 @@ public class AvailableTimeEntity extends BaseTimeEntity {
 
     private Boolean isHoliday;
 
-    private Boolean unavailable;
-
     private LocalTime startTime;
 
     private LocalTime endTime;
@@ -44,7 +42,6 @@ public class AvailableTimeEntity extends BaseTimeEntity {
                 .dayOfWeek(availableTime.getDayOfWeek())
                 .isHoliday(availableTime.getIsHoliday())
                 .applyAt(availableTime.getApplyAt())
-                .unavailable(availableTime.getUnavailable())
                 .startTime(availableTime.getStartTime())
                 .endTime(availableTime.getEndTime())
                 .build();
@@ -56,7 +53,6 @@ public class AvailableTimeEntity extends BaseTimeEntity {
                 .trainer(trainer.toDomain())
                 .dayOfWeek(dayOfWeek)
                 .isHoliday(isHoliday)
-                .unavailable(unavailable)
                 .startTime(startTime)
                 .endTime(endTime)
                 .applyAt(applyAt)
