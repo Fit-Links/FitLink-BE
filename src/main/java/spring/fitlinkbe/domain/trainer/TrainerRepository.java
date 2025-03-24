@@ -19,5 +19,7 @@ public interface TrainerRepository {
 
     void saveAvailableTimes(List<AvailableTime> availableTimes);
 
+    AvailableTime saveAvailableTime(AvailableTime availableTime);
+
     Trainer getTrainerByCode(String trainerCode);
 }
