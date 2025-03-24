@@ -41,7 +41,8 @@ import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_NOT
 import static spring.fitlinkbe.domain.notification.Notification.NotificationType.*;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_CANCEL_REQUEST;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
-import static spring.fitlinkbe.domain.reservation.Session.Status.SESSION_WAITING;
+import static spring.fitlinkbe.domain.reservation.Session.Status.SESSION_COMPLETED;
+import static spring.fitlinkbe.domain.reservation.Session.Status.*;
 
 public class ReservationIntegrationTest extends BaseIntegrationTest {
 
@@ -2126,5 +2127,317 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             });
         }
 
+    }
+
+    @Nested
+    @DisplayName("진행한 PT 처리 Integration TEST")
+    class CompleteSessionIntegrationTest {
+        @Test
+        @DisplayName("트레이너의 PT 처리 성공 - 회원이 PT 참석한 경우")
+        void completeSessionWithJoinSession() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+                    .memberId(1L)
+                    .isJoin(true)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(LocalDateTime.now().plusSeconds(2)))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_APPROVED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_WAITING)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/sessions/complete".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                //예약이 잘 승인됐는지 확인
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+
+                ReservationResponseDto.SuccessSession content = result.body().jsonPath()
+                        .getObject("data", ReservationResponseDto.SuccessSession.class);
+
+                softly.assertThat(content.sessionId()).isEqualTo(1L);
+                softly.assertThat(content.status()).isEqualTo(Notification.NotificationType.SESSION_COMPLETED.getName());
+
+                // 알람이 잘 생성됐는지 확인
+                Notification notification = notificationRepository.getNotification(content.sessionId(),
+                        Notification.ReferenceType.SESSION);
+                softly.assertThat(notification).isNotNull();
+                softly.assertThat(notification.getNotificationType()).isEqualTo(SESSION_DEDUCTED);
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너의 PT 처리 성공 - 회원이 PT 참석하지 않은 경우")
+        void completeSessionWithNotJoinSession() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+                    .memberId(1L)
+                    .isJoin(false)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(LocalDateTime.now().plusSeconds(2)))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_APPROVED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_WAITING)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/sessions/complete".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                //예약이 잘 승인됐는지 확인
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+
+                ReservationResponseDto.SuccessSession content = result.body().jsonPath()
+                        .getObject("data", ReservationResponseDto.SuccessSession.class);
+
+                softly.assertThat(content.sessionId()).isEqualTo(1L);
+                softly.assertThat(content.status()).isEqualTo(SESSION_NOT_ATTEND.getName());
+
+                // 알람이 잘 생성됐는지 확인
+                Notification notification = notificationRepository.getNotification(content.sessionId(),
+                        Notification.ReferenceType.SESSION);
+                softly.assertThat(notification).isNotNull();
+                softly.assertThat(notification.getNotificationType()).isEqualTo(SESSION_DEDUCTED);
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너의 PT 처리 실패 - 세션 정보 없음")
+        void completeSessionWithNoSessionInfo() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+                    .memberId(1L)
+                    .isJoin(true)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(LocalDateTime.now().plusSeconds(2)))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_APPROVED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            reservationRepository.saveReservation(reservation).orElseThrow();
+
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/sessions/complete".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(404);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("세션 정보를 찾지 못하였습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너의 PT 처리 실패 - 이미 세션 완료")
+        void completeSessionWithAlreadySessionCompleted() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+                    .memberId(1L)
+                    .isJoin(true)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(LocalDateTime.now().plusSeconds(2)))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_APPROVED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_COMPLETED)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/sessions/complete".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("이미 세션이 종료되었습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너의 PT 처리 실패 - 이미 완료된 예약")
+        void completeSessionAlreadyReservationCompleted() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+                    .memberId(1L)
+                    .isJoin(true)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(LocalDateTime.now().plusSeconds(2)))
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_COMPLETED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_WAITING)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/sessions/complete".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("이미 예약이 완료되었습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+        }
+
+
+        @Test
+        @DisplayName("트레이너의 PT 처리 실패 - 다른 예약 정보 수정")
+        void completeSessionCompleteOtherReservationInfo() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+                    .memberId(1L)
+                    .isJoin(true)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .reservationDates(List.of(LocalDateTime.now().plusSeconds(2)))
+                    .trainer(Trainer.builder().trainerId(2L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .status(RESERVATION_APPROVED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_WAITING)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/sessions/complete".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("다른 사람의 예약을 완료시킬 수 없습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+        }
     }
 }
