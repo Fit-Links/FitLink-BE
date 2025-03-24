@@ -55,4 +55,12 @@ public class SessionInfo {
     public void restoreSession() {
         remainingCount++;
     }
+
+    public void deductSession() {
+        if (remainingCount <= 0) {
+            throw new CustomException(ErrorCode.SESSION_REMAINING_COUNT_NOT_VALID,
+                    "남은 PT 횟수가 0보다 작습니다. [count: %d]".formatted(remainingCount));
+        }
+        remainingCount--;
+    }
 }

@@ -63,7 +63,7 @@ public class MemberService {
     /**
      * 이미 연결된, 연결 시도중인 트레이너가 있는지 확인
      *
-     * @param memberId
+     * @param memberId 연결 확인할 멤버 ID
      * @throws CustomException 이미 연결된, 연결 시도중인 트레이너가 있을 경우
      */
     public void checkMemberAlreadyConnected(Long memberId) {
@@ -152,6 +152,7 @@ public class MemberService {
 
     /**
      * 연결된 정보 조회
+     *
      * @return 해당 회원과 연동 완료된 (Connected) 상태의 연결 정보
      */
     public ConnectingInfo findConnectedInfo(Long memberId) {
@@ -171,6 +172,15 @@ public class MemberService {
 
     public List<SessionInfo> findAllSessionInfo(List<Long> memberIds, Long trainerId) {
         return sessionInfoRepository.findAllSessionInfo(memberIds, trainerId);
+    }
+
+    /**
+     * 세션 차감
+     */
+    public void deductSession(Long trainerId, Long memberId) {
+        SessionInfo getSessionInfo = this.getSessionInfo(trainerId, memberId);
+        getSessionInfo.deductSession();
+        this.saveSessionInfo(getSessionInfo);
     }
 
     /**

@@ -89,4 +89,17 @@ public class ReservationRequestDto {
                     .build();
         }
     }
+
+    @Builder(toBuilder = true)
+    public record CompleteSession(@NotNull(message = "유저 ID는 필수값 입니다.") Long memberId,
+                                  @NotNull(message = "참석 여부는 필수값 입니다.") Boolean isJoin) {
+
+        public ReservationCriteria.CompleteSession toCriteria(Long reservationId) {
+            return ReservationCriteria.CompleteSession.builder()
+                    .reservationId(reservationId)
+                    .memberId(memberId)
+                    .isJoin(isJoin)
+                    .build();
+        }
+    }
 }

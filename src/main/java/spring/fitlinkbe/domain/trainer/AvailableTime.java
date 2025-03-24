@@ -26,8 +26,6 @@ public class AvailableTime {
 
     private Boolean isHoliday;
 
-    private Boolean unavailable;
-
     private LocalTime startTime;
 
     private LocalTime endTime;
