@@ -52,6 +52,10 @@ public class NotificationService {
     public void sendCompleteSessionNotification(Long sessionId, PersonalDetail memberDetail) {
         Notification notification = completeSessionNotification(sessionId, memberDetail);
         notificationRepository.save(notification);
+    }
 
+    public void sendChangeRequestReservationNotification(Long reservationId, String name, PersonalDetail memberDetail) {
+        Notification notification = changeRequestReservationNotification(reservationId, name, memberDetail);
+        notificationRepository.save(notification);
     }
 }

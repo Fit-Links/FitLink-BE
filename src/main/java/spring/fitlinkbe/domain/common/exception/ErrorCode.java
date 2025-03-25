@@ -36,11 +36,13 @@ public enum ErrorCode {
     RESERVATION_WAITING_MEMBERS_EMPTY("이 날짜에 예약 대기자가 없습니다.", 400),
     RESERVATION_COMPLETE_NOT_ALLOWED("다른 사람의 예약을 완료시킬 수 없습니다.", 400),
     RESERVATION_IS_ALREADY_COMPLETED("이미 예약이 완료되었습니다.", 400),
+    RESERVATION_CHANGE_REQUEST_NOT_ALLOWED("예약 변경을 요청할 수 없는 상태입니다.", 400),
     RESERVATION_CANCEL_NOT_ALLOWED("예약 취소를 할 수 없는 상태입니다.", 400),
     RESERVATION_REFUSE_NOT_ALLOWED("예약 거절을 할 수 없는 상태입니다.", 400),
     RESERVATION_APPROVE_NOT_ALLOWED("예약 확정을 할 수 없는 상태입니다.", 400),
     RESERVATION_IS_ALREADY_APPROVED("이미 예약이 승인 되었습니다.", 400),
     RESERVATION_NOT_FOUND("예약 정보를 찾지 못하였습니다.", 404),
+    RESERVATION_DATE_NOT_FOUND("예약 날짜를 찾지 못하였습니다.", 404),
     FAILED_TO_CONVERT_JSON("Failed to convert LocalDateTime list to JSON", 400),
     FAILED_TO_CONVERT_LIST("Failed to convert LocalDateTime list to List", 400),
 
