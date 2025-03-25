@@ -608,7 +608,7 @@ class ReservationControllerTest {
 
     @Nested
     @DisplayName("세션 예약 Controller TEST")
-    class saveReservationControllerTest {
+    class SaveReservationControllerTest {
 
         @Test
         @DisplayName("트레이너가 세션 예약 성공")
@@ -1449,6 +1449,191 @@ class ReservationControllerTest {
                     .andExpect(jsonPath("$.msg").value("유저 ID는 필수값 입니다."))
                     .andExpect(jsonPath("$.data").isEmpty());
         }
+    }
+
+    @Nested
+    @DisplayName("예약 변경 요청 Controller TEST")
+    class ChangeReqeustReservationControllerTest {
+        @Test
+        @DisplayName("멤버의 예약 변경 요청 성공")
+        void changeReqeustReservation() throws Exception {
+            //given
+            ReservationRequestDto.ChangeReqeustReservation request = ReservationRequestDto.ChangeReqeustReservation
+                    .builder()
+                    .reservationDate(LocalDateTime.now().plusDays(1))
+                    .changeRequestDate(LocalDateTime.now().plusDays(2))
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_CHANGE_REQUEST)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(1L)
+                    .trainerId(null)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeustReservation.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.msg").value("OK"))
+                    .andExpect(jsonPath("$.data.status").value(RESERVATION_CHANGE_REQUEST.getName()));
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 변경 요청 실패 - 현재보다 이전 날짜로 요청")
+        void changeReqeustReservationBeforeReservationDate() throws Exception {
+            //given
+            ReservationRequestDto.ChangeReqeustReservation request = ReservationRequestDto.ChangeReqeustReservation
+                    .builder()
+                    .reservationDate(LocalDateTime.now().minusDays(1))
+                    .changeRequestDate(LocalDateTime.now().plusDays(2))
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_CHANGE_REQUEST)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(1L)
+                    .trainerId(null)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeustReservation.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("현재 날짜보다 이전일 수 없습니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 변경 요청 실패 - 예약 날짜 부재")
+        void changeReqeustReservationNoReservationDate() throws Exception {
+            //given
+            ReservationRequestDto.ChangeReqeustReservation request = ReservationRequestDto.ChangeReqeustReservation
+                    .builder()
+                    .changeRequestDate(LocalDateTime.now().plusDays(2))
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_CHANGE_REQUEST)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(1L)
+                    .trainerId(null)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeustReservation.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("예약 날짜는 필수입니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 변경 요청 실패 - 예약 날짜와 변경 날짜 동일")
+        void changeReqeustReservationSameDate() throws Exception {
+            //given
+            ReservationRequestDto.ChangeReqeustReservation request = ReservationRequestDto.ChangeReqeustReservation
+                    .builder()
+                    .reservationDate(LocalDateTime.now().plusDays(1))
+                    .changeRequestDate(LocalDateTime.now().plusDays(1))
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_CHANGE_REQUEST)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(1L)
+                    .trainerId(null)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeustReservation.class))).thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("예약 날짜와 변경 날짜가 같을 수 없습니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+
     }
 
     private String getAccessToken(PersonalDetail personalDetail) {
