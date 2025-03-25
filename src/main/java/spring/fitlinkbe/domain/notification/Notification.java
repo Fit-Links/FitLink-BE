@@ -163,6 +163,25 @@ public class Notification {
                 .build();
     }
 
+    public static Notification changeRequestReservationNotification(Long reservationId,
+                                                                    String name,
+                                                                    PersonalDetail trainerDetail) {
+
+        String content = "%s 회원님의 PT 예약 변경이 요청되었습니다.".formatted(name);
+
+        return Notification.builder()
+                .refId(reservationId)
+                .refType(ReferenceType.RESERVATION)
+                .notificationType(NotificationType.RESERVATION_CHANGE_REQUEST)
+                .personalDetail(trainerDetail)
+                .name(NotificationType.RESERVATION_CHANGE_REQUEST.name)
+                .content(content)
+                .isSent(true)
+                .isProcessed(false)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
     @RequiredArgsConstructor
     @Getter
     public enum ReferenceType {

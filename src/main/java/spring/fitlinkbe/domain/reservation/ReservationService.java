@@ -252,6 +252,17 @@ public class ReservationService {
     }
 
     @Transactional
+    public Reservation changeReqeustReservation(ReservationCommand.ChangeReqeustReservation command) {
+
+        Reservation getReservation = this.getReservation(command.reservationId());
+        getReservation.changeRequestDate(command.reservationDate(), command.changeRequestDate());
+
+        return reservationRepository.saveReservation(getReservation)
+                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED,
+                        "예약 요청 변경에 실패하였습니다."));
+    }
+
+    @Transactional
     public Session saveSession(Reservation savedReservation) {
 
         Session session = Session.builder()

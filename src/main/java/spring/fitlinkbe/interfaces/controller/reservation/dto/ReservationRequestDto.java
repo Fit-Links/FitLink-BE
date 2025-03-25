@@ -1,13 +1,12 @@
 package spring.fitlinkbe.interfaces.controller.reservation.dto;
 
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import spring.fitlinkbe.application.reservation.criteria.ReservationCriteria;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class ReservationRequestDto {
@@ -99,6 +98,32 @@ public class ReservationRequestDto {
                     .reservationId(reservationId)
                     .memberId(memberId)
                     .isJoin(isJoin)
+                    .build();
+        }
+    }
+
+    @Builder(toBuilder = true)
+    public record ChangeReqeustReservation(@NotNull(message = "예약 날짜는 필수입니다.")
+                                           @FutureOrPresent(message = "현재 날짜보다 이전일 수 없습니다.")
+                                           LocalDateTime reservationDate,
+                                           @NotNull(message = "변경 날짜는 필수입니다.")
+                                           @FutureOrPresent(message = "현재 날짜보다 이전일 수 없습니다.")
+                                           LocalDateTime changeRequestDate) {
+
+        @JsonIgnore
+        @AssertTrue(message = "예약 날짜와 변경 날짜가 같을 수 없습니다.")
+        private boolean isSameDate() {
+            if (reservationDate == null || changeRequestDate == null) {
+                return true;
+            }
+            return !reservationDate.truncatedTo(ChronoUnit.HOURS).isEqual(changeRequestDate.truncatedTo(ChronoUnit.HOURS));
+        }
+
+        public ReservationCriteria.ChangeReqeustReservation toCriteria(Long reservationId) {
+            return ReservationCriteria.ChangeReqeustReservation.builder()
+                    .reservationId(reservationId)
+                    .reservationDate(reservationDate)
+                    .changeRequestDate(changeRequestDate)
                     .build();
         }
     }

@@ -62,8 +62,8 @@ public class TrainerInfoDto {
     @Builder
     public record TrainerCodeResponse(
             String trainerCode
-    ){
-        public static TrainerCodeResponse from(TrainerInfoResult.TrainerCodeResponse response){
+    ) {
+        public static TrainerCodeResponse from(TrainerInfoResult.TrainerCodeResponse response) {
             return TrainerCodeResponse.builder()
                     .trainerCode(response.trainerCode())
                     .build();

@@ -137,7 +137,8 @@ public class ReservationFacade {
                     memberService.getMemberDetail(reservation.getMember().getMemberId()), RESERVATION_REFUSE);
             return reservation;
         }
-        // 멤버 -> 트레이너에게 예약 취소됐다는 알림을 보낸다.
+        // 멤버의 경우
+        // 멤버 -> 트레이너에게 예약 취소 요청 알림을 보낸다.
         notificationService.sendCancelRequestReservationNotification(reservation.getReservationId(), reservation.getName(),
                 trainerService.getTrainerDetail(reservation.getTrainer().getTrainerId()), RESERVATION_CANCEL_REQUEST);
         return reservation;
@@ -199,6 +200,18 @@ public class ReservationFacade {
         return completedSession;
     }
 
+    @Transactional
+    public Reservation changeReqeustReservation(ReservationCriteria.ChangeReqeustReservation criteria) {
+        // 예약 변경 요청
+        Reservation requestedReservation = reservationService.changeReqeustReservation(criteria.toCommand());
+        // 알람 전송 멤버 -> 트레이너에게 예약 변경 요청했다는 알람 발송
+        notificationService.sendChangeRequestReservationNotification(requestedReservation.getReservationId(),
+                requestedReservation.getName(),
+                trainerService.getTrainerDetail(requestedReservation.getTrainer().getTrainerId()));
+
+        return requestedReservation;
+    }
+
     private void cancelExistingReservations(List<Reservation> reservations, String cancelMsg) {
         if (!reservations.isEmpty()) {
             reservations.forEach(Reservation::checkPossibleReserveStatus);
@@ -209,4 +222,6 @@ public class ReservationFacade {
                     memberService.getMemberDetail(r.getMember().getMemberId()), RESERVATION_REFUSE));
         }
     }
+
+
 }

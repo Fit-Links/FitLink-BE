@@ -286,7 +286,7 @@ class ReservationServiceTest {
 
     @Nested
     @DisplayName("세션 예약 Service TEST")
-    class saveReservationServiceTest {
+    class SaveReservationServiceTest {
 
         @Test
         @DisplayName("세션 예약 성공")
@@ -331,7 +331,7 @@ class ReservationServiceTest {
 
     @Nested
     @DisplayName("세션 생성 Service TEST")
-    class saveSessionServiceTest {
+    class SaveSessionServiceTest {
 
         @Test
         @DisplayName("세션 생성 성공")
@@ -375,7 +375,7 @@ class ReservationServiceTest {
 
     @Nested
     @DisplayName("세션 완료 Service TEST")
-    class completeSessionServiceTest {
+    class CompleteSessionServiceTest {
 
         @Test
         @DisplayName("세션 완료 성공")
@@ -458,7 +458,7 @@ class ReservationServiceTest {
 
     @Nested
     @DisplayName("예약 완료 Service TEST")
-    class completeReservationServiceTest {
+    class CompleteReservationServiceTest {
 
         @Test
         @DisplayName("예약 완료 성공")
@@ -577,5 +577,117 @@ class ReservationServiceTest {
                     .extracting("errorCode")
                     .isEqualTo(RESERVATION_COMPLETE_NOT_ALLOWED);
         }
+    }
+
+    @Nested
+    @DisplayName("예약 변경 요청 Service TEST")
+    class ChangeReqeustReservationServiceTest {
+
+        @Test
+        @DisplayName("예약 변경 요청 성공")
+        void changeReqeustReservation() {
+            //given
+            LocalDateTime originDate = LocalDateTime.now().plusDays(1);
+            LocalDateTime changeRequestDate = LocalDateTime.now().plusDays(2);
+
+            ReservationCommand.ChangeReqeustReservation command = ReservationCommand.ChangeReqeustReservation.builder()
+                    .reservationId(1L)
+                    .reservationDate(originDate)
+                    .changeRequestDate(changeRequestDate)
+                    .build();
+
+            Reservation reservation = Reservation.builder()
+                    .reservationId(1L)
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(originDate))
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            Reservation compltedReservation = Reservation.builder()
+                    .reservationId(1L)
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(changeRequestDate))
+                    .status(RESERVATION_CHANGE_REQUEST)
+                    .build();
+
+            when(reservationRepository.getReservation(command.reservationId()))
+                    .thenReturn(Optional.ofNullable(reservation));
+
+            when(reservationRepository.saveReservation(reservation))
+                    .thenReturn(Optional.ofNullable(compltedReservation));
+
+            //when
+            Reservation result = reservationService.changeReqeustReservation(command);
+
+            //then
+            assertThat(result).isNotNull();
+            assertThat(result.getReservationId()).isEqualTo(1L);
+            assertThat(result.getStatus()).isEqualTo(RESERVATION_CHANGE_REQUEST);
+        }
+
+        @Test
+        @DisplayName("예약 변경 요청 실패 - 예약 변경 요청할 수 있는 상태가 아님")
+        void changeReqeustReservationNotAllowChangeRequestStatus() {
+            //given
+            LocalDateTime originDate = LocalDateTime.now().plusDays(1);
+            LocalDateTime changeRequestDate = LocalDateTime.now().plusDays(2);
+
+            ReservationCommand.ChangeReqeustReservation command = ReservationCommand.ChangeReqeustReservation.builder()
+                    .reservationId(1L)
+                    .reservationDate(originDate)
+                    .changeRequestDate(changeRequestDate)
+                    .build();
+
+            Reservation reservation = Reservation.builder()
+                    .reservationId(1L)
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(originDate.plusHours(2)))
+                    .status(RESERVATION_REFUSED)
+                    .build();
+
+            when(reservationRepository.getReservation(command.reservationId()))
+                    .thenReturn(Optional.ofNullable(reservation));
+
+            //when & then
+            assertThatThrownBy(() -> reservationService.changeReqeustReservation(command))
+                    .isInstanceOf(CustomException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED);
+        }
+
+        @Test
+        @DisplayName("예약 변경 요청 실패 - 요청 예약 변경 날짜가 실제 예약 날짜랑 다름")
+        void changeReqeustReservationNotEqualReservationDate() {
+            //given
+            LocalDateTime originDate = LocalDateTime.now().plusDays(1);
+            LocalDateTime changeRequestDate = LocalDateTime.now().plusDays(2);
+
+            ReservationCommand.ChangeReqeustReservation command = ReservationCommand.ChangeReqeustReservation.builder()
+                    .reservationId(1L)
+                    .reservationDate(originDate)
+                    .changeRequestDate(changeRequestDate)
+                    .build();
+
+            Reservation reservation = Reservation.builder()
+                    .reservationId(1L)
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(originDate.plusHours(2)))
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            when(reservationRepository.getReservation(command.reservationId()))
+                    .thenReturn(Optional.ofNullable(reservation));
+
+            //when & then
+            assertThatThrownBy(() -> reservationService.changeReqeustReservation(command))
+                    .isInstanceOf(CustomException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(RESERVATION_DATE_NOT_FOUND);
+        }
+
     }
 }

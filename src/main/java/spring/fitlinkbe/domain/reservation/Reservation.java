@@ -57,6 +57,35 @@ public class Reservation {
         return reservationDates.stream().map(date -> date.plusDays(7)).toList();
     }
 
+    public void changeRequestDate(LocalDateTime reservationDate, LocalDateTime changeDate) {
+
+        if (status != RESERVATION_APPROVED && status != RESERVATION_WAITING) {
+            throw new CustomException(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED);
+        }
+
+        LocalDateTime targetDate = reservationDate.truncatedTo(ChronoUnit.HOURS);
+
+        boolean dateExists = reservationDates.stream()
+                .map(date -> date.truncatedTo(ChronoUnit.HOURS))
+                .anyMatch(targetDate::isEqual);
+
+        if (!dateExists) {
+            throw new CustomException(RESERVATION_DATE_NOT_FOUND);
+        }
+
+        if (reservationDates.size() > 1) {
+            LocalDateTime remainingDate = reservationDates.stream()
+                    .map(date -> date.truncatedTo(ChronoUnit.HOURS))
+                    .filter(date -> !date.isEqual(targetDate))
+                    .findFirst()
+                    .orElseThrow(() -> new CustomException(RESERVATION_DATE_NOT_FOUND));
+
+            reservationDates = List.of(changeDate, remainingDate);
+        }
+
+        status = RESERVATION_CHANGE_REQUEST;
+    }
+
 
     @RequiredArgsConstructor
     @Getter
