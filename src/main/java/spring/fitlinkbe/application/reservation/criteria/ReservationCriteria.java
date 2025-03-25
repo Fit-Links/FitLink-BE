@@ -114,4 +114,16 @@ public class ReservationCriteria {
         }
     }
 
+    @Builder(toBuilder = true)
+    public record ChangeReqeustReservation(LocalDateTime reservationDate, LocalDateTime changeRequestDate,
+                                           Long reservationId) {
+
+        public ReservationCommand.ChangeReqeustReservation toCommand() {
+            return ReservationCommand.ChangeReqeustReservation.builder()
+                    .reservationId(reservationId)
+                    .reservationDate(reservationDate)
+                    .changeRequestDate(changeRequestDate)
+                    .build();
+        }
+    }
 }
