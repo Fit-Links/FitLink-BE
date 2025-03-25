@@ -208,4 +208,24 @@ public class ReservationController {
         return ApiResultResponse.ok(ReservationResponseDto.SuccessSession.of(result));
 
     }
+
+    /**
+     * 예약 변경 요청
+     *
+     * @param request reservationDate, changeDate 정보
+     * @return ApiResultResponse 변경 요청이 된 reservationId 결과를 반환한다.
+     */
+    @RoleCheck(allowedRoles = {UserRole.MEMBER})
+    @PostMapping("{reservationId}/change-request")
+    public ApiResultResponse<ReservationResponseDto.Success> changeReqeustReservation(
+            @PathVariable("reservationId")
+            @NotNull(message = "예약 ID는 필수값입니다.")
+            Long reservationId,
+            @RequestBody @Valid
+            ReservationRequestDto.ChangeReqeustReservation
+                    request) {
+        Reservation result = reservationFacade.changeReqeustReservation(request.toCriteria(reservationId));
+
+        return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
+    }
 }
