@@ -126,4 +126,16 @@ public class ReservationCriteria {
                     .build();
         }
     }
+
+    @Builder(toBuilder = true)
+    public record ChangeApproveReservation(Long reservationId, Long memberId, boolean isApprove) {
+
+        public ReservationCommand.ChangeApproveReservation toCommand() {
+            return ReservationCommand.ChangeApproveReservation.builder()
+                    .reservationId(reservationId)
+                    .memberId(memberId)
+                    .isApprove(isApprove)
+                    .build();
+        }
+    }
 }

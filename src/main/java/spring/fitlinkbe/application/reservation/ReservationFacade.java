@@ -212,6 +212,32 @@ public class ReservationFacade {
         return requestedReservation;
     }
 
+    @Transactional
+    public Reservation changeApproveReservation(ReservationCriteria.ChangeApproveReservation criteria) {
+        // 예약 변경 요청 승인
+        Reservation approvedReservation = reservationService.changeApproveReservation(criteria.toCommand());
+        // 다른 같은 시간대 예약 모두 취소
+        if (criteria.isApprove()) {
+            List<Reservation> getThatTimeReservations = reservationService.getReservationThatTimes(
+                    ReservationCommand.GetReservationThatTimes.builder()
+                            .trainerId(approvedReservation.getTrainer().getTrainerId())
+                            .date(approvedReservation.getReservationDates())
+                            .build());
+
+            List<Reservation> filteredReservations = getThatTimeReservations.stream()
+                    .filter(r -> !r.getReservationId().equals(approvedReservation.getReservationId()))
+                    .toList();
+
+            cancelExistingReservations(filteredReservations, "트레이너의 의해 예약 요청이 거절되었습니다.");
+        }
+        // 트레이너 -> 멤버에게 예약 변경 승인 됐다는 알람 전송
+        notificationService.sendApproveRequestReservationNotification(approvedReservation.getReservationId(),
+                memberService.getMemberDetail(approvedReservation.getMember().getMemberId()),
+                criteria.isApprove());
+
+        return approvedReservation;
+    }
+
     private void cancelExistingReservations(List<Reservation> reservations, String cancelMsg) {
         if (!reservations.isEmpty()) {
             reservations.forEach(Reservation::checkPossibleReserveStatus);
