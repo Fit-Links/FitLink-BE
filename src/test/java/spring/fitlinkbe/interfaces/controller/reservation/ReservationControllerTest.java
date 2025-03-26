@@ -1636,6 +1636,146 @@ class ReservationControllerTest {
 
     }
 
+    @Nested
+    @DisplayName("예약 변경 승인 Controller TEST")
+    class ChangeApproveReservationControllerTest {
+        @Test
+        @DisplayName("멤버의 예약 변경 승인 성공")
+        void changeApproveReservation() throws Exception {
+            //given
+            ReservationRequestDto.ChangeApproveReservation request = ReservationRequestDto.ChangeApproveReservation
+                    .builder()
+                    .memberId(1L)
+                    .isApprove(true)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.changeApproveReservation(any(ReservationCriteria.ChangeApproveReservation.class)))
+                    .thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/change-approve".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.msg").value("OK"))
+                    .andExpect(jsonPath("$.data.status").value(RESERVATION_APPROVED.getName()));
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 변경 승인 실패 - 멤버 ID 부재")
+        void changeApproveReservationNoMemberId() throws Exception {
+            //given
+            ReservationRequestDto.ChangeApproveReservation request = ReservationRequestDto.ChangeApproveReservation
+                    .builder()
+                    .isApprove(true)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.changeApproveReservation(any(ReservationCriteria.ChangeApproveReservation.class)))
+                    .thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/change-approve".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("유저 ID는 필수값 입니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 변경 승인 실패 - 승인 여부 부재")
+        void changeApproveReservationNoIsApprove() throws Exception {
+            //given
+            ReservationRequestDto.ChangeApproveReservation request = ReservationRequestDto.ChangeApproveReservation
+                    .builder()
+                    .memberId(1L)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.changeApproveReservation(any(ReservationCriteria.ChangeApproveReservation.class)))
+                    .thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/change-approve".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("승인 여부는 필수값 입니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+    }
+
     private String getAccessToken(PersonalDetail personalDetail) {
 
         String accessToken = "mockedAccessToken";

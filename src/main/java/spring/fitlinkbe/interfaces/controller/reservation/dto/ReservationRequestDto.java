@@ -127,4 +127,17 @@ public class ReservationRequestDto {
                     .build();
         }
     }
+
+    @Builder(toBuilder = true)
+    public record ChangeApproveReservation(@NotNull(message = "유저 ID는 필수값 입니다.") Long memberId,
+                                           @NotNull(message = "승인 여부는 필수값 입니다.") Boolean isApprove) {
+
+        public ReservationCriteria.ChangeApproveReservation toCriteria(Long reservationId) {
+            return ReservationCriteria.ChangeApproveReservation.builder()
+                    .reservationId(reservationId)
+                    .memberId(memberId)
+                    .isApprove(isApprove)
+                    .build();
+        }
+    }
 }

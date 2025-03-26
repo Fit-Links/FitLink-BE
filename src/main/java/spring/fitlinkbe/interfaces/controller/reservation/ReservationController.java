@@ -217,14 +217,31 @@ public class ReservationController {
      */
     @RoleCheck(allowedRoles = {UserRole.MEMBER})
     @PostMapping("{reservationId}/change-request")
-    public ApiResultResponse<ReservationResponseDto.Success> changeReqeustReservation(
-            @PathVariable("reservationId")
-            @NotNull(message = "예약 ID는 필수값입니다.")
-            Long reservationId,
-            @RequestBody @Valid
-            ReservationRequestDto.ChangeReqeustReservation
-                    request) {
+    public ApiResultResponse<ReservationResponseDto.Success> changeReqeustReservation(@PathVariable("reservationId")
+                                                                                      @NotNull(message = "예약 ID는 필수값입니다.")
+                                                                                      Long reservationId,
+                                                                                      @RequestBody @Valid
+                                                                                      ReservationRequestDto.ChangeReqeustReservation
+                                                                                              request) {
         Reservation result = reservationFacade.changeReqeustReservation(request.toCriteria(reservationId));
+
+        return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
+    }
+
+    /**
+     * @param request // memberId 정보
+     * @return ApiResultResponse 변경 승인 된 reservationId 결과를 반환한다.
+     */
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
+    @PostMapping("{reservationId}/change-approve")
+    public ApiResultResponse<ReservationResponseDto.Success> changeApproveReservation(@PathVariable("reservationId")
+                                                                                      @NotNull(message = "예약 ID는 필수값입니다.")
+                                                                                      Long reservationId,
+                                                                                      @RequestBody @Valid
+                                                                                      ReservationRequestDto.ChangeApproveReservation
+                                                                                              request) {
+
+        Reservation result = reservationFacade.changeApproveReservation(request.toCriteria(reservationId));
 
         return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
     }
