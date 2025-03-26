@@ -30,6 +30,15 @@ public class Session {
         private final String name;
     }
 
+    public static Session createSession(Long reservationId) {
+
+        return Session.builder()
+                .reservation(Reservation.builder().reservationId(reservationId).build())
+                .status(Status.SESSION_WAITING)
+                .build();
+    }
+
+
     public void cancel(String message) {
         if (status == Status.SESSION_CANCELLED) {
             throw new CustomException(SESSION_IS_ALREADY_CANCEL);

@@ -690,4 +690,113 @@ class ReservationServiceTest {
         }
 
     }
+
+    @Nested
+    @DisplayName("예약 변경 승인 Service TEST")
+    class ChangeApproveReservationServiceTest {
+
+        @Test
+        @DisplayName("예약 변경 승인 성공")
+        void changeApproveReservation() {
+            //given
+            LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+
+            ReservationCommand.ChangeApproveReservation command = ReservationCommand.ChangeApproveReservation.builder()
+                    .reservationId(1L)
+                    .memberId(1L)
+                    .isApprove(true)
+                    .build();
+
+            Reservation reservation = Reservation.builder()
+                    .reservationId(1L)
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(reservationDate))
+                    .status(RESERVATION_CHANGE_REQUEST)
+                    .build();
+
+            Reservation compltedReservation = Reservation.builder()
+                    .reservationId(1L)
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(reservationDate))
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            when(reservationRepository.getReservation(command.reservationId()))
+                    .thenReturn(Optional.ofNullable(reservation));
+
+            when(reservationRepository.saveReservation(reservation))
+                    .thenReturn(Optional.ofNullable(compltedReservation));
+
+            //when
+            Reservation result = reservationService.changeApproveReservation(command);
+
+            //then
+            assertThat(result).isNotNull();
+            assertThat(result.getReservationId()).isEqualTo(1L);
+            assertThat(result.getStatus()).isEqualTo(RESERVATION_APPROVED);
+        }
+
+        @Test
+        @DisplayName("예약 변경 승인 실패 - 다른 멤버의 예약 변경 수정 시도")
+        void changeApproveReservationTryOtherMemberId() {
+            //given
+            LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+
+            ReservationCommand.ChangeApproveReservation command = ReservationCommand.ChangeApproveReservation.builder()
+                    .reservationId(1L)
+                    .memberId(2L)
+                    .isApprove(true)
+                    .build();
+
+            Reservation reservation = Reservation.builder()
+                    .reservationId(1L)
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(reservationDate))
+                    .status(RESERVATION_CHANGE_REQUEST)
+                    .build();
+
+            when(reservationRepository.getReservation(command.reservationId()))
+                    .thenReturn(Optional.ofNullable(reservation));
+
+            //when & then
+            assertThatThrownBy(() -> reservationService.changeApproveReservation(command))
+                    .isInstanceOf(CustomException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(MEMBER_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("예약 변경 승인 실패 - 예약 변경 요청 상태가 아님")
+        void changeApproveReservationNotChangeRequestStatus() {
+            //given
+            LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+
+            ReservationCommand.ChangeApproveReservation command = ReservationCommand.ChangeApproveReservation.builder()
+                    .reservationId(1L)
+                    .memberId(1L)
+                    .isApprove(true)
+                    .build();
+
+            Reservation reservation = Reservation.builder()
+                    .reservationId(1L)
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(reservationDate))
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+
+            when(reservationRepository.getReservation(command.reservationId()))
+                    .thenReturn(Optional.ofNullable(reservation));
+
+            //when & then
+            assertThatThrownBy(() -> reservationService.changeApproveReservation(command))
+                    .isInstanceOf(CustomException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(RESERVATION_APPROVE_NOT_ALLOWED);
+        }
+    }
 }

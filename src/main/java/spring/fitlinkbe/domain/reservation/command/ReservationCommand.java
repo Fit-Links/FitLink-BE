@@ -73,4 +73,8 @@ public class ReservationCommand {
     public record ChangeReqeustReservation(LocalDateTime reservationDate, LocalDateTime changeRequestDate,
                                            Long reservationId) {
     }
+
+    @Builder(toBuilder = true)
+    public record ChangeApproveReservation(Long reservationId, Long memberId, boolean isApprove) {
+    }
 }
