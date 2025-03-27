@@ -71,4 +71,8 @@ public class AuthFacade {
 
         return AuthCommand.Response.of(accessToken, refreshToken);
     }
+
+    public String getEmailVerificationToken(Long personalDetailId) {
+        return authService.createEmailVerificationToken(personalDetailId);
+    }
 }

@@ -78,6 +78,19 @@ public class TestDataHandler {
         return saved;
     }
 
+    public Member createMember(PersonalDetail.Status status) {
+        Member member = Member.builder()
+                .name("김민수")
+                .birthDate(LocalDate.of(1995, 1, 1))
+                .phoneNumber(new PhoneNumber("01012345678"))
+                .isConnected(false)
+                .build();
+
+        Member saved = memberRepository.saveMember(member).orElseThrow();
+        createPersonalDetail(status, saved.getMemberId());
+        return saved;
+    }
+
     public Member createMember(String name) {
         Member member = Member.builder()
                 .name(name)
@@ -132,6 +145,22 @@ public class TestDataHandler {
         PersonalDetail personalDetail = PersonalDetail.builder()
                 .name("홍길동")
                 .email("test@testcode.co.kr")
+                .status(status)
+                .oauthProvider(PersonalDetail.OauthProvider.GOOGLE)
+                .providerId(UUID.randomUUID().toString())
+                .build();
+
+        return personalDetailRepository.savePersonalDetail(personalDetail).orElseThrow();
+    }
+
+    public PersonalDetail createPersonalDetail(
+            PersonalDetail.Status status,
+            Long memberId
+    ) {
+        PersonalDetail personalDetail = PersonalDetail.builder()
+                .name("홍길동")
+                .email("test@testcode.co.kr")
+                .memberId(memberId)
                 .status(status)
                 .oauthProvider(PersonalDetail.OauthProvider.GOOGLE)
                 .providerId(UUID.randomUUID().toString())
@@ -303,4 +332,5 @@ public class TestDataHandler {
 
         trainerRepository.saveAvailableTime(availableTime);
     }
+
 }

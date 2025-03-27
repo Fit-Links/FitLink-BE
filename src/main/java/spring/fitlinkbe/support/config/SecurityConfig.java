@@ -31,6 +31,7 @@ public class SecurityConfig {
     private static final WhiteListUrl registerUrls = new WhiteListUrl(List.of(
             "v1/auth/members/register",
             "v1/auth/trainers/register",
+            "v1/auth/email-verification-token",
             "/oauth2/authorization/**"
     ));
 
