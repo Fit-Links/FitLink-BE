@@ -2780,6 +2780,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .builder()
                     .memberId(1L)
                     .isApprove(true)
+                    .approveDate(reservationDate)
                     .build();
 
             // 예약 생성
@@ -2788,7 +2789,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .member(Member.builder().memberId(1L).build())
                     .reservationDates(List.of(reservationDate))
                     .status(RESERVATION_CHANGE_REQUEST)
-                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .createdAt(LocalDateTime.now().plusSeconds(3))
                     .build();
 
             Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
@@ -2842,6 +2843,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .builder()
                     .memberId(1L)
                     .isApprove(false)
+                    .approveDate(reservationDate)
                     .build();
 
             // 예약 생성
@@ -2850,7 +2852,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .member(Member.builder().memberId(1L).build())
                     .reservationDates(List.of(reservationDate))
                     .status(RESERVATION_CHANGE_REQUEST)
-                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .createdAt(LocalDateTime.now().plusSeconds(3))
                     .build();
 
             Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
@@ -2904,6 +2906,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .builder()
                     .memberId(1L)
                     .isApprove(true)
+                    .approveDate(reservationDate)
                     .build();
 
             // 예약 생성
@@ -2912,7 +2915,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .member(Member.builder().memberId(1L).build())
                     .reservationDates(List.of(reservationDate))
                     .status(RESERVATION_CHANGE_REQUEST)
-                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .createdAt(LocalDateTime.now().plusSeconds(3))
                     .build();
 
             Reservation reservation1 = reservationRepository.saveReservation(reservation).orElseThrow();
@@ -2925,7 +2928,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .member(member2)
                     .reservationDates(List.of(reservationDate))
                     .status(RESERVATION_WAITING)
-                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .createdAt(LocalDateTime.now().plusSeconds(3))
                     .build();
 
             Reservation savedReservation2 = reservationRepository.saveReservation(reservation2).orElseThrow();
@@ -2985,6 +2988,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .builder()
                     .memberId(1L)
                     .isApprove(true)
+                    .approveDate(reservationDate)
                     .build();
 
             // 예약 생성
@@ -3029,6 +3033,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .builder()
                     .memberId(2L)
                     .isApprove(true)
+                    .approveDate(reservationDate)
                     .build();
 
             // 예약 생성

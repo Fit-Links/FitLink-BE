@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
@@ -35,53 +34,9 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final SessionRepository sessionRepository;
 
-    @Transactional
-    public List<Reservation> cancelExistReservations(LocalDateTime reservationDate) {
-        String cancelMessage = "예약 불가 설정";
-        //1. 예약 불가 설정한 날짜와 일치하는 날짜의 예약 조회
-        List<Reservation> getReservations = reservationRepository.getReservations()
-                .stream()
-                .filter(Reservation::isAlreadyCancel)
-                .filter(r -> r.isReservationDateSame(List.of(reservationDate)))
-                .toList();
-
-        //2. 이미 존재하는 예약 취소 절차 진행
-        if (!getReservations.isEmpty()) {
-            getReservations.forEach(Reservation::checkPossibleReserveStatus);
-            this.cancelReservations(getReservations, cancelMessage);
-
-            return getReservations;
-        }
-
-        return List.of();
-    }
-
-    @Transactional
-    public Reservation setDisabledReservation(ReservationCommand.SetDisabledTime command) {
-
-        Reservation reservation = Reservation.builder()
-                .trainer(Trainer.builder().trainerId(command.trainerId()).build())
-                .reservationDates(List.of(command.date()))
-                .status(DISABLED_TIME_RESERVATION)
-                .build();
-
-        // 취소된 예약 정보 리턴
-        return reservationRepository.saveReservation(reservation).orElseThrow(() ->
-                new CustomException(ErrorCode.SET_DISABLE_DATE_FAILED,
-                        "예약 불가 설정을 할 수 없습니다."));
-    }
-
-    public List<Reservation> getReservationThatTimes(ReservationCommand.GetReservationThatTimes
-                                                             command) {
-        List<Reservation> reservations = reservationRepository.getReservations(UserRole.TRAINER, command.trainerId());
-
-        // 해당 시간의 예약만 리턴
-        return reservations.stream()
-                .filter((reservation) -> reservation.isReservationDateSame(command.date()))
-                .filter(Reservation::isAlreadyCancel) // 이미 취소된 예약인지 확인
-                .toList();
-    }
-
+    /**
+     * Related Reservation
+     */
 
     public List<Reservation> getReservations(ReservationCommand.GetReservations command) {
 
@@ -95,36 +50,77 @@ public class ReservationService {
                 .toList();
     }
 
-    public List<Reservation> getReservationsWithWaitingStatus(Long trainerId) {
-        List<Reservation> WaitingMembers = reservationRepository.getReservationsWithWaitingStatus(trainerId);
-
-        if (WaitingMembers.isEmpty()) {
-            throw new CustomException(RESERVATION_WAITING_MEMBERS_EMPTY);
-        }
-
-        return WaitingMembers;
-    }
-
     public Reservation getReservation(Long reservationId) {
         return reservationRepository.getReservation(reservationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND,
                         "예약 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(reservationId)));
     }
 
-    public Session getSession(Status status, Long reservationId) {
-        Optional<Session> getSession = reservationRepository.getSession(reservationId);
-        // 예약 승낙 전에는 세션 정보는 없다.
-        if (status == RESERVATION_WAITING) {
-            return null;
+    public List<Reservation> getWaitingMembers(LocalDateTime reservationDate, SecurityUser user) {
+        List<Reservation> waitingMembers = reservationRepository.getReservationsWithWaitingStatus(user.getTrainerId());
+
+        if (waitingMembers.isEmpty()) {
+            throw new CustomException(RESERVATION_WAITING_MEMBERS_EMPTY);
         }
 
-        return getSession.orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND,
-                "세션 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(reservationId)));
+        return waitingMembers.stream()
+                .filter((r) -> r.isReservationDateSame(List.of(reservationDate)))
+                .toList();
     }
 
-    public Page<Session> getSessions(ReservationCommand.GetSessions command) {
-        return sessionRepository.getSessions(command.memberId(), command.trainerId(),
-                command.status(), command.pageRequest());
+    @Transactional
+    public Reservation setDisabledReservation(ReservationCommand.SetDisabledTime command) {
+
+        Reservation reservation = Reservation.builder()
+                .trainer(Trainer.builder().trainerId(command.trainerId()).build())
+                .reservationDates(List.of(command.date()))
+                .status(DISABLED_TIME_RESERVATION)
+                .build();
+
+        // 예약 불가 설정 정보 리턴
+        return reservationRepository.saveReservation(reservation).orElseThrow(() ->
+                new CustomException(ErrorCode.SET_DISABLE_DATE_FAILED,
+                        "예약 불가 설정을 할 수 없습니다."));
+    }
+
+    @Transactional
+    public List<Reservation> fixedReserveSession(List<Reservation> reservations) {
+        // 고정 예약 진행
+        List<Reservation> savedReservations = reservationRepository.saveReservations(reservations);
+        // 세션 생성
+        List<Session> sessions = savedReservations.stream()
+                .map(reservation -> Session.builder()
+                        .reservation(reservation)
+                        .status(SESSION_WAITING)
+                        .build())
+                .toList();
+        // 세션 저장
+        reservationRepository.saveSessions(sessions);
+
+        return savedReservations;
+    }
+
+    @Transactional
+    public List<Reservation> scheduledFixedReservations() {
+        // 고정 예약 상태의 예약 조회
+        List<Reservation> fixedReservations = reservationRepository.getFixedReservations();
+        // 일주일 뒤에 시간으로 예약 도메인 생성
+        List<Reservation> newReservations = fixedReservations.stream()
+                .map(Reservation::toFixedDomain)
+                .toList();
+        // 일주일 뒤에 시간에 예약이 있다면(예약 대기 포함) 취소 절차 진행
+        newReservations.forEach((r) -> cancelExistReservations(r.getReservationDates(), "트레이너 고정 예약"
+                , null));
+
+        return newReservations;
+    }
+
+    @Transactional
+    public Reservation reserveSession(Reservation reservation) {
+        return reservationRepository.saveReservation(reservation)
+                .orElseThrow(() ->
+                        new CustomException(ErrorCode.RESERVATION_IS_FAILED,
+                                "예약에 실패하였습니다."));
     }
 
     @Transactional
@@ -199,54 +195,42 @@ public class ReservationService {
     }
 
     @Transactional
-    public List<Reservation> fixedReserveSession(List<Reservation> reservations) {
-        // 고정 예약 진행
-        List<Reservation> savedReservations = reservationRepository.saveReservations(reservations);
-        // 세션 생성
-        List<Session> sessions = savedReservations.stream()
-                .map(reservation -> Session.builder()
-                        .reservation(reservation)
-                        .status(SESSION_WAITING)
-                        .build())
+    public List<Reservation> cancelExistReservations(List<LocalDateTime> reservationDates,
+                                                     String cancelReason, Long reservationId) {
+        //1. 일치하는 날짜의 예약 조회
+        List<Reservation> getReservations = reservationRepository.getReservations()
+                .stream()
+                .filter(Reservation::isAlreadyCancel)
+                .filter(r -> !r.getReservationId().equals(reservationId))
+                .filter(r -> r.isReservationDateSame(reservationDates))
                 .toList();
-        // 세션 저장
+
+        //2. 이미 존재하는 예약 취소 절차 진행
+        if (!getReservations.isEmpty()) {
+            getReservations.forEach(Reservation::checkPossibleReserveStatus);
+            cancelReservations(getReservations, cancelReason);
+
+            return getReservations;
+        }
+
+        return List.of();
+    }
+
+    @Transactional
+    public void cancelReservations(List<Reservation> reservations, String message) {
+        // 예약 정보 취소
+        reservations.forEach(reservation -> reservation.cancel(message));
+        // 취소한 예약 정보 저장
+        reservationRepository.saveReservations(reservations);
+        // 세션 정보 찾기
+        List<Session> sessions = reservations.stream()
+                .map(reservation -> reservationRepository.getSession(reservation.getReservationId()))
+                .flatMap(Optional::stream)
+                .toList();
+        //세션 정보 취소
+        sessions.forEach(session -> session.cancel(message));
+        // 세션 취소 정보 저장
         reservationRepository.saveSessions(sessions);
-
-        return savedReservations;
-    }
-
-    @Transactional
-    public Reservation reserveSession(Reservation reservation) {
-        return reservationRepository.saveReservation(reservation)
-                .orElseThrow(() ->
-                        new CustomException(ErrorCode.RESERVATION_IS_FAILED,
-                                "예약에 실패하였습니다."));
-    }
-
-    @Transactional
-    public Session completeSession(ReservationCommand.CompleteSession command) {
-
-        Session getSession = reservationRepository.getSession(command.reservationId()).orElseThrow(() ->
-                new CustomException(ErrorCode.SESSION_NOT_FOUND,
-                        "세션 정보를 찾지 못하였습니다. [reservationId: %d].".formatted(command.reservationId())));
-
-        getSession.complete(command.isJoin());
-
-        return reservationRepository.saveSession(getSession).orElseThrow(() ->
-                new CustomException(ErrorCode.SESSION_CREATE_FAILED));
-
-    }
-
-    @Transactional
-    public Reservation completeReservation(ReservationCommand.CompleteReservation command, SecurityUser user) {
-        Reservation getReservation = reservationRepository.getReservation(command.reservationId()).orElseThrow(() ->
-                new CustomException(ErrorCode.RESERVATION_NOT_FOUND,
-                        "예약 정보를 찾지 못하였습니다. [reservationId: %d].".formatted(command.reservationId())));
-
-        getReservation.complete(user.getTrainerId(), command.memberId());
-
-        return reservationRepository.saveReservation(getReservation).orElseThrow(() ->
-                new CustomException(ErrorCode.RESERVATION_IS_FAILED));
     }
 
     @Transactional
@@ -281,6 +265,50 @@ public class ReservationService {
     }
 
     @Transactional
+    public Session completeSession(ReservationCommand.CompleteSession command, SecurityUser user) {
+
+        Session getSession = reservationRepository.getSession(command.reservationId()).orElseThrow(() ->
+                new CustomException(ErrorCode.SESSION_NOT_FOUND,
+                        "세션 정보를 찾지 못하였습니다. [reservationId: %d].".formatted(command.reservationId())));
+        // 세션 완료 처리
+        getSession.complete(command.isJoin());
+
+        Reservation getReservation = reservationRepository.getReservation(command.reservationId()).orElseThrow(() ->
+                new CustomException(ErrorCode.RESERVATION_NOT_FOUND,
+                        "예약 정보를 찾지 못하였습니다. [reservationId: %d].".formatted(command.reservationId())));
+
+        // 예약 종료 처리
+        getReservation.complete(user.getTrainerId(), command.memberId());
+
+        reservationRepository.saveReservation(getReservation).orElseThrow(() ->
+                new CustomException(ErrorCode.RESERVATION_IS_FAILED));
+
+        return reservationRepository.saveSession(getSession).orElseThrow(() ->
+                new CustomException(ErrorCode.SESSION_CREATE_FAILED));
+
+    }
+
+    /**
+     * Related Session
+     */
+
+    public Page<Session> getSessions(ReservationCommand.GetSessions command) {
+        return sessionRepository.getSessions(command.memberId(), command.trainerId(),
+                command.status(), command.pageRequest());
+    }
+
+    public Session getSession(Status status, Long reservationId) {
+        Optional<Session> getSession = reservationRepository.getSession(reservationId);
+        // 예약 승낙 전에는 세션 정보는 없다.
+        if (status == RESERVATION_WAITING) {
+            return null;
+        }
+
+        return getSession.orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND,
+                "세션 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(reservationId)));
+    }
+
+    @Transactional
     public Session saveSession(Reservation savedReservation) {
 
         Session session = Session.builder()
@@ -290,28 +318,6 @@ public class ReservationService {
 
         return reservationRepository.saveSession(session)
                 .orElseThrow(() -> new CustomException(SESSION_CREATE_FAILED));
-    }
-
-    public List<Reservation> getFixedReservations() {
-        return reservationRepository.getFixedReservations();
-
-    }
-
-    @Transactional
-    public void cancelReservations(List<Reservation> reservations, String message) {
-        // 예약 정보 취소
-        reservations.forEach(reservation -> reservation.cancel(message));
-        // 취소한 예약 정보 저장
-        reservationRepository.saveReservations(reservations);
-        // 세션 정보 찾기
-        List<Session> sessions = reservations.stream()
-                .map(reservation -> reservationRepository.getSession(reservation.getReservationId()))
-                .flatMap(Optional::stream)
-                .toList();
-        //세션 정보 취소
-        sessions.forEach(session -> session.cancel(message));
-        // 세션 취소 정보 저장
-        reservationRepository.saveSessions(sessions);
     }
 
 }

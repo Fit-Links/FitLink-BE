@@ -47,14 +47,6 @@ public class ReservationCriteria {
     @Builder(toBuilder = true)
     public record FixedReserveSession(List<LocalDateTime> reservationDates, Long memberId, String name) {
 
-        public ReservationCommand.GetReservationThatTimes toCommand(SecurityUser user) {
-
-            return ReservationCommand.GetReservationThatTimes.builder()
-                    .date(reservationDates)
-                    .trainerId(user.getTrainerId())
-                    .build();
-        }
-
         public List<Reservation> toDomain(SessionInfo sessionInfo, SecurityUser user) {
             return reservationDates.stream()
                     .map((date) -> Reservation.builder()
@@ -104,16 +96,11 @@ public class ReservationCriteria {
 
             return ReservationCommand.CompleteSession.builder()
                     .reservationId(reservationId)
+                    .memberId(memberId)
                     .isJoin(isJoin)
                     .build();
         }
 
-        public ReservationCommand.CompleteReservation toCompleteReservationCommand() {
-            return ReservationCommand.CompleteReservation.builder()
-                    .reservationId(reservationId)
-                    .memberId(memberId)
-                    .build();
-        }
     }
 
     @Builder(toBuilder = true)
@@ -130,7 +117,8 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
-    public record ChangeApproveReservation(Long reservationId, Long memberId, boolean isApprove) {
+    public record ChangeApproveReservation(Long reservationId, Long memberId, LocalDateTime approveDate,
+                                           boolean isApprove) {
 
         public ReservationCommand.ChangeApproveReservation toCommand() {
             return ReservationCommand.ChangeApproveReservation.builder()

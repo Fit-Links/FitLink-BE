@@ -134,11 +134,15 @@ public class ReservationRequestDto {
 
     @Builder(toBuilder = true)
     public record ChangeApproveReservation(@NotNull(message = "유저 ID는 필수값 입니다.") Long memberId,
+                                           @NotNull(message = "승인 날짜는 필수입니다.")
+                                           @FutureOrPresent(message = "현재 날짜보다 이전일 수 없습니다.")
+                                           LocalDateTime approveDate,
                                            @NotNull(message = "승인 여부는 필수값 입니다.") Boolean isApprove) {
 
         public ReservationCriteria.ChangeApproveReservation toCriteria(Long reservationId) {
             return ReservationCriteria.ChangeApproveReservation.builder()
                     .reservationId(reservationId)
+                    .approveDate(approveDate)
                     .memberId(memberId)
                     .isApprove(isApprove)
                     .build();
