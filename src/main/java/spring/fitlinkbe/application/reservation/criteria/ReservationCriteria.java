@@ -19,9 +19,10 @@ public class ReservationCriteria {
     @Builder(toBuilder = true)
     public record SetDisabledTime(LocalDateTime date) {
 
-        public ReservationCommand.SetDisabledTime toCommand() {
+        public ReservationCommand.SetDisabledTime toCommand(Long trainerId) {
             return ReservationCommand.SetDisabledTime.builder()
                     .date(date)
+                    .trainerId(trainerId)
                     .build();
         }
     }
@@ -70,10 +71,11 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
-    public record CancelReservation(Long reservationId, String cancelReason) {
+    public record CancelReservation(Long reservationId, LocalDateTime cancelDate, String cancelReason) {
         public ReservationCommand.CancelReservation toCommand() {
             return ReservationCommand.CancelReservation.builder()
                     .reservationId(reservationId)
+                    .cancelDate(cancelDate)
                     .cancelReason(cancelReason)
                     .build();
         }

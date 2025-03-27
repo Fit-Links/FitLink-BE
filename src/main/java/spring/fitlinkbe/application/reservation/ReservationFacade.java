@@ -12,7 +12,6 @@ import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
-import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
 import spring.fitlinkbe.support.security.SecurityUser;
 
@@ -22,7 +21,7 @@ import java.util.List;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
-import static spring.fitlinkbe.domain.notification.Notification.Reason.RESERVATION_CANCEL_REQUEST;
+import static spring.fitlinkbe.domain.notification.Notification.Reason.RESERVATION_CANCEL;
 import static spring.fitlinkbe.domain.notification.Notification.Reason.RESERVATION_REFUSE;
 
 @Component
@@ -57,15 +56,13 @@ public class ReservationFacade {
 
     @Transactional
     public Reservation setDisabledReservation(ReservationCriteria.SetDisabledTime criteria, SecurityUser user) {
-        String cancelMessage = "예약 불가 설정";
-        //1. 모든 예약 조회
-        List<Reservation> reservations = reservationService.getReservations();
-        //2. 이미 존재하는 예약 취소 절차 진행
-        cancelExistingReservations(reservations, cancelMessage);
-        //3. 트레이너 정보 조회
-        Trainer trainerInfo = trainerService.getTrainerInfo(user.getTrainerId());
-        //4. 예약 불가능한 날짜 설정 및 결과 리턴
-        return reservationService.setDisabledTime(criteria.toCommand(), trainerInfo);
+        // 기존에 있던 예약들 취소
+        List<Reservation> cancelledReservations = reservationService.cancelExistReservations(criteria.date());
+        // 예약이 취소되었다면, 트레이너 -> 멤버 예약 취소됐다는 알람 전송
+        cancelledReservations.forEach(r -> notificationService.sendCancelReservationNotification(r.getReservationId(),
+                memberService.getMemberDetail(r.getMember().getMemberId()), RESERVATION_REFUSE));
+        // 예약 불가 설정한 정보 리턴
+        return reservationService.setDisabledReservation(criteria.toCommand(user.getTrainerId()));
     }
 
     @Transactional
@@ -140,7 +137,8 @@ public class ReservationFacade {
         // 멤버의 경우
         // 멤버 -> 트레이너에게 예약 취소 요청 알림을 보낸다.
         notificationService.sendCancelRequestReservationNotification(reservation.getReservationId(), reservation.getName(),
-                trainerService.getTrainerDetail(reservation.getTrainer().getTrainerId()), RESERVATION_CANCEL_REQUEST);
+                criteria.cancelDate(), criteria.cancelReason(),
+                trainerService.getTrainerDetail(reservation.getTrainer().getTrainerId()), RESERVATION_CANCEL);
         return reservation;
     }
 
@@ -207,6 +205,7 @@ public class ReservationFacade {
         // 알람 전송 멤버 -> 트레이너에게 예약 변경 요청했다는 알람 발송
         notificationService.sendChangeRequestReservationNotification(requestedReservation.getReservationId(),
                 requestedReservation.getName(),
+                criteria.reservationDate(), criteria.changeRequestDate(),
                 trainerService.getTrainerDetail(requestedReservation.getTrainer().getTrainerId()));
 
         return requestedReservation;

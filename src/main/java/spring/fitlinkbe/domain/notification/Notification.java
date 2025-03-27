@@ -5,6 +5,7 @@ import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.reservation.Reservation;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Builder(toBuilder = true)
 @Getter
@@ -76,16 +77,15 @@ public class Notification {
     }
 
     public static Notification cancelRequestReservationNotification(Long reservationId, String name,
-                                                                    PersonalDetail memberDetail, Reason reason) {
-        String content = "회원 %s 님의 %s를 요청하였습니다.".formatted(
-                name,
-                reason.name);
+                                                                    LocalDateTime cancelDate, String cancelReason,
+                                                                    PersonalDetail trainerDetail, Reason reason) {
+        String content = ("회원 %s 님의 %s를 요청하였습니다.\n +%s\n +취소 사유: %s").formatted(name, reason.name, cancelDate.truncatedTo(ChronoUnit.HOURS), cancelReason);
 
         return Notification.builder()
                 .refId(reservationId)
                 .refType(ReferenceType.RESERVATION)
                 .notificationType(NotificationType.RESERVATION_CANCEL)
-                .personalDetail(memberDetail)
+                .personalDetail(trainerDetail)
                 .name(NotificationType.RESERVATION_CANCEL.getName())
                 .content(content)
                 .isSent(true)
@@ -185,10 +185,13 @@ public class Notification {
     }
 
     public static Notification changeRequestReservationNotification(Long reservationId,
-                                                                    String name,
+                                                                    String name, LocalDateTime reservationDate,
+                                                                    LocalDateTime changeDate,
                                                                     PersonalDetail trainerDetail) {
 
-        String content = "%s 회원님의 PT 예약 변경이 요청되었습니다.".formatted(name);
+        String content = ("%s 회원님의 PT 예약 변경이 요청되었습니다. \n " +
+                "%s -> %s").formatted(name, reservationDate.truncatedTo(ChronoUnit.HOURS),
+                changeDate.truncatedTo(ChronoUnit.HOURS));
 
         return Notification.builder()
                 .refId(reservationId)
@@ -246,8 +249,7 @@ public class Notification {
     public enum Reason {
         DAY_OFF("연차"),
         RESERVATION_REFUSE("예약 거절"),
-        RESERVATION_CANCEL("예약 취소"),
-        RESERVATION_CANCEL_REQUEST("예약 취소 요청");
+        RESERVATION_CANCEL("예약 취소");
         private final String name;
     }
 }

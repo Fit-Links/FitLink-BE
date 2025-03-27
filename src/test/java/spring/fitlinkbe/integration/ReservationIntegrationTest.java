@@ -648,6 +648,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .name(member.getName())
                     .dayOfWeek(reservationDate.getDayOfWeek())
                     .status(RESERVATION_WAITING)
+                    .createdAt(LocalDateTime.now().plusSeconds(3))
                     .build();
 
             reservationRepository.saveReservation(reservation).orElseThrow();
@@ -698,7 +699,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .name(member.getName())
                     .dayOfWeek(reservationDate.getDayOfWeek())
                     .status(RESERVATION_WAITING)
-                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .createdAt(LocalDateTime.now().plusSeconds(3))
                     .build();
 
             Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
@@ -709,11 +710,10 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             reservationRepository.saveSession(session);
 
-            LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
             ReservationRequestDto.SetDisabledTime request = ReservationRequestDto.SetDisabledTime
                     .builder()
-                    .date(requestDate)
+                    .date(reservationDate)
                     .build();
 
             // when
@@ -1458,11 +1458,12 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelDate(requestDate)
                     .cancelReason("개인 사정")
                     .build();
-
-            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
 
             // 예약 생성
             Reservation reservation = Reservation.builder()
@@ -1518,17 +1519,19 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelDate(requestDate)
                     .cancelReason("개인 사정")
                     .build();
-
-            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
 
             // 예약 생성
             Reservation reservation = Reservation.builder()
                     .reservationDates(List.of(requestDate))
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
+                    .name("길동")
                     .status(RESERVATION_APPROVED)
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
@@ -1578,11 +1581,12 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelDate(requestDate)
                     .cancelReason("")
                     .build();
-
-            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
 
             // 예약 생성
             Reservation reservation = Reservation.builder()
@@ -1630,6 +1634,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
                     .cancelReason("개인 사유")
+                    .cancelDate(LocalDateTime.now().plusHours(3))
                     .build();
 
             // when
@@ -1657,11 +1662,12 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
                     .cancelReason("개인 사유")
+                    .cancelDate(requestDate)
                     .build();
-
-            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
 
             // 취소된 예약 생성
             Reservation reservation = Reservation.builder()
@@ -1699,11 +1705,12 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
                     .cancelReason("개인 사유")
+                    .cancelDate(requestDate)
                     .build();
-
-            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
 
             // 예약 승인이 거절된 예약 생성
             Reservation reservation = Reservation.builder()
@@ -1741,11 +1748,12 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
+            LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
+
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
                     .cancelReason("개인 사유")
+                    .cancelDate(requestDate)
                     .build();
-
-            LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
             // 예약 생성
             Reservation reservation = Reservation.builder()
@@ -2584,6 +2592,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             Reservation reservation = Reservation.builder()
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
+                    .name("길동")
                     .reservationDates(List.of(reservationDate, reservationDate.plusHours(2)))
                     .status(RESERVATION_WAITING)
                     .createdAt(LocalDateTime.now().plusSeconds(2))
@@ -2701,6 +2710,51 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(404);
                 softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
                 softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("예약 날짜를 찾지 못하였습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 변경 요청 실패 - 예약 변경 요청할 수 있는 시간이 아님")
+        void changeReqeustReservationNotAllowChangeRequestHours() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+            LocalDateTime changeRequestDate = LocalDateTime.now().plusHours(1);
+
+            ReservationRequestDto.ChangeReqeustReservation request = ReservationRequestDto.ChangeReqeustReservation
+                    .builder()
+                    .reservationDate(reservationDate)
+                    .changeRequestDate(changeRequestDate)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(reservationDate))
+                    .status(RESERVATION_APPROVED)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/change-request".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("현재시간보다 2시간 이후부터 변경 가능합니다.");
                 softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
             });
         }

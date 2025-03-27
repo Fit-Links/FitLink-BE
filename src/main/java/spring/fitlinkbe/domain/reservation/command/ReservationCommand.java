@@ -57,7 +57,8 @@ public class ReservationCommand {
     }
 
     @Builder(toBuilder = true)
-    public record CancelReservation(Long reservationId, String cancelReason) {
+    public record CancelReservation(Long reservationId, LocalDateTime cancelDate,
+                                    String cancelReason) {
 
     }
 

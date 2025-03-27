@@ -1051,8 +1051,11 @@ class ReservationControllerTest {
         @DisplayName("트레이너가 예약 취소 성공")
         void cancelReservationWithTrainer() throws Exception {
             //given
+            LocalDateTime cancelDate = LocalDateTime.now().plusHours(2);
+
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
                     .cancelReason("개인 사정으로 인한 취소")
+                    .cancelDate(cancelDate)
                     .build();
 
             Long reservationId = 1L;
@@ -1094,8 +1097,11 @@ class ReservationControllerTest {
         @DisplayName("멤버가 예약 취소 성공")
         void cancelReservationWithMember() throws Exception {
             //given
+            LocalDateTime cancelDate = LocalDateTime.now().plusHours(2);
+
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
                     .cancelReason("개인 사정으로 인한 취소")
+                    .cancelDate(cancelDate)
                     .build();
 
             Long reservationId = 1L;
@@ -1137,7 +1143,10 @@ class ReservationControllerTest {
         @DisplayName("예약 취소 실패 - 취소 사유 부재")
         void cancelReservationWithNoReason() throws Exception {
             //given
+            LocalDateTime cancelDate = LocalDateTime.now().plusHours(2);
+
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelDate(cancelDate)
                     .build();
 
             Long reservationId = 1L;

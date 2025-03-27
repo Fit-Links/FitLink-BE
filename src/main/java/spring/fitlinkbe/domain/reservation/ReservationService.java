@@ -35,11 +35,40 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final SessionRepository sessionRepository;
 
-    public List<Reservation> getReservations() {
-
-        return reservationRepository.getReservations()
-                .stream().filter(Reservation::isAlreadyCancel)
+    @Transactional
+    public List<Reservation> cancelExistReservations(LocalDateTime reservationDate) {
+        String cancelMessage = "예약 불가 설정";
+        //1. 예약 불가 설정한 날짜와 일치하는 날짜의 예약 조회
+        List<Reservation> getReservations = reservationRepository.getReservations()
+                .stream()
+                .filter(Reservation::isAlreadyCancel)
+                .filter(r -> r.isReservationDateSame(List.of(reservationDate)))
                 .toList();
+
+        //2. 이미 존재하는 예약 취소 절차 진행
+        if (!getReservations.isEmpty()) {
+            getReservations.forEach(Reservation::checkPossibleReserveStatus);
+            this.cancelReservations(getReservations, cancelMessage);
+
+            return getReservations;
+        }
+
+        return List.of();
+    }
+
+    @Transactional
+    public Reservation setDisabledReservation(ReservationCommand.SetDisabledTime command) {
+
+        Reservation reservation = Reservation.builder()
+                .trainer(Trainer.builder().trainerId(command.trainerId()).build())
+                .reservationDates(List.of(command.date()))
+                .status(DISABLED_TIME_RESERVATION)
+                .build();
+
+        // 취소된 예약 정보 리턴
+        return reservationRepository.saveReservation(reservation).orElseThrow(() ->
+                new CustomException(ErrorCode.SET_DISABLE_DATE_FAILED,
+                        "예약 불가 설정을 할 수 없습니다."));
     }
 
     public List<Reservation> getReservationThatTimes(ReservationCommand.GetReservationThatTimes
@@ -99,23 +128,6 @@ public class ReservationService {
     }
 
     @Transactional
-    public void cancelReservations(List<Reservation> reservations, String message) {
-        // 예약 정보 취소
-        reservations.forEach(reservation -> reservation.cancel(message));
-        // 취소한 예약 정보 저장
-        reservationRepository.saveReservations(reservations);
-        // 세션 정보 찾기
-        List<Session> sessions = reservations.stream()
-                .map(reservation -> reservationRepository.getSession(reservation.getReservationId()))
-                .flatMap(Optional::stream)
-                .toList();
-        //세션 정보 취소
-        sessions.forEach(session -> session.cancel(message));
-        // 세션 취소 정보 저장
-        reservationRepository.saveSessions(sessions);
-    }
-
-    @Transactional
     public Reservation approveReservation(ReservationCommand.ApproveReservation command) {
 
         Reservation reservation = this.getReservation(command.reservationId());
@@ -165,7 +177,7 @@ public class ReservationService {
         //트레이너의 경우
         if (user.getUserRole() == TRAINER) {
             // 예약을 취소한다.
-            reservation.cancel("트레이너가 예약을 취소하였습니다");
+            reservation.cancelRequest("트레이너가 예약을 취소하였습니다", command.cancelDate(), user.getUserRole());
             Reservation cancelReservation = reservationRepository.saveReservation(reservation)
                     .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_CANCEL_FAILED,
                             "예약 취소를 실패하였습니다. [reservationId: %d]".formatted(command.reservationId())));
@@ -180,24 +192,10 @@ public class ReservationService {
         }
         // 멤버의 경우
         // 예약 취소 요청
-        reservation.cancelRequest("회원이 예약 취소를 요청 하였습니다.");
+        reservation.cancelRequest("회원이 예약 취소를 요청 하였습니다.", command.cancelDate(), user.getUserRole());
         // 취소한 예약 정보 저장
         return reservationRepository.saveReservation(reservation).orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_CANCEL_FAILED,
                 "예약 취소 요청에 실패하였습니다. [reservationId: %d]".formatted(command.reservationId())));
-    }
-
-    @Transactional
-    public Reservation setDisabledTime(ReservationCommand.SetDisabledTime command, Trainer trainerInfo) {
-
-        Reservation reservation = Reservation.builder()
-                .trainer(trainerInfo)
-                .reservationDates(List.of(command.date()))
-                .status(DISABLED_TIME_RESERVATION)
-                .build();
-
-        return reservationRepository.saveReservation(reservation).orElseThrow(() ->
-                new CustomException(ErrorCode.SET_DISABLE_DATE_FAILED,
-                        "예약 불가 설정을 할 수 없습니다."));
     }
 
     @Transactional
@@ -299,5 +297,21 @@ public class ReservationService {
 
     }
 
+    @Transactional
+    public void cancelReservations(List<Reservation> reservations, String message) {
+        // 예약 정보 취소
+        reservations.forEach(reservation -> reservation.cancel(message));
+        // 취소한 예약 정보 저장
+        reservationRepository.saveReservations(reservations);
+        // 세션 정보 찾기
+        List<Session> sessions = reservations.stream()
+                .map(reservation -> reservationRepository.getSession(reservation.getReservationId()))
+                .flatMap(Optional::stream)
+                .toList();
+        //세션 정보 취소
+        sessions.forEach(session -> session.cancel(message));
+        // 세션 취소 정보 저장
+        reservationRepository.saveSessions(sessions);
+    }
 
 }

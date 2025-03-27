@@ -276,7 +276,7 @@ class ReservationServiceTest {
                     .thenReturn(Optional.ofNullable(savedReservation));
 
             //when
-            Reservation result = reservationService.setDisabledTime(command, trainer);
+            Reservation result = reservationService.setDisabledReservation(command);
 
             //then
             assertThat(result.getStatus()).isEqualTo(DISABLED_TIME_RESERVATION);

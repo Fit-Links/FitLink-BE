@@ -63,12 +63,16 @@ public class ReservationRequestDto {
     }
 
     @Builder(toBuilder = true)
-    public record CancelReservation(@NotEmpty(message = "취소 사유는 필수값 입니다.") String cancelReason) {
+    public record CancelReservation(@NotEmpty(message = "취소 사유는 필수값 입니다.") String cancelReason,
+                                    @NotNull(message = "취소 날짜는 필수입니다.")
+                                    @FutureOrPresent(message = "현재 날짜보다 이전일 수 없습니다.")
+                                    LocalDateTime cancelDate) {
 
         public ReservationCriteria.CancelReservation toCriteria(Long reservationId) {
 
             return ReservationCriteria.CancelReservation.builder()
                     .reservationId(reservationId)
+                    .cancelDate(cancelDate)
                     .cancelReason(cancelReason)
                     .build();
         }

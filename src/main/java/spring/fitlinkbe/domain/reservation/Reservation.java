@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
+import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.*;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
 
@@ -76,7 +77,10 @@ public class Reservation {
     }
 
     public void changeRequestDate(LocalDateTime reservationDate, LocalDateTime changeDate) {
-
+        // 변경할 시간은 현재시간 +2시간 이후부터 변경 가능
+        if (changeDate.isBefore(LocalDateTime.now().plusHours(2))) {
+            throw new CustomException(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED, "현재시간보다 2시간 이후부터 변경 가능합니다.");
+        }
         if (this.status != RESERVATION_APPROVED && this.status != RESERVATION_WAITING) {
             throw new CustomException(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED);
         }
@@ -205,9 +209,9 @@ public class Reservation {
         this.status = RESERVATION_APPROVED;
     }
 
-    public void cancelRequest(String message) {
+    public void cancelRequest(String message, LocalDateTime cancelDate, UserRole role) {
         // 당일 예약 취소는 불가능 함
-        if (LocalDateTime.now().isAfter(reservationDates.get(0).minusDays(1).truncatedTo(ChronoUnit.DAYS).plusHours(23))) {
+        if (LocalDateTime.now().isAfter(cancelDate.minusDays(1).truncatedTo(ChronoUnit.DAYS).plusHours(23))) {
             throw new CustomException(RESERVATION_CANCEL_NOT_ALLOWED, "당일 예약 취소 요청은 불가합니다.");
         }
         if (this.status == DISABLED_TIME_RESERVATION || this.status == RESERVATION_REFUSED) {
@@ -217,7 +221,7 @@ public class Reservation {
             throw new CustomException(RESERVATION_IS_ALREADY_CANCEL);
         }
         this.cancelReason = message;
-        this.status = RESERVATION_CANCEL_REQUEST;
+        this.status = role == TRAINER ? RESERVATION_CANCELLED : RESERVATION_CANCEL_REQUEST;
 
     }
 
