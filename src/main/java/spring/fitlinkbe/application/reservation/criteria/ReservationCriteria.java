@@ -19,9 +19,10 @@ public class ReservationCriteria {
     @Builder(toBuilder = true)
     public record SetDisabledTime(LocalDateTime date) {
 
-        public ReservationCommand.SetDisabledTime toCommand() {
+        public ReservationCommand.SetDisabledTime toCommand(Long trainerId) {
             return ReservationCommand.SetDisabledTime.builder()
                     .date(date)
+                    .trainerId(trainerId)
                     .build();
         }
     }
@@ -46,14 +47,6 @@ public class ReservationCriteria {
     @Builder(toBuilder = true)
     public record FixedReserveSession(List<LocalDateTime> reservationDates, Long memberId, String name) {
 
-        public ReservationCommand.GetReservationThatTimes toCommand(SecurityUser user) {
-
-            return ReservationCommand.GetReservationThatTimes.builder()
-                    .date(reservationDates)
-                    .trainerId(user.getTrainerId())
-                    .build();
-        }
-
         public List<Reservation> toDomain(SessionInfo sessionInfo, SecurityUser user) {
             return reservationDates.stream()
                     .map((date) -> Reservation.builder()
@@ -70,10 +63,11 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
-    public record CancelReservation(Long reservationId, String cancelReason) {
+    public record CancelReservation(Long reservationId, LocalDateTime cancelDate, String cancelReason) {
         public ReservationCommand.CancelReservation toCommand() {
             return ReservationCommand.CancelReservation.builder()
                     .reservationId(reservationId)
+                    .cancelDate(cancelDate)
                     .cancelReason(cancelReason)
                     .build();
         }
@@ -102,16 +96,11 @@ public class ReservationCriteria {
 
             return ReservationCommand.CompleteSession.builder()
                     .reservationId(reservationId)
+                    .memberId(memberId)
                     .isJoin(isJoin)
                     .build();
         }
 
-        public ReservationCommand.CompleteReservation toCompleteReservationCommand() {
-            return ReservationCommand.CompleteReservation.builder()
-                    .reservationId(reservationId)
-                    .memberId(memberId)
-                    .build();
-        }
     }
 
     @Builder(toBuilder = true)
@@ -123,6 +112,19 @@ public class ReservationCriteria {
                     .reservationId(reservationId)
                     .reservationDate(reservationDate)
                     .changeRequestDate(changeRequestDate)
+                    .build();
+        }
+    }
+
+    @Builder(toBuilder = true)
+    public record ChangeApproveReservation(Long reservationId, Long memberId, LocalDateTime approveDate,
+                                           boolean isApprove) {
+
+        public ReservationCommand.ChangeApproveReservation toCommand() {
+            return ReservationCommand.ChangeApproveReservation.builder()
+                    .reservationId(reservationId)
+                    .memberId(memberId)
+                    .isApprove(isApprove)
                     .build();
         }
     }

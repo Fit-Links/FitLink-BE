@@ -91,17 +91,17 @@ public class ReservationResponseDto {
                                    LocalDate birthDate, String phoneNumber, String profilePictureUrl,
                                    DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates) {
 
-        public static ReservationResponseDto.GetWaitingMember of(ReservationResult.ReservationWaitingMember member) {
+        public static ReservationResponseDto.GetWaitingMember of(Reservation reservation) {
 
             return GetWaitingMember.builder()
-                    .memberId(member.personalDetail().getMemberId())
-                    .name(member.personalDetail().getName())
-                    .birthDate(member.personalDetail().getBirthDate())
-                    .phoneNumber(member.personalDetail().getPhoneNumber())
-                    .profilePictureUrl(member.personalDetail().getProfilePictureUrl())
-                    .reservationId(member.reservation().getReservationId())
-                    .reservationDates(member.reservation().getReservationDates())
-                    .dayOfWeek(member.reservation().getReservationDates().get(0).getDayOfWeek())
+                    .memberId(reservation.getMember().getMemberId())
+                    .name(reservation.getMember().getName())
+                    .birthDate(reservation.getMember().getBirthDate())
+                    .phoneNumber(reservation.getMember().getPhoneNumber())
+                    .profilePictureUrl(reservation.getMember().getProfilePictureUrl())
+                    .reservationId(reservation.getReservationId())
+                    .reservationDates(reservation.getReservationDates())
+                    .dayOfWeek(reservation.getReservationDates().get(0).getDayOfWeek())
                     .build();
         }
     }

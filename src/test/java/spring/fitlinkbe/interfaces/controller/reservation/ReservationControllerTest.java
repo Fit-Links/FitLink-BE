@@ -98,7 +98,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(response));
+            when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
 
             //when & then
             mockMvc.perform(get("/v1/reservations")
@@ -142,7 +142,7 @@ class ReservationControllerTest {
             SecurityUser user = new SecurityUser(personalDetail);
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(response));
+            when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
 
             //when & then
             mockMvc.perform(get("/v1/reservations")
@@ -177,7 +177,7 @@ class ReservationControllerTest {
             SecurityUser user = new SecurityUser(personalDetail);
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(response));
+            when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
 
             //when //then
             mockMvc.perform(get("/v1/reservations")
@@ -219,7 +219,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(response));
+            when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
 
             //when & then
             mockMvc.perform(get("/v1/reservations")
@@ -261,7 +261,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(response));
+            when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
 
             //when & then
             mockMvc.perform(get("/v1/reservations")
@@ -302,7 +302,7 @@ class ReservationControllerTest {
 
             SecurityUser user = new SecurityUser(personalDetail);
 
-            when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(ReservationResult.Reservations.from(response));
+            when(reservationFacade.getReservations(any(LocalDate.class), any(SecurityUser.class))).thenReturn(response);
 
             //when & then
             mockMvc.perform(get("/v1/reservations")
@@ -417,12 +417,10 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            ReservationResult.ReservationWaitingMember result =
-                    ReservationResult.ReservationWaitingMember.builder()
-                            .reservation(Reservation.builder()
-                                    .reservationDates(List.of(requestDate.plusDays(1))).build())
-                            .personalDetail(PersonalDetail.builder().personalDetailId(2L).build())
-                            .build();
+            Reservation result =
+                    Reservation.builder()
+                            .member(Member.builder().memberId(1L).build())
+                            .reservationDates(List.of(requestDate.plusDays(1))).build();
 
             when(reservationFacade.getWaitingMembers(any(LocalDateTime.class), any(SecurityUser.class)))
                     .thenReturn(List.of(result));
@@ -453,12 +451,9 @@ class ReservationControllerTest {
             SecurityUser user = new SecurityUser(personalDetail);
 
             String accessToken = getAccessToken(personalDetail);
-
-            ReservationResult.ReservationWaitingMember result =
-                    ReservationResult.ReservationWaitingMember.builder()
-                            .reservation(Reservation.builder()
-                                    .reservationDates(List.of(LocalDateTime.now().plusDays(1))).build())
-                            .personalDetail(PersonalDetail.builder().personalDetailId(2L).build())
+            Reservation result =
+                    Reservation.builder()
+                            .reservationDates(List.of(LocalDateTime.now().plusDays(1)))
                             .build();
 
             when(reservationFacade.getWaitingMembers(any(LocalDateTime.class), any(SecurityUser.class)))
@@ -843,7 +838,7 @@ class ReservationControllerTest {
                     .build();
 
             Reservation reservation = Reservation.builder().reservationId(1L).status(RESERVATION_APPROVED).build();
-            ReservationResult.Reservations reservations = ReservationResult.Reservations.from(List.of(reservation));
+            List<Reservation> reservations = List.of(reservation);
 
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -886,7 +881,7 @@ class ReservationControllerTest {
                     .build();
 
             Reservation reservation = Reservation.builder().reservationId(1L).status(RESERVATION_APPROVED).build();
-            ReservationResult.Reservations reservations = ReservationResult.Reservations.from(List.of(reservation));
+            List<Reservation> reservations = List.of(reservation);
 
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -927,7 +922,7 @@ class ReservationControllerTest {
                     .build();
 
             Reservation reservation = Reservation.builder().reservationId(1L).status(RESERVATION_APPROVED).build();
-            ReservationResult.Reservations reservations = ReservationResult.Reservations.from(List.of(reservation));
+            List<Reservation> reservations = List.of(reservation);
 
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -968,7 +963,7 @@ class ReservationControllerTest {
                     .build();
 
             Reservation reservation = Reservation.builder().reservationId(1L).status(RESERVATION_APPROVED).build();
-            ReservationResult.Reservations reservations = ReservationResult.Reservations.from(List.of(reservation));
+            List<Reservation> reservations = List.of(reservation);
 
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -1010,7 +1005,7 @@ class ReservationControllerTest {
                     .build();
 
             Reservation reservation = Reservation.builder().reservationId(1L).status(RESERVATION_APPROVED).build();
-            ReservationResult.Reservations reservations = ReservationResult.Reservations.from(List.of(reservation));
+            List<Reservation> reservations = List.of(reservation);
 
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -1051,8 +1046,11 @@ class ReservationControllerTest {
         @DisplayName("트레이너가 예약 취소 성공")
         void cancelReservationWithTrainer() throws Exception {
             //given
+            LocalDateTime cancelDate = LocalDateTime.now().plusHours(2);
+
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
                     .cancelReason("개인 사정으로 인한 취소")
+                    .cancelDate(cancelDate)
                     .build();
 
             Long reservationId = 1L;
@@ -1094,8 +1092,11 @@ class ReservationControllerTest {
         @DisplayName("멤버가 예약 취소 성공")
         void cancelReservationWithMember() throws Exception {
             //given
+            LocalDateTime cancelDate = LocalDateTime.now().plusHours(2);
+
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
                     .cancelReason("개인 사정으로 인한 취소")
+                    .cancelDate(cancelDate)
                     .build();
 
             Long reservationId = 1L;
@@ -1137,7 +1138,10 @@ class ReservationControllerTest {
         @DisplayName("예약 취소 실패 - 취소 사유 부재")
         void cancelReservationWithNoReason() throws Exception {
             //given
+            LocalDateTime cancelDate = LocalDateTime.now().plusHours(2);
+
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+                    .cancelDate(cancelDate)
                     .build();
 
             Long reservationId = 1L;
@@ -1634,6 +1638,155 @@ class ReservationControllerTest {
         }
 
 
+    }
+
+    @Nested
+    @DisplayName("예약 변경 승인 Controller TEST")
+    class ChangeApproveReservationControllerTest {
+        @Test
+        @DisplayName("멤버의 예약 변경 승인 성공")
+        void changeApproveReservation() throws Exception {
+            //given
+            LocalDateTime approveDate = LocalDateTime.now().plusHours(1);
+
+            ReservationRequestDto.ChangeApproveReservation request = ReservationRequestDto.ChangeApproveReservation
+                    .builder()
+                    .memberId(1L)
+                    .isApprove(true)
+                    .approveDate(approveDate)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.changeApproveReservation(any(ReservationCriteria.ChangeApproveReservation.class)))
+                    .thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/change-approve".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.msg").value("OK"))
+                    .andExpect(jsonPath("$.data.status").value(RESERVATION_APPROVED.getName()));
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 변경 승인 실패 - 멤버 ID 부재")
+        void changeApproveReservationNoMemberId() throws Exception {
+            //given
+            LocalDateTime approveDate = LocalDateTime.now().plusHours(1);
+
+            ReservationRequestDto.ChangeApproveReservation request = ReservationRequestDto.ChangeApproveReservation
+                    .builder()
+                    .isApprove(true)
+                    .approveDate(approveDate)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.changeApproveReservation(any(ReservationCriteria.ChangeApproveReservation.class)))
+                    .thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/change-approve".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("유저 ID는 필수값 입니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 변경 승인 실패 - 승인 여부 부재")
+        void changeApproveReservationNoIsApprove() throws Exception {
+            LocalDateTime approveDate = LocalDateTime.now().plusHours(1);
+
+            //given
+            ReservationRequestDto.ChangeApproveReservation request = ReservationRequestDto.ChangeApproveReservation
+                    .builder()
+                    .memberId(1L)
+                    .approveDate(approveDate)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_APPROVED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.changeApproveReservation(any(ReservationCriteria.ChangeApproveReservation.class)))
+                    .thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/change-approve".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("승인 여부는 필수값 입니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
     }
 
     private String getAccessToken(PersonalDetail personalDetail) {

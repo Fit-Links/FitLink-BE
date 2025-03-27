@@ -7,7 +7,6 @@ import spring.fitlinkbe.domain.reservation.Session;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 public class ReservationCommand {
 
@@ -27,11 +26,6 @@ public class ReservationCommand {
                     .userId(userId)
                     .build();
         }
-    }
-
-    @Builder(toBuilder = true)
-    public record GetReservationThatTimes(List<LocalDateTime> date, Long trainerId) {
-
     }
 
     @Builder(toBuilder = true)
@@ -57,20 +51,21 @@ public class ReservationCommand {
     }
 
     @Builder(toBuilder = true)
-    public record CancelReservation(Long reservationId, String cancelReason) {
+    public record CancelReservation(Long reservationId, LocalDateTime cancelDate,
+                                    String cancelReason) {
 
     }
 
     @Builder(toBuilder = true)
-    public record CompleteSession(Long reservationId, Boolean isJoin) {
-    }
-
-    @Builder(toBuilder = true)
-    public record CompleteReservation(Long reservationId, Long memberId) {
+    public record CompleteSession(Long reservationId, Long memberId, Boolean isJoin) {
     }
 
     @Builder(toBuilder = true)
     public record ChangeReqeustReservation(LocalDateTime reservationDate, LocalDateTime changeRequestDate,
                                            Long reservationId) {
+    }
+
+    @Builder(toBuilder = true)
+    public record ChangeApproveReservation(Long reservationId, Long memberId, boolean isApprove) {
     }
 }

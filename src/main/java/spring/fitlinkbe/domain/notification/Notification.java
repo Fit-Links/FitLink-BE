@@ -5,6 +5,7 @@ import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.reservation.Reservation;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Builder(toBuilder = true)
 @Getter
@@ -76,16 +77,15 @@ public class Notification {
     }
 
     public static Notification cancelRequestReservationNotification(Long reservationId, String name,
-                                                                    PersonalDetail memberDetail, Reason reason) {
-        String content = "회원 %s 님의 %s를 요청하였습니다.".formatted(
-                name,
-                reason.name);
+                                                                    LocalDateTime cancelDate, String cancelReason,
+                                                                    PersonalDetail trainerDetail, Reason reason) {
+        String content = ("회원 %s 님의 %s를 요청하였습니다.\n +%s\n +취소 사유: %s").formatted(name, reason.name, cancelDate.truncatedTo(ChronoUnit.HOURS), cancelReason);
 
         return Notification.builder()
                 .refId(reservationId)
                 .refType(ReferenceType.RESERVATION)
                 .notificationType(NotificationType.RESERVATION_CANCEL)
-                .personalDetail(memberDetail)
+                .personalDetail(trainerDetail)
                 .name(NotificationType.RESERVATION_CANCEL.getName())
                 .content(content)
                 .isSent(true)
@@ -105,6 +105,27 @@ public class Notification {
                 .notificationType(NotificationType.RESERVATION_APPROVE)
                 .personalDetail(memberDetail)
                 .name(NotificationType.RESERVATION_APPROVE.name)
+                .content(content)
+                .isSent(true)
+                .isProcessed(false)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
+    public static Notification approveRequestReservationNotification(Long reservationId, PersonalDetail memberDetail,
+                                                                     boolean isApprove) {
+
+        String content = "%s 님의 예약 변경이 %s되었습니다."
+                .formatted(memberDetail.getName(), isApprove ? "승인" : "거절");
+
+        return Notification.builder()
+                .refId(reservationId)
+                .refType(ReferenceType.RESERVATION)
+                .notificationType(isApprove ? NotificationType.RESERVATION_CHANGE_REQUEST_APPROVED :
+                        NotificationType.RESERVATION_CHANGE_REQUEST_REFUSED)
+                .personalDetail(memberDetail)
+                .name(isApprove ? NotificationType.RESERVATION_CHANGE_REQUEST_APPROVED.name :
+                        NotificationType.RESERVATION_CHANGE_REQUEST_REFUSED.name)
                 .content(content)
                 .isSent(true)
                 .isProcessed(false)
@@ -164,10 +185,13 @@ public class Notification {
     }
 
     public static Notification changeRequestReservationNotification(Long reservationId,
-                                                                    String name,
+                                                                    String name, LocalDateTime reservationDate,
+                                                                    LocalDateTime changeDate,
                                                                     PersonalDetail trainerDetail) {
 
-        String content = "%s 회원님의 PT 예약 변경이 요청되었습니다.".formatted(name);
+        String content = ("%s 회원님의 PT 예약 변경이 요청되었습니다. \n " +
+                "%s -> %s").formatted(name, reservationDate.truncatedTo(ChronoUnit.HOURS),
+                changeDate.truncatedTo(ChronoUnit.HOURS));
 
         return Notification.builder()
                 .refId(reservationId)
@@ -204,7 +228,8 @@ public class Notification {
         DISCONNECT("트레이너 연동 해제", "회원과 연동이 해제되었습니다."),
 
         //회원
-        RESERVATION_CHANGE_REQUEST_REFUSED("세션 변경 요청 거절", "세션 변경 요청이 거절 되었습니다"),
+        RESERVATION_CHANGE_REQUEST_APPROVED("예약 변경 요청 승인", "예약 변경 요청이 승인 되었습니다"),
+        RESERVATION_CHANGE_REQUEST_REFUSED("예약 변경 요청 거절", "예약 변경 요청이 거절 되었습니다"),
         RESERVATION_APPROVE("예약 승인", "예약이 승인되었습니다."),
         RESERVATION_CANCEL("예약 취소", "예약이 취소되었습니다."),
         RESERVATION_REFUSE("예약 거절", "예약이 거절되었습니다."),
@@ -224,8 +249,7 @@ public class Notification {
     public enum Reason {
         DAY_OFF("연차"),
         RESERVATION_REFUSE("예약 거절"),
-        RESERVATION_CANCEL("예약 취소"),
-        RESERVATION_CANCEL_REQUEST("예약 취소 요청");
+        RESERVATION_CANCEL("예약 취소");
         private final String name;
     }
 }

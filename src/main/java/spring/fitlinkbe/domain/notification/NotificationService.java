@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.reservation.Reservation;
 
+import java.time.LocalDateTime;
+
 import static spring.fitlinkbe.domain.notification.Notification.*;
 
 @Service
@@ -29,13 +31,23 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
-    public void sendCancelRequestReservationNotification(Long reservationId, String name, PersonalDetail memberDetail, Reason reason) {
-        Notification notification = cancelRequestReservationNotification(reservationId, name, memberDetail, reason);
+    public void sendCancelRequestReservationNotification(Long reservationId, String name,
+                                                         LocalDateTime cancelDate, String cancelReason,
+                                                         PersonalDetail trainerDetail,
+                                                         Reason reason) {
+        Notification notification = cancelRequestReservationNotification(reservationId, name,
+                cancelDate, cancelReason, trainerDetail, reason);
         notificationRepository.save(notification);
     }
 
     public void sendApproveReservationNotification(Long reservationId, PersonalDetail memberDetail) {
         Notification notification = approveReservationNotification(reservationId, memberDetail);
+        notificationRepository.save(notification);
+    }
+
+    public void sendApproveRequestReservationNotification(Long reservationId, PersonalDetail memberDetail,
+                                                          boolean isApprove) {
+        Notification notification = approveRequestReservationNotification(reservationId, memberDetail, isApprove);
         notificationRepository.save(notification);
     }
 
@@ -54,8 +66,11 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
-    public void sendChangeRequestReservationNotification(Long reservationId, String name, PersonalDetail memberDetail) {
-        Notification notification = changeRequestReservationNotification(reservationId, name, memberDetail);
+    public void sendChangeRequestReservationNotification(Long reservationId, String name, LocalDateTime reservationDate,
+                                                         LocalDateTime changeDate,
+                                                         PersonalDetail memberDetail) {
+        Notification notification = changeRequestReservationNotification(reservationId, name,
+                reservationDate, changeDate, memberDetail);
         notificationRepository.save(notification);
     }
 }
