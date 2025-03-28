@@ -24,6 +24,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class TrainerIntegrationTest extends BaseIntegrationTest {
@@ -607,4 +608,45 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
     }
 
 
+    @Nested
+    @DisplayName("트레이너 수업 가능 시간 삭제 테스트")
+    class DeleteTrainerAvailableTimesTest {
+        private static final String URL = "/v1/trainers/me/available-times";
+
+        @Test
+        @DisplayName("트레이너 수업 가능 시간 삭제 성공")
+        void deleteTrainerAvailableTimesSuccess() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            LocalDate now = LocalDate.now();
+            testDataHandler.createAvailableTime(trainer, DayOfWeek.MONDAY, now);
+            testDataHandler.createAvailableTime(trainer, DayOfWeek.TUESDAY, now);
+            testDataHandler.createAvailableTime(trainer, DayOfWeek.WEDNESDAY, now);
+            testDataHandler.createAvailableTime(trainer, DayOfWeek.THURSDAY, now);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 수업 가능 시간 삭제 요청을 한다면
+            Map<String, String> parameter = Map.of("applyAt", now.toString());
+            ExtractableResponse<Response> result = delete(URL, parameter, token);
+
+            // then
+            // 수업 가능 시간 삭제가 성공한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(204);
+                softly.assertThat(response.data()).isNull();
+
+                List<AvailableTime> availableTimes = availableTimeRepository.getAvailableTimes(trainer.getTrainerId(), now);
+                softly.assertThat(availableTimes.size()).isEqualTo(0);
+            });
+        }
+    }
 }
