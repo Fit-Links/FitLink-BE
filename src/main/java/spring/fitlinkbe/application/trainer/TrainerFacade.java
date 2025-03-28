@@ -89,4 +89,13 @@ public class TrainerFacade {
         List<AvailableTime> availableTimes = criteria.toAvailableTimes(trainer);
         trainerService.saveAvailableTimes(availableTimes);
     }
+
+    public void deleteAvailableTimes(Long trainerId, LocalDate applyAt) {
+        List<AvailableTime> availableTimes = trainerService.getAvailableTimes(trainerId, applyAt);
+        if (availableTimes.isEmpty()) {
+            throw new CustomException(ErrorCode.AVAILABLE_TIMES_IS_NOT_FOUND);
+        }
+
+        trainerService.deleteAvailableTimes(availableTimes);
+    }
 }

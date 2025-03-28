@@ -78,4 +78,12 @@ public class TrainerService {
 
         return availableTimeRepository.getAvailableTimes(trainerId, scheduledAppliedDate);
     }
+
+    public List<AvailableTime> getAvailableTimes(Long trainerId, LocalDate applyAt) {
+        return availableTimeRepository.getAvailableTimes(trainerId, applyAt);
+    }
+
+    public void deleteAvailableTimes(List<AvailableTime> availableTimes) {
+        availableTimeRepository.deleteAll(availableTimes);
+    }
 }

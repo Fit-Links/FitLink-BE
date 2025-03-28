@@ -15,6 +15,8 @@ import spring.fitlinkbe.support.aop.RoleCheck;
 import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
 
+import java.time.LocalDate;
+
 @RestController
 @RequiredArgsConstructor
 @RoleCheck(allowedRoles = {UserRole.TRAINER})
@@ -60,5 +62,15 @@ public class TrainerController {
         trainerFacade.saveAvailableTimes(user.getTrainerId(), request.toCriteria());
 
         return ApiResultResponse.of(HttpStatus.CREATED, true, null);
+    }
+
+    @DeleteMapping("/me/available-times")
+    public ApiResultResponse<Object> deleteAvailableTimes(
+            @Login SecurityUser user,
+            @RequestParam LocalDate applyAt
+    ) {
+        trainerFacade.deleteAvailableTimes(user.getTrainerId(), applyAt);
+
+        return ApiResultResponse.of(HttpStatus.NO_CONTENT, true, null);
     }
 }
