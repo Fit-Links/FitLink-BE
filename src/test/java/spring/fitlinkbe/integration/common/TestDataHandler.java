@@ -17,6 +17,7 @@ import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationRepository;
 import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.domain.trainer.AvailableTime;
+import spring.fitlinkbe.domain.trainer.DayOff;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
@@ -333,4 +334,22 @@ public class TestDataHandler {
         trainerRepository.saveAvailableTime(availableTime);
     }
 
+    public void createDayOff(Trainer trainer, LocalDate dayOffDate) {
+        DayOff dayOff = DayOff.builder()
+                .trainer(trainer)
+                .dayOffDate(dayOffDate)
+                .build();
+
+        trainerRepository.saveDayOff(dayOff);
+    }
+
+    public void createReservation(Trainer trainer, LocalDate reservationDate) {
+        Reservation reservation = Reservation.builder()
+                .trainer(trainer)
+                .status(Reservation.Status.RESERVATION_APPROVED)
+                .reservationDates(List.of(LocalDateTime.of(reservationDate, LocalTime.of(10, 0))))
+                .build();
+
+        reservationRepository.saveReservation(reservation);
+    }
 }
