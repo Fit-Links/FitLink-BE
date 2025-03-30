@@ -69,8 +69,8 @@ jobs:
          REPO : ${{ secrets.ECR_REPOSITORY }}
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.GH_ACTIONS_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           envs: IMAGE_TAG,ACCOUNT_ID,REPO
           script: |
