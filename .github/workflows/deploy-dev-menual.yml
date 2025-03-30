@@ -68,7 +68,7 @@ jobs:
          ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
          REPO : ${{ secrets.ECR_REPOSITORY }}
         with:
-          host: ${{ secrets.SERVER_HOST }}
+          host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.GH_ACTIONS_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: IMAGE_TAG,ACCOUNT_ID,REPO
