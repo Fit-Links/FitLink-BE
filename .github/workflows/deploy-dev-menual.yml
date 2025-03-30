@@ -8,7 +8,7 @@ env:
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
   IMAGE_TAG: ${{ github.sha }}-${{ github.run_number }}
-  CONTAINER_NAME: spring-app
+  # CONTAINER_NAME: spring-app
 
 jobs:
   deploy:
@@ -17,8 +17,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-        with:
-          ref: dev
+        # with:
+        #   ref: dev
 
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v2
@@ -31,17 +31,17 @@ jobs:
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      - name: Generate application-secret.yml
-        run: |
-          cat <<EOF > ./src/main/resources/application-secret.yml
-          spring:
-            datasource:
-              hikari:
-                jdbc-url: ${{ secrets.DB_JDBC_URL }}
-                driver-class-name: com.mysql.cj.jdbc.Driver
-                username: ${{ secrets.DB_USERNAME }}
-                password: ${{ secrets.DB_PASSWORD }}
-          EOF
+      # - name: Generate application-secret.yml
+      #   run: |
+      #     cat <<EOF > ./src/main/resources/application-secret.yml
+      #     spring:
+      #       datasource:
+      #         hikari:
+      #           jdbc-url: ${{ secrets.DB_JDBC_URL }}
+      #           driver-class-name: com.mysql.cj.jdbc.Driver
+      #           username: ${{ secrets.DB_USERNAME }}
+      #           password: ${{ secrets.DB_PASSWORD }}
+      #     EOF
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -60,6 +60,16 @@ jobs:
           docker build --build-arg PROFILE=dev -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Deploy to EC2
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ec2-user
+        run: |
+          echo "$PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST "bash ~/deploy.sh dev $IMAGE_TAG"
 
       # - name: Create deploy script
       #   run: echo "${{ secrets.DEPLOY_SCRIPT }}" > deploy.sh
