@@ -1789,6 +1789,149 @@ class ReservationControllerTest {
         }
     }
 
+    @Nested
+    @DisplayName("예약 취소 승인 Controller TEST")
+    class CancelApproveReservationControllerTest {
+        @Test
+        @DisplayName("멤버의 예약 취소 승인 성공")
+        void cancelApproveReservation() throws Exception {
+            //given
+            ReservationRequestDto.CancelApproveReservation request = ReservationRequestDto.CancelApproveReservation
+                    .builder()
+                    .memberId(1L)
+                    .isApprove(true)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_CANCELLED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.cancelApproveReservation(any(ReservationCriteria.CancelApproveReservation.class),
+                    any(SecurityUser.class)))
+                    .thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/cancel-approve".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.msg").value("OK"))
+                    .andExpect(jsonPath("$.data.status").value(RESERVATION_CANCELLED.getName()));
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 취소 승인 실패 - 멤버 ID 부재")
+        void cancelApproveReservationNoMemberId() throws Exception {
+            //given
+            ReservationRequestDto.CancelApproveReservation request = ReservationRequestDto.CancelApproveReservation
+                    .builder()
+                    .isApprove(true)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_CANCELLED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.cancelApproveReservation(any(ReservationCriteria.CancelApproveReservation.class),
+                    any(SecurityUser.class)))
+                    .thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/cancel-approve".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("유저 ID는 필수값 입니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 취소 승인 실패 - 승인 여부 부재")
+        void cancelApproveReservationNoIsApprove() throws Exception {
+            //given
+            ReservationRequestDto.CancelApproveReservation request = ReservationRequestDto.CancelApproveReservation
+                    .builder()
+                    .memberId(1L)
+                    .build();
+
+            Long reservationId = 1L;
+
+            Reservation result = Reservation.builder()
+                    .reservationId(1L)
+                    .status(RESERVATION_CANCELLED)
+                    .build();
+
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            when(reservationFacade.cancelApproveReservation(any(ReservationCriteria.CancelApproveReservation.class),
+                    any(SecurityUser.class)))
+                    .thenReturn(result);
+
+            //when & then
+            mockMvc.perform(post("/v1/reservations/%s/cancel-approve".formatted(reservationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user))
+                            .with(csrf())
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.msg").value("승인 여부는 필수값 입니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+    }
+
     private String getAccessToken(PersonalDetail personalDetail) {
 
         String accessToken = "mockedAccessToken";

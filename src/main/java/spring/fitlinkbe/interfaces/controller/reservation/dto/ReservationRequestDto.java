@@ -79,6 +79,20 @@ public class ReservationRequestDto {
     }
 
     @Builder(toBuilder = true)
+    public record CancelApproveReservation(@NotNull(message = "유저 ID는 필수값 입니다.") Long memberId,
+                                           @NotNull(message = "승인 여부는 필수값 입니다.") Boolean isApprove) {
+        public ReservationCriteria.CancelApproveReservation toCriteria(Long reservationId) {
+
+            return ReservationCriteria.CancelApproveReservation.builder()
+                    .reservationId(reservationId)
+                    .memberId(memberId)
+                    .isApprove(isApprove)
+                    .build();
+
+        }
+    }
+
+    @Builder(toBuilder = true)
     public record ApproveReservation(@NotNull(message = "유저 ID는 필수값 입니다.") Long memberId,
                                      @NotNull(message = "요청 날짜는 비어있을 수 없습니다.")
                                      @FutureOrPresent(message = "현재 날짜보다 이전일 수 없습니다.")
@@ -89,19 +103,6 @@ public class ReservationRequestDto {
                     .reservationId(reservationId)
                     .memberId(memberId)
                     .reservationDate(reservationDate)
-                    .build();
-        }
-    }
-
-    @Builder(toBuilder = true)
-    public record CompleteSession(@NotNull(message = "유저 ID는 필수값 입니다.") Long memberId,
-                                  @NotNull(message = "참석 여부는 필수값 입니다.") Boolean isJoin) {
-
-        public ReservationCriteria.CompleteSession toCriteria(Long reservationId) {
-            return ReservationCriteria.CompleteSession.builder()
-                    .reservationId(reservationId)
-                    .memberId(memberId)
-                    .isJoin(isJoin)
                     .build();
         }
     }
@@ -148,4 +149,18 @@ public class ReservationRequestDto {
                     .build();
         }
     }
+
+    @Builder(toBuilder = true)
+    public record CompleteSession(@NotNull(message = "유저 ID는 필수값 입니다.") Long memberId,
+                                  @NotNull(message = "참석 여부는 필수값 입니다.") Boolean isJoin) {
+
+        public ReservationCriteria.CompleteSession toCriteria(Long reservationId) {
+            return ReservationCriteria.CompleteSession.builder()
+                    .reservationId(reservationId)
+                    .memberId(memberId)
+                    .isJoin(isJoin)
+                    .build();
+        }
+    }
+
 }

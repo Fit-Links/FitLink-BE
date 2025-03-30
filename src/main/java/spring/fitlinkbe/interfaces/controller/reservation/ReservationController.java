@@ -185,7 +185,29 @@ public class ReservationController {
 
     }
 
-    //TODO 예약 취소 승인 컨트롤러
+    /**
+     * 예약 취소 승인
+     *
+     * @param request cancelReason 정보
+     * @return ApiResultResponse 취소된 reservationId 정보를 반환한다.
+     */
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
+    @PostMapping("/{reservationId}/cancel-approve")
+    public ApiResultResponse<ReservationResponseDto.Success> cancelApproveReservation(@PathVariable("reservationId")
+                                                                                      @NotNull(message = "예약 ID는 필수값입니다.")
+                                                                                      Long reservationId,
+                                                                                      @RequestBody @Valid
+                                                                                      ReservationRequestDto.CancelApproveReservation
+                                                                                              request,
+                                                                                      @Login SecurityUser user
+
+    ) {
+
+        Reservation result = reservationFacade.cancelApproveReservation(request.toCriteria(reservationId), user);
+
+        return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
+
+    }
 
     /**
      * 예약 변경 요청
