@@ -71,10 +71,12 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.GH_ACTIONS_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
           envs: IMAGE_TAG,ACCOUNT_ID,REPO
           script: |
             chmod +x ~/deploy.sh
             ~/deploy.sh dev $IMAGE_TAG $ACCOUNT_ID $REPO
+          debug: true  # 디버깅 모드 활성화
 
       # - name: Deploy to EC2
       #   env:
