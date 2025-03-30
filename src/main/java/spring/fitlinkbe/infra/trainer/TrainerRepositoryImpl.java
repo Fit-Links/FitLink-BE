@@ -9,6 +9,7 @@ import spring.fitlinkbe.domain.trainer.DayOff;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,5 +90,23 @@ public class TrainerRepositoryImpl implements TrainerRepository {
     public Trainer getTrainerByCode(String trainerCode) {
         return trainerJpaRepository.findByTrainerCode(trainerCode)
                 .orElseThrow(() -> new CustomException(ErrorCode.TRAINER_IS_NOT_FOUND)).toDomain();
+    }
+
+    @Override
+    public boolean isDayOffExists(Long trainerId, List<LocalDate> dayOffDates) {
+        return dayOffJpaRepository.existsByTrainer_TrainerIdAndDayOffDateIn(trainerId, dayOffDates);
+    }
+
+    @Override
+    public List<DayOff> saveAllDayOffs(List<DayOff> dayOffs) {
+        List<DayOffEntity> entities = dayOffs.stream()
+                .map(DayOffEntity::from)
+                .toList();
+
+        List<DayOffEntity> savedEntities = dayOffJpaRepository.saveAll(entities);
+
+        return savedEntities.stream()
+                .map(DayOffEntity::toDomain)
+                .toList();
     }
 }

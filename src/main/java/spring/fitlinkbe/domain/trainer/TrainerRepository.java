@@ -1,5 +1,6 @@
 package spring.fitlinkbe.domain.trainer;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,4 +23,8 @@ public interface TrainerRepository {
     AvailableTime saveAvailableTime(AvailableTime availableTime);
 
     Trainer getTrainerByCode(String trainerCode);
+
+    boolean isDayOffExists(Long trainerId, List<LocalDate> dayOffDates);
+
+    List<DayOff> saveAllDayOffs(List<DayOff> dayOffs);
 }

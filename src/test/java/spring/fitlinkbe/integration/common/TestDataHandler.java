@@ -343,11 +343,17 @@ public class TestDataHandler {
         trainerRepository.saveDayOff(dayOff);
     }
 
-    public void createReservation(Trainer trainer, LocalDate reservationDate) {
+    public void createReservation(Member member, Trainer trainer, LocalDate reservationDate) {
         Reservation reservation = Reservation.builder()
                 .trainer(trainer)
+                .member(member)
                 .status(Reservation.Status.RESERVATION_APPROVED)
-                .reservationDates(List.of(LocalDateTime.of(reservationDate, LocalTime.of(10, 0))))
+                .reservationDates(
+                        List.of(
+                                LocalDateTime.of(reservationDate, LocalTime.of(10, 0)),
+                                LocalDateTime.of(reservationDate.plusDays(1), LocalTime.of(10, 13))
+                        )
+                )
                 .build();
 
         reservationRepository.saveReservation(reservation);

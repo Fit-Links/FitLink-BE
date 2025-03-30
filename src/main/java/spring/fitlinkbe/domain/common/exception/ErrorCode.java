@@ -11,7 +11,9 @@ public enum ErrorCode {
     TRAINER_IS_NOT_FOUND("트레이너 정보가 존재하지 않습니다.", 404),
     ALREADY_APPLIED_AVAILABLE_TIMES("이미 적용된 수업 시간이 있습니다.", 409),
     ALREADY_SCHEDULED_AVAILABLE_TIMES("이미 적용 대기중인 스케줄이 있습니다.", 409),
+
     AVAILABLE_TIMES_IS_NOT_FOUND("해당 날짜에 수업 시간이 없습니다.", 404),
+    DAY_OFF_DUPLICATED("해당 날짜에 이미 적용된 휴무일이 있습니다.", 409),
 
     // Member 관련 ErrorCode
     MEMBER_DETAIL_NOT_FOUND("멤버 상세 정보를 찾지 못하였습니다", 404),
@@ -28,6 +30,8 @@ public enum ErrorCode {
     // Reservation 관련 ErrorCode
 
     RESERVATION_IS_FAILED("예약에 실패하였습니다.", 400),
+
+    APPROVED_RESERVATION_EXISTS("승인된 예약이 존재합니다.", 409),
 
     RESERVATION_NOT_ALLOWED("예약을 할 수 있는 상태가 아닙니다.", 400),
     SET_DISABLE_DATE_FAILED("예약 불가 설정에 실패하였습니다.", 400),

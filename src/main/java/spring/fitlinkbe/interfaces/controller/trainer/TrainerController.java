@@ -6,16 +6,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.trainer.TrainerFacade;
 import spring.fitlinkbe.application.trainer.criteria.AvailableTimesResult;
+import spring.fitlinkbe.application.trainer.criteria.DayOffResult;
 import spring.fitlinkbe.application.trainer.criteria.TrainerInfoResult;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.trainer.dto.AvailableTimesDto;
+import spring.fitlinkbe.interfaces.controller.trainer.dto.DayOffDto;
 import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerInfoDto;
 import spring.fitlinkbe.support.aop.RoleCheck;
 import spring.fitlinkbe.support.argumentresolver.Login;
 import spring.fitlinkbe.support.security.SecurityUser;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -64,6 +67,7 @@ public class TrainerController {
         return ApiResultResponse.of(HttpStatus.CREATED, true, null);
     }
 
+
     @DeleteMapping("/me/available-times")
     public ApiResultResponse<Object> deleteAvailableTimes(
             @Login SecurityUser user,
@@ -73,4 +77,16 @@ public class TrainerController {
 
         return ApiResultResponse.of(HttpStatus.NO_CONTENT, true, null);
     }
+
+    @PostMapping("/me/day-off")
+    public ApiResultResponse<List<DayOffDto.Response>> saveDayOff(
+            @Login SecurityUser user,
+            @Valid @RequestBody List<LocalDate> request
+    ) {
+        List<DayOffResult.Response> result = trainerFacade.saveDayOff(user.getTrainerId(), request);
+
+        return ApiResultResponse.of(HttpStatus.CREATED, true,
+                result.stream().map(DayOffDto.Response::from).toList());
+    }
+
 }
