@@ -68,4 +68,8 @@ public class ReservationCommand {
     @Builder(toBuilder = true)
     public record ChangeApproveReservation(Long reservationId, Long memberId, boolean isApprove) {
     }
+
+    @Builder(toBuilder = true)
+    public record CancelApproveReservation(Long reservationId, Long memberId, boolean isApprove) {
+    }
 }

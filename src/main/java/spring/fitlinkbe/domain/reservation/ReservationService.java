@@ -147,9 +147,9 @@ public class ReservationService {
     @Transactional
     public List<Reservation> refuseReservations(ReservationCommand.RefuseReservations command, SecurityUser user) {
 
-        List<Reservation> getReservations = reservationRepository.getReservations(user.getUserRole(), user.getUserId());
+        List<Reservation> reservations = reservationRepository.getReservations(user.getUserRole(), user.getUserId());
 
-        List<Reservation> refuseReservations = getReservations.stream()
+        List<Reservation> refuseReservations = reservations.stream()
                 .filter(r -> r.getStatus() == RESERVATION_WAITING)
                 .filter(r -> r.isReservationDateSame(List.of(command.reservationDate())))
                 .toList();
@@ -198,7 +198,7 @@ public class ReservationService {
     public List<Reservation> cancelExistReservations(List<LocalDateTime> reservationDates,
                                                      String cancelReason, Long reservationId) {
         //1. 일치하는 날짜의 예약 조회
-        List<Reservation> getReservations = reservationRepository.getReservations()
+        List<Reservation> reservations = reservationRepository.getReservations()
                 .stream()
                 .filter(Reservation::isAlreadyCancel)
                 .filter(r -> !r.getReservationId().equals(reservationId))
@@ -206,11 +206,11 @@ public class ReservationService {
                 .toList();
 
         //2. 이미 존재하는 예약 취소 절차 진행
-        if (!getReservations.isEmpty()) {
-            getReservations.forEach(Reservation::checkPossibleReserveStatus);
-            cancelReservations(getReservations, cancelReason);
+        if (!reservations.isEmpty()) {
+            reservations.forEach(Reservation::checkPossibleReserveStatus);
+            cancelReservations(reservations, cancelReason);
 
-            return getReservations;
+            return reservations;
         }
 
         return List.of();
@@ -234,12 +234,31 @@ public class ReservationService {
     }
 
     @Transactional
+    public Reservation cancelApproveReservation(ReservationCommand.CancelApproveReservation command) {
+        Reservation reservation = getReservation(command.reservationId());
+        reservation.approveCancelReqeust(command.memberId(), command.isApprove());
+
+        Optional<Session> session = reservationRepository.getSession(command.reservationId());
+
+        //만약 세션이 있다면 세션도 취소
+        if (command.isApprove() && session.isPresent()) {
+            session.get().cancel("예약 취소 요청으로 인한 취소");
+            reservationRepository.saveSession(session.get());
+
+        }
+
+        return reservationRepository.saveReservation(reservation)
+                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED,
+                        "예약 취소 승인에 실패하였습니다."));
+    }
+
+    @Transactional
     public Reservation changeReqeustReservation(ReservationCommand.ChangeReqeustReservation command) {
 
-        Reservation getReservation = this.getReservation(command.reservationId());
-        getReservation.changeRequestDate(command.reservationDate(), command.changeRequestDate());
+        Reservation reservation = this.getReservation(command.reservationId());
+        reservation.changeRequestDate(command.reservationDate(), command.changeRequestDate());
 
-        return reservationRepository.saveReservation(getReservation)
+        return reservationRepository.saveReservation(reservation)
                 .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED,
                         "예약 요청 변경에 실패하였습니다."));
     }
@@ -247,43 +266,43 @@ public class ReservationService {
     @Transactional
     public Reservation changeApproveReservation(ReservationCommand.ChangeApproveReservation command) {
 
-        Reservation getReservation = this.getReservation(command.reservationId());
-        getReservation.approveChangeReqeust(command.memberId(), command.isApprove());
+        Reservation reservation = this.getReservation(command.reservationId());
+        reservation.approveChangeReqeust(command.memberId(), command.isApprove());
 
         //만약 만들어진 세션이 없다면 생성
-        Optional<Session> getSession = reservationRepository.getSession(getReservation.getReservationId());
+        Optional<Session> session = reservationRepository.getSession(reservation.getReservationId());
 
-        if (getSession.isEmpty()) {
-            Session session = Session.createSession(getReservation.getReservationId());
-            reservationRepository.saveSession(session);
+        if (session.isEmpty()) {
+            Session sessionDomain = Session.createSession(reservation.getReservationId());
+            reservationRepository.saveSession(sessionDomain);
         }
 
-        return reservationRepository.saveReservation(getReservation)
+        return reservationRepository.saveReservation(reservation)
                 .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED,
-                        "예약 요청 변경에 실패하였습니다."));
+                        "예약 변경 승인에 실패하였습니다."));
 
     }
 
     @Transactional
     public Session completeSession(ReservationCommand.CompleteSession command, SecurityUser user) {
 
-        Session getSession = reservationRepository.getSession(command.reservationId()).orElseThrow(() ->
+        Session session = reservationRepository.getSession(command.reservationId()).orElseThrow(() ->
                 new CustomException(ErrorCode.SESSION_NOT_FOUND,
                         "세션 정보를 찾지 못하였습니다. [reservationId: %d].".formatted(command.reservationId())));
         // 세션 완료 처리
-        getSession.complete(command.isJoin());
+        session.complete(command.isJoin());
 
-        Reservation getReservation = reservationRepository.getReservation(command.reservationId()).orElseThrow(() ->
+        Reservation reservation = reservationRepository.getReservation(command.reservationId()).orElseThrow(() ->
                 new CustomException(ErrorCode.RESERVATION_NOT_FOUND,
                         "예약 정보를 찾지 못하였습니다. [reservationId: %d].".formatted(command.reservationId())));
 
         // 예약 종료 처리
-        getReservation.complete(user.getTrainerId(), command.memberId());
+        reservation.complete(user.getTrainerId(), command.memberId());
 
-        reservationRepository.saveReservation(getReservation).orElseThrow(() ->
+        reservationRepository.saveReservation(reservation).orElseThrow(() ->
                 new CustomException(ErrorCode.RESERVATION_IS_FAILED));
 
-        return reservationRepository.saveSession(getSession).orElseThrow(() ->
+        return reservationRepository.saveSession(session).orElseThrow(() ->
                 new CustomException(ErrorCode.SESSION_CREATE_FAILED));
 
     }
@@ -298,13 +317,13 @@ public class ReservationService {
     }
 
     public Session getSession(Status status, Long reservationId) {
-        Optional<Session> getSession = reservationRepository.getSession(reservationId);
+        Optional<Session> session = reservationRepository.getSession(reservationId);
         // 예약 승낙 전에는 세션 정보는 없다.
         if (status == RESERVATION_WAITING) {
             return null;
         }
 
-        return getSession.orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND,
+        return session.orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND,
                 "세션 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(reservationId)));
     }
 
@@ -319,5 +338,6 @@ public class ReservationService {
         return reservationRepository.saveSession(session)
                 .orElseThrow(() -> new CustomException(SESSION_CREATE_FAILED));
     }
+
 
 }

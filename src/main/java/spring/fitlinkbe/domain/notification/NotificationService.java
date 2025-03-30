@@ -73,4 +73,9 @@ public class NotificationService {
                 reservationDate, changeDate, memberDetail);
         notificationRepository.save(notification);
     }
+
+    public void sendCancelApproveReservationNotification(Long reservationId, PersonalDetail memberDetail, boolean approve) {
+        Notification notification = cancelApproveReservationNotification(reservationId, approve, memberDetail);
+        notificationRepository.save(notification);
+    }
 }

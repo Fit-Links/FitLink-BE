@@ -32,6 +32,7 @@ public class Reservation {
     private String name;
     private List<LocalDateTime> reservationDates;
     private LocalDateTime changeDate;
+    private LocalDateTime confirmDate;
     private DayOfWeek dayOfWeek;
     private Status status;
     private String cancelReason;
@@ -48,6 +49,7 @@ public class Reservation {
         RESERVATION_APPROVED("예약 확정"), // 예약 확정
         RESERVATION_CANCELLED("예약 취소"), // 예약 취소
         RESERVATION_CANCEL_REQUEST("예약 취소 요청"), // 예약 취소
+        RESERVATION_CANCEL_REQUEST_REFUSED("예약 취소 거절"), //예약 변경 거절
         RESERVATION_REFUSED("예약 거절"),  // 예약 거부
         RESERVATION_CHANGE_REQUEST("예약 변경 요청"), //예약 변경 요청
         RESERVATION_CHANGE_REQUEST_REFUSED("예약 변경 거절"), //예약 변경 거절
@@ -64,7 +66,7 @@ public class Reservation {
                 .sessionInfo(sessionInfo)
                 .name(name)
                 .reservationDates(getAfterSevenDay())
-                .changeDate(changeDate)
+                .confirmDate(confirmDate)
                 .dayOfWeek(dayOfWeek)
                 .status(FIXED_RESERVATION)
                 .isDayOff(isDayOff)
@@ -107,10 +109,24 @@ public class Reservation {
         }
 
         if (this.status != RESERVATION_CHANGE_REQUEST) {
-            throw new CustomException(RESERVATION_APPROVE_NOT_ALLOWED, "예약 변경을 할 수 있는 상태가 아닙니다.");
+            throw new CustomException(RESERVATION_APPROVE_NOT_ALLOWED, "예약 변경 승인을 할 수 있는 상태가 아닙니다.");
         }
 
+        this.confirmDate = isApprove ? this.changeDate : null;
         this.status = isApprove ? RESERVATION_APPROVED : RESERVATION_CHANGE_REQUEST_REFUSED;
+    }
+
+
+    public void approveCancelReqeust(Long memberId, boolean isApprove) {
+        if (!Objects.equals(this.member.getMemberId(), memberId)) {
+            throw new CustomException(MEMBER_NOT_FOUND, "잘못된 멤버의 예약을 변경하려고 합니다.");
+        }
+
+        if (this.status != RESERVATION_CANCEL_REQUEST) {
+            throw new CustomException(RESERVATION_APPROVE_NOT_ALLOWED, "예약 취소 승인을 할 수 있는 상태가 아닙니다.");
+        }
+
+        this.status = isApprove ? RESERVATION_CANCELLED : RESERVATION_CANCEL_REQUEST_REFUSED;
     }
 
     public boolean isAlreadyCancel() {
@@ -137,14 +153,6 @@ public class Reservation {
                             .map(date -> date.truncatedTo(ChronoUnit.HOURS))
                             .anyMatch(truncatedRequestDate::isEqual);
                 });
-    }
-
-    public boolean isWaitingStatus() {
-        if (this.status != RESERVATION_WAITING) {
-            throw new CustomException(RESERVATION_IS_NOT_WAITING_STATUS, "예약 상태가 대기 상태가 아닙니다.");
-        }
-
-        return true;
     }
 
     public boolean isReservationInRange(LocalDateTime startDate, LocalDateTime endDate) {
@@ -191,6 +199,7 @@ public class Reservation {
             throw new CustomException(RESERVATION_CANCEL_NOT_ALLOWED);
         }
         this.cancelReason = message;
+        this.confirmDate = null;
         this.status = RESERVATION_CANCELLED;
     }
 
@@ -205,6 +214,8 @@ public class Reservation {
         if (this.reservationDates.size() > 1) {
             this.reservationDates = List.of(reservationDate);
         }
+
+        this.confirmDate = reservationDate;
 
         this.status = RESERVATION_APPROVED;
     }
@@ -221,6 +232,7 @@ public class Reservation {
             throw new CustomException(RESERVATION_IS_ALREADY_CANCEL);
         }
         this.cancelReason = message;
+        this.confirmDate = role == TRAINER ? null : this.confirmDate;
         this.status = role == TRAINER ? RESERVATION_CANCELLED : RESERVATION_CANCEL_REQUEST;
 
     }
