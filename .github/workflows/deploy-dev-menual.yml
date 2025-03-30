@@ -67,9 +67,20 @@ jobs:
           HOST: ${{ secrets.EC2_HOST }}
           USER: ec2-user
         run: |
-          echo "$PRIVATE_KEY" > private_key.pem
+          echo "$PRIVATE_KEY" | tr -d '\r' > private_key.pem
           chmod 600 private_key.pem
           ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST "bash ~/deploy.sh dev $IMAGE_TAG"
+
+    
+      # - name: Deploy to EC2
+      #   env:
+      #     PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     HOST: ${{ secrets.EC2_HOST }}
+      #     USER: ec2-user
+      #   run: |
+      #     echo "$PRIVATE_KEY" > private_key.pem
+      #     chmod 600 private_key.pem
+      #     ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST "bash ~/deploy.sh dev $IMAGE_TAG"
 
       # - name: Create deploy script
       #   run: echo "${{ secrets.DEPLOY_SCRIPT }}" > deploy.sh
