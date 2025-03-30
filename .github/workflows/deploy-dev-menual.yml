@@ -61,15 +61,25 @@ jobs:
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Deploy to EC2
-        env:
-          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          HOST: ${{ secrets.EC2_HOST }}
-          USER: ec2-user
-        run: |
-          echo "$PRIVATE_KEY" | tr -d '\r' > private_key.pem
-          chmod 600 private_key.pem
-          ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST "bash ~/deploy.sh dev $IMAGE_TAG"
+      - name: Run deploy script on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.GH_ACTIONS_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            chmod +x ~/deploy.sh
+            ~/deploy.sh dev ${{ IMAGE_TAG }}
+
+      # - name: Deploy to EC2
+      #   env:
+      #     PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     HOST: ${{ secrets.EC2_HOST }}
+      #     USER: ec2-user
+      #   run: |
+      #     echo "$PRIVATE_KEY" | tr -d '\r' > private_key.pem
+      #     chmod 600 private_key.pem
+      #     ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST "bash ~/deploy.sh dev $IMAGE_TAG"
 
     
       # - name: Deploy to EC2
@@ -96,17 +106,7 @@ jobs:
       #     source: "deploy.sh"
       #     target: "~/"
 
-      # - name: Run deploy script on server
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.SERVER_HOST }}
-      #     username: ${{ secrets.GH_ACTIONS_USERNAME }}
-      #     key: ${{ secrets.GH_ACTIONS_KEY }}
-      #     script: |
-      #       export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-      #       export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #       chmod +x ~/deploy.sh
-      #       ~/deploy.sh dev ${{ github.sha }}
+
             
       # - name: Run deploy script on server
       #   uses: appleboy/ssh-action@master
