@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
+import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
 
 public class ReservationCriteria {
@@ -37,6 +38,7 @@ public class ReservationCriteria {
                     .sessionInfo(sessionInfo)
                     .name(name)
                     .reservationDates(dates)
+                    .confirmDate(user.getUserRole() == TRAINER ? dates.get(0) : null)
                     .dayOfWeek(dates.get(0).getDayOfWeek())
                     .status(user.getUserRole() == MEMBER ? RESERVATION_WAITING
                             : RESERVATION_APPROVED)
@@ -55,6 +57,7 @@ public class ReservationCriteria {
                             .sessionInfo(sessionInfo)
                             .name(name)
                             .reservationDates(List.of(date))
+                            .confirmDate(date)
                             .dayOfWeek(date.getDayOfWeek())
                             .status(FIXED_RESERVATION)
                             .build())
@@ -122,6 +125,18 @@ public class ReservationCriteria {
 
         public ReservationCommand.ChangeApproveReservation toCommand() {
             return ReservationCommand.ChangeApproveReservation.builder()
+                    .reservationId(reservationId)
+                    .memberId(memberId)
+                    .isApprove(isApprove)
+                    .build();
+        }
+    }
+
+    @Builder(toBuilder = true)
+    public record CancelApproveReservation(Long reservationId, Long memberId, boolean isApprove) {
+
+        public ReservationCommand.CancelApproveReservation toCommand() {
+            return ReservationCommand.CancelApproveReservation.builder()
                     .reservationId(reservationId)
                     .memberId(memberId)
                     .isApprove(isApprove)
