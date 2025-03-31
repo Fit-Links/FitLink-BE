@@ -77,4 +77,15 @@ public class TrainerController {
         return ApiResultResponse.of(HttpStatus.CREATED, true,
                 result.stream().map(DayOffDto.Response::from).toList());
     }
+
+    @DeleteMapping("/me/day-off/{dayOffId}")
+    public ApiResultResponse<Object> deleteDayOff(
+            @Login SecurityUser user,
+            @PathVariable Long dayOffId
+    ) {
+        trainerFacade.deleteDayOff(user.getTrainerId(), dayOffId);
+
+        return ApiResultResponse.of(HttpStatus.NO_CONTENT, true, null);
+    }
+
 }

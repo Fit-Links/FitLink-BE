@@ -747,7 +747,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.success()).isFalse();
                 softly.assertThat(response.status()).isEqualTo(404);
                 softly.assertThat(response.data()).isNull();
-                softly.assertThat(response.msg()).isEqualTo("존재하지 않는 휴무일입니다.");
+                softly.assertThat(response.msg()).isEqualTo("휴무일이 존재하지 않습니다.");
             });
         }
     }
