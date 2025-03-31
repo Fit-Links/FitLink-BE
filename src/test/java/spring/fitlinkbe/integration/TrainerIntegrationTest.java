@@ -825,4 +825,74 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
         }
     }
 
+    @Nested
+    @DisplayName("휴무일 조회 테스트")
+    class GetDayOffTest {
+        private static final String URL = "/v1/trainers/me/day-off";
+
+        @Test
+        @DisplayName("휴무일 조회 성공 - 휴무일이 존재할 때")
+        void getDayOffSuccess() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+
+            // 휴무일 추가
+            testDataHandler.createDayOff(trainer, LocalDate.now().minusDays(2));
+            testDataHandler.createDayOff(trainer, LocalDate.now().plusDays(1));
+            testDataHandler.createDayOff(trainer, LocalDate.now().plusDays(2));
+            testDataHandler.createDayOff(trainer, LocalDate.now().plusDays(3));
+
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 휴무일 조회 요청을 한다면
+            ExtractableResponse<Response> result = get(URL, token);
+
+            // then
+            // 오늘 이후의 휴무일만 조회된다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<List<DayOffDto.Response>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(200);
+                softly.assertThat(response.data()).isNotNull();
+
+                List<DayOffDto.Response> dayOffs = response.data();
+                softly.assertThat(dayOffs.size()).isEqualTo(3);
+            });
+        }
+
+        @Test
+        @DisplayName("휴무일 조회 성공 - 휴무일이 존재하지 않을 때")
+        void getDayOffSuccessWithoutDayOff() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // ���레이너가 휴무일 조회 요청을 한다면
+            ExtractableResponse<Response> result = get(URL, token);
+
+            // then
+            // 휴무일 조회가 성공한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<List<DayOffDto.Response>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(200);
+                softly.assertThat(response.data()).isEmpty();
+            });
+        }
+    }
 }

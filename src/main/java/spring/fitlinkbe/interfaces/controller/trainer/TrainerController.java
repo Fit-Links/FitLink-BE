@@ -89,8 +89,6 @@ public class TrainerController {
                 result.stream().map(DayOffDto.Response::from).toList());
     }
 
-<<<<<<< HEAD
-=======
     @DeleteMapping("/me/day-off/{dayOffId}")
     public ApiResultResponse<Object> deleteDayOff(
             @Login SecurityUser user,
@@ -101,5 +99,4 @@ public class TrainerController {
         return ApiResultResponse.of(HttpStatus.NO_CONTENT, true, null);
     }
 
->>>>>>> 2168115 (:sparkles: "휴무일 삭제 api 작업")
 }
