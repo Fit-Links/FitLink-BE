@@ -99,4 +99,11 @@ public class TrainerController {
         return ApiResultResponse.of(HttpStatus.NO_CONTENT, true, null);
     }
 
+    @GetMapping("/me/day-off")
+    public ApiResultResponse<List<DayOffDto.Response>> getDayOff(@Login SecurityUser user) {
+        List<DayOffResult.Response> result = trainerFacade.getDayOff(user.getTrainerId());
+
+        return ApiResultResponse.of(HttpStatus.OK, true,
+                result.stream().map(DayOffDto.Response::from).toList());
+    }
 }

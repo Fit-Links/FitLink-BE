@@ -108,4 +108,13 @@ public class TrainerService {
     public void deleteDayOff(DayOff dayOff) {
         trainerRepository.deleteDayOff(dayOff);
     }
+
+    /**
+     * 트레이너의 휴무일을 조회한다.
+     *
+     * @return 휴무일 목록 (현재 날짜 이후의 휴무일만)
+     */
+    public List<DayOff> findAllDayOff(Long trainerId) {
+        return trainerRepository.findScheduledDayOff(trainerId);
+    }
 }

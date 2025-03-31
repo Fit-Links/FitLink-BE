@@ -128,8 +128,17 @@ public class TrainerFacade {
         return trainerService.saveAllDayOffs(dayOffs);
     }
 
+
     public void deleteDayOff(Long trainerId, Long dayOffId) {
         DayOff dayOff = trainerService.getDayOff(trainerId, dayOffId);
         trainerService.deleteDayOff(dayOff);
+    }
+
+    public List<DayOffResult.Response> getDayOff(Long trainerId) {
+        List<DayOff> dayOffs = trainerService.findAllDayOff(trainerId);
+
+        return dayOffs.stream()
+                .map(DayOffResult.Response::from)
+                .toList();
     }
 }

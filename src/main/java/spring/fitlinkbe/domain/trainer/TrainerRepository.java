@@ -31,4 +31,6 @@ public interface TrainerRepository {
     Optional<DayOff> findDayOff(Long trainerId, Long dayOffId);
 
     void deleteDayOff(DayOff dayOff);
+
+    List<DayOff> findScheduledDayOff(Long trainerId);
 }

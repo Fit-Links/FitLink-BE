@@ -120,4 +120,12 @@ public class TrainerRepositoryImpl implements TrainerRepository {
     public void deleteDayOff(DayOff dayOff) {
         dayOffJpaRepository.deleteById(dayOff.getDayOffId());
     }
+
+    @Override
+    public List<DayOff> findScheduledDayOff(Long trainerId) {
+        return dayOffJpaRepository.findScheduledDayOff(trainerId)
+                .stream()
+                .map(DayOffEntity::toDomain)
+                .toList();
+    }
 }
