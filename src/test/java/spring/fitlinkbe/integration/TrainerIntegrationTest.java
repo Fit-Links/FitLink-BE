@@ -11,9 +11,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
-import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.AvailableTimeRepository;
+import spring.fitlinkbe.domain.trainer.DayOff;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
@@ -684,6 +684,74 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
         }
     }
 
+    @Nested
+    @DisplayName("트레이너 휴무일 삭제 테스트")
+    class DeleteTrainerDayOffTest {
+        private static final String URL = "/v1/trainers/me/day-off/{dayOffId}";
+
+        @Test
+        @DisplayName("트레이너 휴무일 삭제 성공")
+        void deleteTrainerDayOffSuccess() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+
+            // 휴무일 추가
+            LocalDate dayOff = LocalDate.of(2021, 10, 1);
+            DayOff dayoff = testDataHandler.createDayOff(trainer, dayOff);
+
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 휴무일 삭제 요청을 한다면
+            String url = URL.replace("{dayOffId}", dayoff.getDayOffId().toString());
+            ExtractableResponse<Response> result = delete(url, token);
+
+            // then
+            // 휴무일 삭제가 성공한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<List<DayOffDto.Response>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(204);
+                softly.assertThat(response.data()).isNull();
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너 휴무일 삭제 실패 - 존재하지 않는 휴무일 삭제 요청")
+        void deleteTrainerDayOffFailWithNotExistDayOff() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 휴무일 삭제 요청을 한다면
+            String url = URL.replace("{dayOffId}", "0");
+            ExtractableResponse<Response> result = delete(url, token);
+
+            // then
+            // 휴무일 삭제가 실패한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<List<DayOffDto.Response>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(404);
+                softly.assertThat(response.data()).isNull();
+                softly.assertThat(response.msg()).isEqualTo("휴무일이 존재하지 않습니다.");
+            });
+        }
+    }
 
     @Nested
     @DisplayName("트레이너 수업 가능 시간 삭제 테스트")

@@ -334,13 +334,13 @@ public class TestDataHandler {
         trainerRepository.saveAvailableTime(availableTime);
     }
 
-    public void createDayOff(Trainer trainer, LocalDate dayOffDate) {
+    public DayOff createDayOff(Trainer trainer, LocalDate dayOffDate) {
         DayOff dayOff = DayOff.builder()
                 .trainer(trainer)
                 .dayOffDate(dayOffDate)
                 .build();
 
-        trainerRepository.saveDayOff(dayOff);
+        return trainerRepository.saveDayOff(dayOff).get();
     }
 
     public void createReservation(Member member, Trainer trainer, LocalDate reservationDate) {
