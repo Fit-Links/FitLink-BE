@@ -98,4 +98,14 @@ public class TrainerService {
     public List<DayOff> saveAllDayOffs(List<DayOff> dayOffs) {
         return trainerRepository.saveAllDayOffs(dayOffs);
     }
+
+    public DayOff getDayOff(Long trainerId, Long dayOffId) {
+        return trainerRepository.findDayOff(trainerId, dayOffId)
+                .orElseThrow(() -> new CustomException(ErrorCode.DAY_OFF_NOT_FOUND));
+    }
+
+    @Transactional
+    public void deleteDayOff(DayOff dayOff) {
+        trainerRepository.deleteDayOff(dayOff);
+    }
 }

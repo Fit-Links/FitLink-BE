@@ -27,4 +27,8 @@ public interface TrainerRepository {
     boolean isDayOffExists(Long trainerId, List<LocalDate> dayOffDates);
 
     List<DayOff> saveAllDayOffs(List<DayOff> dayOffs);
+
+    Optional<DayOff> findDayOff(Long trainerId, Long dayOffId);
+
+    void deleteDayOff(DayOff dayOff);
 }

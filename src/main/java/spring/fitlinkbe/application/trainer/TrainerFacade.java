@@ -128,4 +128,8 @@ public class TrainerFacade {
         return trainerService.saveAllDayOffs(dayOffs);
     }
 
+    public void deleteDayOff(Long trainerId, Long dayOffId) {
+        DayOff dayOff = trainerService.getDayOff(trainerId, dayOffId);
+        trainerService.deleteDayOff(dayOff);
+    }
 }

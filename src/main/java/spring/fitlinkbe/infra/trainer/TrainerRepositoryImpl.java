@@ -109,4 +109,15 @@ public class TrainerRepositoryImpl implements TrainerRepository {
                 .map(DayOffEntity::toDomain)
                 .toList();
     }
+
+    @Override
+    public Optional<DayOff> findDayOff(Long trainerId, Long dayOffId) {
+        return dayOffJpaRepository.findByTrainer_TrainerIdAndDayOffId(trainerId, dayOffId)
+                .map(DayOffEntity::toDomain);
+    }
+
+    @Override
+    public void deleteDayOff(DayOff dayOff) {
+        dayOffJpaRepository.deleteById(dayOff.getDayOffId());
+    }
 }
