@@ -10,8 +10,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
+import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.member.Member;
+<<<<<<< HEAD
+=======
+import spring.fitlinkbe.domain.notification.Notification;
+import spring.fitlinkbe.domain.notification.NotificationRepository;
+>>>>>>> 1061c56 (:sparkles: "트레이너 회원 연결 해제 api 테스트 추가")
 import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.AvailableTimeRepository;
 import spring.fitlinkbe.domain.trainer.DayOff;
@@ -20,14 +27,22 @@ import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.trainer.dto.AvailableTimesDto;
+<<<<<<< HEAD
 import spring.fitlinkbe.interfaces.controller.trainer.dto.DayOffDto;
+=======
+import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerDto;
+>>>>>>> 1061c56 (:sparkles: "트레이너 회원 연결 해제 api 테스트 추가")
 import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerInfoDto;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+<<<<<<< HEAD
 import java.util.Map;
+=======
+import java.util.Optional;
+>>>>>>> 1061c56 (:sparkles: "트레이너 회원 연결 해제 api 테스트 추가")
 import java.util.stream.Stream;
 
 public class TrainerIntegrationTest extends BaseIntegrationTest {
@@ -37,6 +52,12 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     AvailableTimeRepository availableTimeRepository;
+
+    @Autowired
+    ConnectingInfoRepository connectingInfoRepository;
+
+    @Autowired
+    NotificationRepository notificationRepository;
 
     @Nested
     @DisplayName("트레이너 내 정보 조회 테스트")
@@ -678,6 +699,79 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.status()).isEqualTo(404);
                 softly.assertThat(response.data()).isNull();
                 softly.assertThat(response.msg()).isEqualTo("해당 날짜에 수업 시간이 없습니다.");
+            });
+        }
+    }
+
+    @Nested
+    @DisplayName("트레이너 회원 연결 해제 태스트")
+    class DisconnectMemberTest {
+        private static final String URL = "/v1/trainers/disconnect";
+
+        @Test
+        @DisplayName("트레이너 회원 연결 해제 성공")
+        void disconnectMemberSuccess() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+            Member member = testDataHandler.createMember();
+            PersonalDetail personalDetail = testDataHandler.getMemberPersonalDetail(member.getMemberId());
+            testDataHandler.connectMemberAndTrainer(member, trainer);
+
+            // when
+            // 트레이너가 회원 연결 해제 요청을 한다면
+            TrainerDto.MemberDisconnectRequest disconnectRequest = new TrainerDto.MemberDisconnectRequest(member.getMemberId());
+            ExtractableResponse<Response> result = post(URL, writeValueAsString(disconnectRequest), token);
+
+            // then
+            // 회원 연결 해제가 성공한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(204);
+                softly.assertThat(response.data()).isNull();
+
+                Optional<ConnectingInfo> connectingInfo = connectingInfoRepository.findConnectingInfo(member.getMemberId(), trainer.getTrainerId());
+                softly.assertThat(connectingInfo).isEmpty();
+
+                Notification notification = notificationRepository.getNotification(personalDetail.getPersonalDetailId(), Notification.NotificationType.DISCONNECT_TRAINER);
+                softly.assertThat(notification).isNotNull();
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너 회원 연결 해제 실패 - 연결 정보가 없는 회원인 경우")
+        void disconnectMemberFailWithNotConnectedMember() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            Long memberId = testDataHandler.createMember().getMemberId();
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // when
+            // 트레이너가 회원 연결 해제 요청을 한다면
+            TrainerDto.MemberDisconnectRequest disconnectRequest = new TrainerDto.MemberDisconnectRequest(memberId);
+            ExtractableResponse<Response> result = post(URL, writeValueAsString(disconnectRequest), token);
+
+            // then
+            // 회원 연결 해제가 실패한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(404);
+                softly.assertThat(response.data()).isNull();
+                softly.assertThat(response.msg()).isEqualTo("연결 정보가 없습니다.");
             });
         }
     }
