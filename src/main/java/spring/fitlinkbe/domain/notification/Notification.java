@@ -56,6 +56,20 @@ public class Notification {
                 .build();
     }
 
+    public static Notification trainerDisconnectNotification(PersonalDetail memberDetail) {
+        return Notification.builder()
+                .refId(null)
+                .refType(ReferenceType.CONNECTING)
+                .notificationType(NotificationType.DISCONNECT_TRAINER)
+                .personalDetail(memberDetail)
+                .name(NotificationType.DISCONNECT_TRAINER.getName())
+                .content(NotificationType.DISCONNECT_TRAINER.description)
+                .isSent(true)
+                .isProcessed(false)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
     public static Notification cancelReservationNotification(Long reservationId, PersonalDetail memberDetail,
                                                              Reason reason) {
 

@@ -14,11 +14,8 @@ import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.member.Member;
-<<<<<<< HEAD
-=======
 import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.domain.notification.NotificationRepository;
->>>>>>> 1061c56 (:sparkles: "트레이너 회원 연결 해제 api 테스트 추가")
 import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.AvailableTimeRepository;
 import spring.fitlinkbe.domain.trainer.DayOff;
@@ -27,22 +24,15 @@ import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.trainer.dto.AvailableTimesDto;
-<<<<<<< HEAD
 import spring.fitlinkbe.interfaces.controller.trainer.dto.DayOffDto;
-=======
 import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerDto;
->>>>>>> 1061c56 (:sparkles: "트레이너 회원 연결 해제 api 테스트 추가")
 import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerInfoDto;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-<<<<<<< HEAD
 import java.util.Map;
-=======
-import java.util.Optional;
->>>>>>> 1061c56 (:sparkles: "트레이너 회원 연결 해제 api 테스트 추가")
 import java.util.stream.Stream;
 
 public class TrainerIntegrationTest extends BaseIntegrationTest {
@@ -737,8 +727,8 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.status()).isEqualTo(204);
                 softly.assertThat(response.data()).isNull();
 
-                Optional<ConnectingInfo> connectingInfo = connectingInfoRepository.findConnectingInfo(member.getMemberId(), trainer.getTrainerId());
-                softly.assertThat(connectingInfo).isEmpty();
+                ConnectingInfo connectingInfo = connectingInfoRepository.findConnectingInfo(member.getMemberId(), trainer.getTrainerId()).get();
+                softly.assertThat(connectingInfo.getStatus()).isEqualTo(ConnectingInfo.ConnectingStatus.DISCONNECTED);
 
                 Notification notification = notificationRepository.getNotification(personalDetail.getPersonalDetailId(), Notification.NotificationType.DISCONNECT_TRAINER);
                 softly.assertThat(notification).isNotNull();

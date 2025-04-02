@@ -12,6 +12,7 @@ import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.trainer.dto.AvailableTimesDto;
 import spring.fitlinkbe.interfaces.controller.trainer.dto.DayOffDto;
+import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerDto;
 import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerInfoDto;
 import spring.fitlinkbe.support.aop.RoleCheck;
 import spring.fitlinkbe.support.argumentresolver.Login;
@@ -105,5 +106,15 @@ public class TrainerController {
 
         return ApiResultResponse.of(HttpStatus.OK, true,
                 result.stream().map(DayOffDto.Response::from).toList());
+    }
+
+    @PostMapping("/disconnect")
+    public ApiResultResponse<Object> disconnectTrainer(
+            @Login SecurityUser user,
+            @RequestBody @Valid TrainerDto.MemberDisconnectRequest request
+    ) {
+        trainerFacade.disconnectTrainer(user.getTrainerId(), request.memberId());
+
+        return ApiResultResponse.of(HttpStatus.NO_CONTENT, true, null);
     }
 }

@@ -9,7 +9,10 @@ import spring.fitlinkbe.application.trainer.criteria.DayOffResult;
 import spring.fitlinkbe.application.trainer.criteria.TrainerInfoResult;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
+import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.member.MemberService;
+import spring.fitlinkbe.domain.notification.NotificationService;
 import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.DayOff;
@@ -24,6 +27,9 @@ import java.util.List;
 public class TrainerFacade {
     private final TrainerService trainerService;
     private final ReservationService reservationService;
+    private final MemberService memberService;
+    private final NotificationService notificationService;
+
 
     public TrainerInfoResult.Response getTrainerInfo(Long trainerId) {
         Trainer trainer = trainerService.getTrainerInfo(trainerId);
@@ -141,5 +147,15 @@ public class TrainerFacade {
         return dayOffs.stream()
                 .map(DayOffResult.Response::from)
                 .toList();
+    }
+
+    @Transactional
+    public void disconnectTrainer(Long trainerId, Long memberId) {
+        PersonalDetail personalDetail = memberService.getMemberDetail(memberId);
+        ConnectingInfo connectingInfo = trainerService.getConnectingInfo(trainerId, memberId);
+        connectingInfo.disconnect();
+
+        trainerService.saveConnectingInfo(connectingInfo);
+        notificationService.sendTrainerDisconnectNotification(personalDetail);
     }
 }
