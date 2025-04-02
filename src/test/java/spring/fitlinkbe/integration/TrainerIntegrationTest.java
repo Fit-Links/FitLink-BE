@@ -11,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.AvailableTimeRepository;
 import spring.fitlinkbe.domain.trainer.DayOff;
@@ -722,6 +723,43 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
+        @DisplayName("트레이너 휴무일 추가 성공 - 다른 날짜에 확정된 예약이 있을 때")
+        void addTrainerDayOffSuccessWithConfirmedReservation() throws Exception {
+            // given
+            // 트레이너, 회원 정보
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            Member member = testDataHandler.createMember("member1");
+            testDataHandler.connectMemberAndTrainer(member, trainer);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // 해당 날짜에 확정된 예약이 있을 때
+            LocalDate dayOff = LocalDate.of(2021, 10, 1);
+            testDataHandler.createConfirmReservation(member, trainer, dayOff.plusDays(1).atTime(10, 0));
+
+            // when
+            // 트레이너가 휴무일 추가 요청을 한다면
+            List<LocalDate> dayOffs = List.of(dayOff);
+            ExtractableResponse<Response> result = post(URL, writeValueAsString(dayOffs), token);
+
+            // then
+            // 휴무일 추가가 성공한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<List<DayOffDto.Response>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(201);
+                softly.assertThat(response.data()).isNotNull();
+
+                List<DayOffDto.Response> dayOffsResponse = response.data();
+                softly.assertThat(dayOffsResponse.size()).isEqualTo(1);
+            });
+        }
+
+        @Test
         @DisplayName("트레이너 휴무일 추가 실패 - 이미 같은 날짜에 추가된 휴무일이 있을 때")
         void addTrainerDayOffFailWithAlreadyAdded() throws Exception {
             // given
@@ -752,6 +790,41 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.status()).isEqualTo(409);
                 softly.assertThat(response.data()).isNull();
                 softly.assertThat(response.msg()).isEqualTo("해당 날짜에 이미 적용된 휴무일이 있습니다.");
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너 휴무일 추가 실패 - 해당 날짜에 확정된 예약이 있을 때")
+        void addTrainerDayOffFailWithConfirmedReservation() throws Exception {
+            // given
+            // 트레이너, 회원 정보
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            Member member = testDataHandler.createMember("member1");
+            testDataHandler.connectMemberAndTrainer(member, trainer);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            // 해당 날짜에 확정된 예약이 있을 때
+            LocalDate dayOff = LocalDate.of(2021, 10, 1);
+            testDataHandler.createConfirmReservation(member, trainer, dayOff.atTime(10, 0));
+
+            // when
+            // 트레이너가 휴무일 추가 요청을 한다면
+            List<LocalDate> dayOffs = List.of(dayOff);
+            ExtractableResponse<Response> result = post(URL, writeValueAsString(dayOffs), token);
+
+            // then
+            // 휴무일 추가가 실패한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<List<DayOffDto.Response>> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(409);
+                softly.assertThat(response.data()).isNull();
+                softly.assertThat(response.msg()).isEqualTo("해당 날짜에 확정된 예약이 존재합니다.");
             });
         }
     }

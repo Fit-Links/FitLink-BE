@@ -108,6 +108,7 @@ public class TrainerFacade {
         Trainer trainer = trainerService.getTrainerInfo(trainerId);
 
         trainerService.checkDayOffDuplicatedOrThrow(trainerId, dayOffDates);
+        reservationService.checkConfirmedReservationExistOrThrow(trainerId, dayOffDates);
 
         List<DayOff> dayOffs = createAndSaveDayOff(trainer, dayOffDates);
 

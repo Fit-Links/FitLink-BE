@@ -15,6 +15,7 @@ public enum ErrorCode {
     AVAILABLE_TIMES_IS_NOT_FOUND("해당 날짜에 수업 시간이 없습니다.", 404),
     DAY_OFF_DUPLICATED("해당 날짜에 이미 적용된 휴무일이 있습니다.", 409),
     DAY_OFF_NOT_FOUND("휴무일이 존재하지 않습니다.", 404),
+    CONFIRMED_RESERVATION_EXISTS("해당 날짜에 확정된 예약이 존재합니다.", 409),
 
     // Member 관련 ErrorCode
     MEMBER_DETAIL_NOT_FOUND("멤버 상세 정보를 찾지 못하였습니다", 404),

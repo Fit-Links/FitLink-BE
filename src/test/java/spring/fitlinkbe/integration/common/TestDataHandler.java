@@ -358,4 +358,15 @@ public class TestDataHandler {
 
         reservationRepository.saveReservation(reservation);
     }
+
+    public void createConfirmReservation(Member member, Trainer trainer, LocalDateTime confirmDate) {
+        Reservation reservation = Reservation.builder()
+                .trainer(trainer)
+                .member(member)
+                .status(Reservation.Status.RESERVATION_APPROVED)
+                .confirmDate(confirmDate)
+                .build();
+
+        reservationRepository.saveReservation(reservation);
+    }
 }
