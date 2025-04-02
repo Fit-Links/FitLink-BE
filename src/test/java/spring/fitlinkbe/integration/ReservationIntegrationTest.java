@@ -40,6 +40,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_NOT_ALLOWED;
 import static spring.fitlinkbe.domain.notification.Notification.NotificationType.*;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_CANCEL_REQUEST;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_CANCEL_REQUEST_REFUSED;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_CHANGE_REQUEST;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
 import static spring.fitlinkbe.domain.reservation.Session.Status.SESSION_COMPLETED;
@@ -3012,7 +3013,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
                 softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
                 softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
-                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("예약 변경을 할 수 있는 상태가 아닙니다.");
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("예약 변경 승인을 할 수 있는 상태가 아닙니다.");
                 softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
             });
         }
@@ -3049,6 +3050,236 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             // when
             ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/change-approve".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(404);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("잘못된 멤버의 예약을 변경하려고 합니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+        }
+
+    }
+
+    @Nested
+    @DisplayName("예약 취소 승인 Integration TEST")
+    class CancelApproveReservationIntegrationTest {
+        @Test
+        @DisplayName("멤버의 예약 취소 승인 성공 - 예약 취소 요청 승인인 경우")
+        void cancelApproveReservationWithApprove() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CancelApproveReservation request = ReservationRequestDto.CancelApproveReservation
+                    .builder()
+                    .memberId(1L)
+                    .isApprove(true)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(LocalDateTime.now()))
+                    .status(RESERVATION_CANCEL_REQUEST)
+                    .createdAt(LocalDateTime.now().plusSeconds(3))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_WAITING)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel-approve".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                //예약 취소 승인이 잘 되었는지 확인
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+
+                ReservationResponseDto.Success content = result.body().jsonPath()
+                        .getObject("data", ReservationResponseDto.Success.class);
+
+                softly.assertThat(content.reservationId()).isEqualTo(1L);
+                softly.assertThat(content.status()).isEqualTo(RESERVATION_CANCELLED.getName());
+
+                //세션이 잘 취소됐는지 확인
+                Session cancelledSession = reservationRepository.getSession(content.reservationId()).orElseThrow();
+                softly.assertThat(cancelledSession.getStatus()).isEqualTo(SESSION_CANCELLED);
+
+
+                // 알람이 잘 생성됐는지 확인
+                Notification notification = notificationRepository.getNotification(content.reservationId(),
+                        Notification.ReferenceType.RESERVATION);
+                softly.assertThat(notification).isNotNull();
+                softly.assertThat(notification.getNotificationType()).isEqualTo(
+                        Notification.NotificationType.RESERVATION_CANCEL_REQUEST_APPROVED);
+            });
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 취소 승인 성공 - 예약 취소 요청 거절인 경우")
+        void cancelApproveReservationWithRefuse() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CancelApproveReservation request = ReservationRequestDto.CancelApproveReservation
+                    .builder()
+                    .memberId(1L)
+                    .isApprove(false)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(LocalDateTime.now()))
+                    .status(RESERVATION_CANCEL_REQUEST)
+                    .createdAt(LocalDateTime.now().plusSeconds(3))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_WAITING)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel-approve".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                //예약 취소 승인이 잘 되었는지 확인
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+
+                ReservationResponseDto.Success content = result.body().jsonPath()
+                        .getObject("data", ReservationResponseDto.Success.class);
+
+                softly.assertThat(content.reservationId()).isEqualTo(1L);
+                softly.assertThat(content.status()).isEqualTo(RESERVATION_CANCEL_REQUEST_REFUSED.getName());
+
+                // 알람이 잘 생성됐는지 확인
+                Notification notification = notificationRepository.getNotification(content.reservationId(),
+                        Notification.ReferenceType.RESERVATION);
+                softly.assertThat(notification).isNotNull();
+                softly.assertThat(notification.getNotificationType()).isEqualTo(
+                        Notification.NotificationType.RESERVATION_CANCEL_REQUEST_REFUSED);
+            });
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 취소 승인 실패 - 예약 취소 요청 상태가 아님")
+        void cancelApproveReservationNotChangeRequestStatus() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CancelApproveReservation request = ReservationRequestDto.CancelApproveReservation
+                    .builder()
+                    .memberId(1L)
+                    .isApprove(true)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(LocalDateTime.now()))
+                    .status(RESERVATION_CHANGE_REQUEST)
+                    .createdAt(LocalDateTime.now().plusSeconds(3))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_WAITING)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel-approve".formatted(1),
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("예약 취소 승인을 할 수 있는 상태가 아닙니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+        }
+
+        @Test
+        @DisplayName("멤버의 예약 취소 승인 실패 - 다른 멤버의 예약 변경 수정 시도")
+        void cancelApproveReservationTryOtherMemberId() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            ReservationRequestDto.CancelApproveReservation request = ReservationRequestDto.CancelApproveReservation
+                    .builder()
+                    .memberId(2L)
+                    .isApprove(true)
+                    .build();
+
+            // 예약 생성
+            Reservation reservation = Reservation.builder()
+                    .trainer(Trainer.builder().trainerId(1L).build())
+                    .member(Member.builder().memberId(1L).build())
+                    .reservationDates(List.of(LocalDateTime.now()))
+                    .status(RESERVATION_CANCEL_REQUEST)
+                    .createdAt(LocalDateTime.now().plusSeconds(3))
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            // 세션 생성
+            Session session = Session.builder()
+                    .reservation(savedReservation)
+                    .status(SESSION_WAITING)
+                    .build();
+
+            reservationRepository.saveSession(session);
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel-approve".formatted(1),
                     request,
                     accessToken);
 

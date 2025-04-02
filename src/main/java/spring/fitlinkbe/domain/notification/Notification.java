@@ -206,6 +206,28 @@ public class Notification {
                 .build();
     }
 
+    public static Notification cancelApproveReservationNotification(Long reservationId, boolean isApprove,
+                                                                    PersonalDetail memberDetail) {
+
+        String content = "%s 님의 예약 취소 요청이 %s되었습니다."
+                .formatted(memberDetail.getName(), isApprove ? "승인" : "거절");
+
+
+        return Notification.builder()
+                .refId(reservationId)
+                .refType(ReferenceType.RESERVATION)
+                .notificationType(isApprove ? NotificationType.RESERVATION_CANCEL_REQUEST_APPROVED :
+                        NotificationType.RESERVATION_CANCEL_REQUEST_REFUSED)
+                .personalDetail(memberDetail)
+                .name(isApprove ? NotificationType.RESERVATION_CHANGE_REQUEST.name :
+                        NotificationType.RESERVATION_CANCEL_REQUEST_REFUSED.name)
+                .content(content)
+                .isSent(true)
+                .isProcessed(false)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
     @RequiredArgsConstructor
     @Getter
     public enum ReferenceType {
@@ -235,8 +257,8 @@ public class Notification {
         RESERVATION_REFUSE("예약 거절", "예약이 거절되었습니다."),
         SESSION_DEDUCTED("세션 차감", "세션이 1회 차감되었습니다"),
         SESSION_REMINDER("금일 세션 진행", "오늘 세션이 진행됩니다."),
-        SESSION_CANCEL_REQUEST_APPROVED("세션 취소 요청 승인", "세션 취소 요청이 승인 되었습니다."),
-        SESSION_CANCEL_REQUEST_REFUSED("세션 취소 요청 거절", "세션 취소 요청이 거절 되었습니다."),
+        RESERVATION_CANCEL_REQUEST_APPROVED("예약 취소 요청 승인", "예약 취소 요청이 승인 되었습니다."),
+        RESERVATION_CANCEL_REQUEST_REFUSED("예약 취소 요청 거절", "예약 취소 요청이 거절 되었습니다."),
         SESSION_REMAIN_5("세션 5회 남음", "세션이 5회 남았습니다."),
         SESSION_EDITED("세션 직접 수정", "트레이너가 세션을 수정하였습니다");
 

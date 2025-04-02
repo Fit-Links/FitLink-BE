@@ -163,8 +163,24 @@ public class ReservationFacade {
         return reservation;
     }
 
+    @Transactional
+    public Reservation cancelApproveReservation(ReservationCriteria.CancelApproveReservation criteria,
+                                                SecurityUser user) {
+        // 예약 취소 승인 여부 반영
+        Reservation approvedReservation = reservationService.cancelApproveReservation(criteria.toCommand());
 
-    //TODO 예약 취소 승인 메서드
+        //만약 예약 취소 승인이 됐다면 세션 1회 복구
+        if (criteria.isApprove()) {
+            memberService.restoreSession(user.getTrainerId(), criteria.memberId());
+        }
+
+        // 트레이너 -> 멤버에게 예약 취소 여부 결과 알람 발송
+        notificationService.sendCancelApproveReservationNotification(approvedReservation.getReservationId(),
+                memberService.getMemberDetail(approvedReservation.getMember().getMemberId()),
+                criteria.isApprove());
+
+        return approvedReservation;
+    }
 
 
     @Transactional

@@ -46,6 +46,8 @@ public class ReservationEntity extends BaseTimeEntity {
 
     private LocalDateTime changeDate;
 
+    private LocalDateTime confirmDate;
+
     @Enumerated(EnumType.STRING)
     private DayOfWeek dayOfWeek;
 
