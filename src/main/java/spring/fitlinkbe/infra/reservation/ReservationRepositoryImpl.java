@@ -8,6 +8,7 @@ import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationRepository;
 import spring.fitlinkbe.domain.reservation.Session;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -121,4 +122,10 @@ public class ReservationRepositoryImpl implements ReservationRepository {
                 .map(SessionEntity::toDomain)
                 .toList();
     }
+
+    @Override
+    public boolean isConfirmedReservationExists(Long trainerId, List<LocalDate> dates) {
+        return reservationJpaRepository.isConfirmedReservationExists(trainerId, dates);
+    }
 }
+

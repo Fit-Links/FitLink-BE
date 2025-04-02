@@ -2,6 +2,7 @@ package spring.fitlinkbe.domain.reservation;
 
 import spring.fitlinkbe.domain.common.enums.UserRole;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,5 +28,5 @@ public interface ReservationRepository {
 
     Optional<Session> saveSession(Session session);
 
-
+    boolean isConfirmedReservationExists(Long trainerId, List<LocalDate> dates);
 }

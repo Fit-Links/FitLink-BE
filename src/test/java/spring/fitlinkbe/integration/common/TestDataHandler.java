@@ -17,6 +17,7 @@ import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationRepository;
 import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.domain.trainer.AvailableTime;
+import spring.fitlinkbe.domain.trainer.DayOff;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
@@ -333,4 +334,39 @@ public class TestDataHandler {
         trainerRepository.saveAvailableTime(availableTime);
     }
 
+    public DayOff createDayOff(Trainer trainer, LocalDate dayOffDate) {
+        DayOff dayOff = DayOff.builder()
+                .trainer(trainer)
+                .dayOffDate(dayOffDate)
+                .build();
+
+        return trainerRepository.saveDayOff(dayOff).get();
+    }
+
+    public void createReservation(Member member, Trainer trainer, LocalDate reservationDate) {
+        Reservation reservation = Reservation.builder()
+                .trainer(trainer)
+                .member(member)
+                .status(Reservation.Status.RESERVATION_APPROVED)
+                .reservationDates(
+                        List.of(
+                                LocalDateTime.of(reservationDate, LocalTime.of(10, 0)),
+                                LocalDateTime.of(reservationDate.plusDays(1), LocalTime.of(10, 13))
+                        )
+                )
+                .build();
+
+        reservationRepository.saveReservation(reservation);
+    }
+
+    public void createConfirmReservation(Member member, Trainer trainer, LocalDateTime confirmDate) {
+        Reservation reservation = Reservation.builder()
+                .trainer(trainer)
+                .member(member)
+                .status(Reservation.Status.RESERVATION_APPROVED)
+                .confirmDate(confirmDate)
+                .build();
+
+        reservationRepository.saveReservation(reservation);
+    }
 }

@@ -2,6 +2,7 @@ package spring.fitlinkbe.infra.trainer;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.Hibernate;
 import spring.fitlinkbe.domain.trainer.DayOff;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
 
@@ -28,6 +29,7 @@ public class DayOffEntity extends BaseTimeEntity {
         return DayOffEntity.builder()
                 .dayOffId(dayOff.getDayOffId() != null ? dayOff.getDayOffId() : null)
                 .dayOffDate(dayOff.getDayOffDate())
+                .trainer(TrainerEntity.from(dayOff.getTrainer()))
                 .build();
     }
 
@@ -35,6 +37,7 @@ public class DayOffEntity extends BaseTimeEntity {
         return DayOff.builder()
                 .dayOffId(dayOffId)
                 .dayOffDate(dayOffDate)
+                .trainer(Hibernate.isInitialized(trainer) ? trainer.toDomain() : null)
                 .build();
     }
 }
