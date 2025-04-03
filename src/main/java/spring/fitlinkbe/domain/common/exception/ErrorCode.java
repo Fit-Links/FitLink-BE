@@ -11,6 +11,7 @@ public enum ErrorCode {
     TRAINER_IS_NOT_FOUND("트레이너 정보가 존재하지 않습니다.", 404),
     ALREADY_APPLIED_AVAILABLE_TIMES("이미 적용된 수업 시간이 있습니다.", 409),
     ALREADY_SCHEDULED_AVAILABLE_TIMES("이미 적용 대기중인 스케줄이 있습니다.", 409),
+    AVAILABLE_TIMES_IS_NOT_FOUND("해당 날짜에 수업 시간이 없습니다.", 404),
 
     // Member 관련 ErrorCode
     MEMBER_DETAIL_NOT_FOUND("멤버 상세 정보를 찾지 못하였습니다", 404),
@@ -71,7 +72,6 @@ public enum ErrorCode {
     CONNECTING_INFO_NOT_FOUND("Connecting Info 정보가 존재하지 않습니다.", 404),
 
     INVALID_PARAMETER("유효하지 않은 파라미터입니다.", 400),
-
     ;
 
     private final String msg;

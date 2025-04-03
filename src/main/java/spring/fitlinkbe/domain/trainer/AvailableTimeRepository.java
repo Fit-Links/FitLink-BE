@@ -9,4 +9,6 @@ public interface AvailableTimeRepository {
     LocalDate getScheduledAppliedDate(Long trainerId);
 
     List<AvailableTime> getAvailableTimes(Long trainerId, LocalDate appliedDate);
+
+    void deleteAll(List<AvailableTime> availableTimes);
 }

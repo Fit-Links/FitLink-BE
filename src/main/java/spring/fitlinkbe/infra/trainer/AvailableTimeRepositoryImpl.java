@@ -29,4 +29,10 @@ public class AvailableTimeRepositoryImpl implements AvailableTimeRepository {
         return availableTimeJpaRepository.findAllAvailableTimes(trainerId, appliedDate)
                 .stream().map(AvailableTimeEntity::toDomain).toList();
     }
+
+    @Override
+    public void deleteAll(List<AvailableTime> availableTimes) {
+        availableTimeJpaRepository.deleteAllById(availableTimes.stream()
+                .map(AvailableTime::getAvailableTimeId).toList());
+    }
 }

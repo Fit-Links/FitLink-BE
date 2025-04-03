@@ -12,15 +12,13 @@ public class AvailableTimesResult {
 
     @Builder
     public record Response(
-            List<AvailableTimeResponse> currentSchedules,
+            ScheduledChangeResponse currentSchedules,
 
             ScheduledChangeResponse scheduledChanges
     ) {
         public static Response of(List<AvailableTime> currentSchedules, List<AvailableTime> scheduledSchedules) {
             return Response.builder()
-                    .currentSchedules(currentSchedules.stream()
-                            .map(AvailableTimeResponse::from)
-                            .toList())
+                    .currentSchedules(ScheduledChangeResponse.from(currentSchedules))
                     .scheduledChanges(ScheduledChangeResponse.from(scheduledSchedules))
                     .build();
         }

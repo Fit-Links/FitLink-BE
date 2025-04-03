@@ -16,15 +16,13 @@ public class AvailableTimesDto {
 
     @Builder
     public record Response(
-            List<AvailableTimeResponse> currentSchedules,
+            ScheduledChangeResponse currentSchedules,
 
             ScheduledChangeResponse scheduledChanges
     ) {
         public static Response from(AvailableTimesResult.Response response) {
             return Response.builder()
-                    .currentSchedules(response.currentSchedules().stream()
-                            .map(AvailableTimeResponse::from)
-                            .toList())
+                    .currentSchedules(ScheduledChangeResponse.from(response.currentSchedules()))
                     .scheduledChanges(ScheduledChangeResponse.from(response.scheduledChanges()))
                     .build();
         }
