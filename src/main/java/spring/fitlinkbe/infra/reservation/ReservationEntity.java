@@ -40,7 +40,7 @@ public class ReservationEntity extends BaseTimeEntity {
 
     private String name;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "varchar(255)")
     @Convert(converter = LocalDateTimeListConverter.class)
     private List<LocalDateTime> reservationDates;
 

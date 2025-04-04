@@ -20,7 +20,8 @@ public class AuthDto {
     @Builder
     public record EmailAuthTokenResponse(
             String verificationToken
-    ){}
+    ) {
+    }
 
 
     @Builder
