@@ -18,3 +18,10 @@ spring:
 
 server:
   port: 8080
+
+app:
+  cors:
+    allowed-headers:
+    allowed-methods:
+    allowed-origins:
+    max-age:
