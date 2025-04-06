@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
-import spring.fitlinkbe.domain.reservation.Reservation;
 
 import java.time.LocalDateTime;
 
@@ -16,66 +15,68 @@ import static spring.fitlinkbe.domain.notification.Notification.*;
 public class NotificationService {
     private final NotificationRepository notificationRepository;
 
-    public void sendConnectRequestNotification(PersonalDetail trainerDetail, String memberName, Long connectingInfoId) {
-        Notification notification = connectRequestNotification(trainerDetail, memberName, connectingInfoId);
+    public void sendConnectRequestNotification(PersonalDetail trainerDetail, Long memberId, String memberName,
+                                               Long connectingInfoId) {
+        Notification notification = connectRequestNotification(trainerDetail, memberId, memberName, connectingInfoId);
         notificationRepository.save(notification);
     }
 
-    public void sendDisconnectNotification(String name, PersonalDetail trainerDetail) {
-        Notification notification = disconnectNotification(name, trainerDetail);
+    public void sendDisconnectNotification(PersonalDetail trainerDetail, Long memberId, String memberName) {
+        Notification notification = disconnectNotification(trainerDetail, memberId, memberName);
         notificationRepository.save(notification);
     }
 
-    public void sendCancelReservationNotification(Long reservationId, PersonalDetail memberDetail, Reason reason) {
-        Notification notification = cancelReservationNotification(reservationId, memberDetail, reason);
+    public void sendCancelReservationNotification(PersonalDetail memberDetail, Long reservationId, Long trainerId,
+                                                  Reason reason) {
+        Notification notification = cancelReservationNotification(memberDetail, reservationId, trainerId, reason);
         notificationRepository.save(notification);
     }
 
-    public void sendCancelRequestReservationNotification(Long reservationId, String name,
+    public void sendCancelRequestReservationNotification(PersonalDetail trainerDetail,
+                                                         Long reservationId, Long memberId, String name,
                                                          LocalDateTime cancelDate, String cancelReason,
-                                                         PersonalDetail trainerDetail,
                                                          Reason reason) {
-        Notification notification = cancelRequestReservationNotification(reservationId, name,
-                cancelDate, cancelReason, trainerDetail, reason);
+        Notification notification = cancelRequestReservationNotification(trainerDetail, reservationId, memberId, name,
+                cancelDate, cancelReason, reason);
         notificationRepository.save(notification);
     }
 
-    public void sendApproveReservationNotification(Long reservationId, PersonalDetail memberDetail) {
-        Notification notification = approveReservationNotification(reservationId, memberDetail);
+    public void sendApproveReservationNotification(PersonalDetail memberDetail, Long reservationId, Long trainerId) {
+        Notification notification = approveReservationNotification(memberDetail, reservationId, trainerId);
         notificationRepository.save(notification);
     }
 
-    public void sendApproveRequestReservationNotification(Long reservationId, PersonalDetail memberDetail,
+    public void sendApproveRequestReservationNotification(PersonalDetail memberDetail, Long reservationId, Long trainerId,
                                                           boolean isApprove) {
-        Notification notification = approveRequestReservationNotification(reservationId, memberDetail, isApprove);
+        Notification notification = approveRequestReservationNotification(memberDetail, reservationId, trainerId, isApprove);
         notificationRepository.save(notification);
     }
 
-    public void sendRefuseReservationNotification(Long reservationId, PersonalDetail trainerDetail) {
-        Notification notification = refuseReservationNotification(reservationId, trainerDetail);
+    public void sendRefuseReservationNotification(PersonalDetail memberDetail, Long reservationId, Long trainerId) {
+        Notification notification = refuseReservationNotification(memberDetail, reservationId, trainerId);
         notificationRepository.save(notification);
     }
 
-    public void sendRequestReservationNotification(Reservation reservation, PersonalDetail trainerDetail) {
-        Notification notification = requestReservationNotification(reservation, trainerDetail);
+    public void sendRequestReservationNotification(PersonalDetail trainerDetail, Long reservationId, Long memberId, String name) {
+        Notification notification = requestReservationNotification(trainerDetail, reservationId, memberId, name);
         notificationRepository.save(notification);
     }
 
-    public void sendCompleteSessionNotification(Long sessionId, PersonalDetail memberDetail) {
-        Notification notification = completeSessionNotification(sessionId, memberDetail);
+    public void sendCompleteSessionNotification(PersonalDetail memberDetail, Long sessionId, Long trainerId) {
+        Notification notification = completeSessionNotification(memberDetail, sessionId, trainerId);
         notificationRepository.save(notification);
     }
 
-    public void sendChangeRequestReservationNotification(Long reservationId, String name, LocalDateTime reservationDate,
-                                                         LocalDateTime changeDate,
-                                                         PersonalDetail memberDetail) {
-        Notification notification = changeRequestReservationNotification(reservationId, name,
-                reservationDate, changeDate, memberDetail);
+    public void sendChangeRequestReservationNotification(PersonalDetail trainerDetail, Long reservationId, Long memberId,
+                                                         String name, LocalDateTime reservationDate, LocalDateTime changeDate) {
+        Notification notification = changeRequestReservationNotification(trainerDetail, reservationId, memberId, name,
+                reservationDate, changeDate);
         notificationRepository.save(notification);
     }
 
-    public void sendCancelApproveReservationNotification(Long reservationId, PersonalDetail memberDetail, boolean approve) {
-        Notification notification = cancelApproveReservationNotification(reservationId, approve, memberDetail);
+    public void sendCancelApproveReservationNotification(PersonalDetail memberDetail, Long reservationId, Long trainerId,
+                                                         boolean approve) {
+        Notification notification = cancelApproveReservationNotification(memberDetail, reservationId, trainerId, approve);
         notificationRepository.save(notification);
     }
 }

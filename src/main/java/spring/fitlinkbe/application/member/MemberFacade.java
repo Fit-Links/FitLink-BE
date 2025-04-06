@@ -45,7 +45,8 @@ public class MemberFacade {
 
         ConnectingInfo connectingInfo = memberService.requestConnectTrainer(trainer, member);
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(trainer.getTrainerId());
-        notificationService.sendConnectRequestNotification(trainerDetail, member.getName(), connectingInfo.getConnectingInfoId());
+        notificationService.sendConnectRequestNotification(trainerDetail, member.getMemberId(), member.getName(),
+                connectingInfo.getConnectingInfoId());
     }
 
     @Transactional
@@ -54,7 +55,7 @@ public class MemberFacade {
 
         Member member = memberService.getMember(memberId);
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(connectingInfo.getTrainer().getTrainerId());
-        notificationService.sendDisconnectNotification(member.getName(), trainerDetail);
+        notificationService.sendDisconnectNotification(trainerDetail, member.getMemberId(), member.getName());
 
         connectingInfo.disconnect();
         memberService.saveConnectingInfo(connectingInfo);
