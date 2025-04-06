@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.SessionInfoRepository;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
@@ -1907,7 +1908,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
                 // 알람이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        UserRole.MEMBER,Notification.ReferenceType.RESERVATION);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_APPROVE);
 
@@ -1918,7 +1919,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
                 // 다른 예약 알람 내용이 거절 내용인지 확인
                 Notification notification2 = notificationRepository.getNotification(refuseReservation.getReservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        UserRole.MEMBER, Notification.ReferenceType.RESERVATION);
                 softly.assertThat(notification2).isNotNull();
                 softly.assertThat(notification2.getNotificationType()).isEqualTo(RESERVATION_REFUSE);
 
@@ -2194,7 +2195,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
                 // 알람이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.sessionId(),
-                        Notification.ReferenceType.SESSION);
+                        UserRole.MEMBER, Notification.ReferenceType.SESSION);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(SESSION_DEDUCTED);
             });
@@ -2252,7 +2253,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
                 // 알람이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.sessionId(),
-                        Notification.ReferenceType.SESSION);
+                        UserRole.MEMBER, Notification.ReferenceType.SESSION);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(SESSION_DEDUCTED);
             });

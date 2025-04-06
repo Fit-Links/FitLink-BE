@@ -3,6 +3,7 @@ package spring.fitlinkbe.infra.notification;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.notification.Notification;
@@ -33,6 +34,13 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     public Notification getNotification(Long refId, Notification.ReferenceType refType) {
 
         return notificationJpaRepository.findByRefIdAndRefType(refId, refType)
+                .map(NotificationEntity::toDomain)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
+    }
+
+    @Override
+    public Notification getNotification(Long refId, UserRole target, Notification.ReferenceType refType) {
+        return notificationJpaRepository.findByRefIdAndRefTypeAndTarget(refId, refType, target)
                 .map(NotificationEntity::toDomain)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
     }

@@ -8,6 +8,7 @@ import spring.fitlinkbe.application.reservation.criteria.ReservationResult;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.notification.NotificationService;
+import spring.fitlinkbe.domain.notification.command.NotificationCommand;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.reservation.Session;
@@ -22,7 +23,6 @@ import java.util.List;
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
 import static spring.fitlinkbe.domain.notification.Notification.Reason.RESERVATION_CANCEL;
-import static spring.fitlinkbe.domain.notification.Notification.Reason.RESERVATION_REFUSE;
 
 @Component
 @RequiredArgsConstructor
@@ -69,8 +69,8 @@ public class ReservationFacade {
 
         cancelledReservations.forEach(r -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-            notificationService.sendCancelReservationNotification(memberDetail, r.getReservationId(),
-                    r.getTrainer().getTrainerId(), RESERVATION_CANCEL);
+            notificationService.sendNotification(NotificationCommand.CancelReservation.of(
+                    memberDetail, r.getReservationId(), r.getTrainer().getTrainerId(), RESERVATION_CANCEL));
         });
         // 예약 불가 설정한 정보 리턴
         return reservationService.setDisabledReservation(criteria.toCommand(user.getTrainerId()));
@@ -85,8 +85,8 @@ public class ReservationFacade {
         // 예약이 취소되었다면, 트레이너 -> 멤버 예약 취소됐다는 알람 전송
         cancelledReservations.forEach(r -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-            notificationService.sendCancelReservationNotification(memberDetail, r.getReservationId(),
-                    r.getTrainer().getTrainerId(), RESERVATION_CANCEL);
+            notificationService.sendNotification(NotificationCommand.CancelReservation.of(
+                    memberDetail, r.getReservationId(), r.getTrainer().getTrainerId(), RESERVATION_CANCEL));
         });
         // 고정 예약 진행
         List<Reservation> reservationDomains = criteria.toDomain(memberService.getSessionInfo(user.getTrainerId(),
@@ -102,8 +102,8 @@ public class ReservationFacade {
         // 예약이 취소되었다면, 트레이너 -> 멤버 예약 취소됐다는 알람 전송
         fixedReservations.forEach(r -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-            notificationService.sendCancelReservationNotification(memberDetail, r.getReservationId(),
-                    r.getTrainer().getTrainerId(), RESERVATION_CANCEL);
+            notificationService.sendNotification(NotificationCommand.CancelReservation.of(
+                    memberDetail, r.getReservationId(), r.getTrainer().getTrainerId(), RESERVATION_CANCEL));
         });
 
         // 고정 예약 진행
@@ -122,15 +122,16 @@ public class ReservationFacade {
             reservationService.saveSession(savedReservation);
             // 트레이너가 예약했다면 멤버에게 예약이 됐다는 알람 전송
             PersonalDetail memberDetail = memberService.getMemberDetail(reservation.getMember().getMemberId());
-            notificationService.sendApproveReservationNotification(memberDetail, savedReservation.getReservationId(),
-                    savedReservation.getTrainer().getTrainerId());
+
+            notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail,
+                    savedReservation.getReservationId(), savedReservation.getTrainer().getTrainerId(), true));
         }
 
         if (user.getUserRole() == MEMBER) {
             // 멤버가 예약했다면 트레이너에게 예약 요청을 했다는 알람 전송
             PersonalDetail trainerDetail = trainerService.getTrainerDetail(reservation.getTrainer().getTrainerId());
-            notificationService.sendRequestReservationNotification(trainerDetail, savedReservation.getReservationId(),
-                    savedReservation.getMember().getMemberId(), savedReservation.getName());
+            notificationService.sendNotification(NotificationCommand.RequestReservation.of(trainerDetail, savedReservation.getReservationId(),
+                    savedReservation.getMember().getMemberId(), savedReservation.getName()));
         }
         return savedReservation;
     }
@@ -142,17 +143,18 @@ public class ReservationFacade {
         //예약 완료 알람 발송 트레이너 -> 멤버에게 예약 완료되었다는 알람 발송
         PersonalDetail memberDetail = memberService.getMemberDetail(approveReservation.getMember().getMemberId());
 
-        notificationService.sendApproveReservationNotification(memberDetail, approveReservation.getReservationId(),
-                approveReservation.getTrainer().getTrainerId());
+        notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail,
+                approveReservation.getReservationId(), approveReservation.getTrainer().getTrainerId(), true));
 
         List<Reservation> refuseReservations = reservationService.refuseReservations(
                 criteria.toRefuseReservationsCommand(), user);
 
         //예약 거절 알람 발송 트레이너 -> 멤버에게 예약 거절되었다는 알람 발송
         refuseReservations.forEach((refuseReservation) -> {
-            PersonalDetail memberDetail1 = memberService.getMemberDetail(refuseReservation.getMember().getMemberId());
-            notificationService.sendRefuseReservationNotification(memberDetail1, refuseReservation.getReservationId(),
-                    refuseReservation.getTrainer().getTrainerId());
+            PersonalDetail refuseMemberDetail = memberService.getMemberDetail(refuseReservation.getMember().getMemberId());
+
+            notificationService.sendNotification(NotificationCommand.ApproveReservation.of(refuseMemberDetail,
+                    refuseReservation.getReservationId(), refuseReservation.getTrainer().getTrainerId(), false));
         });
 
         return approveReservation;
@@ -169,9 +171,8 @@ public class ReservationFacade {
                     reservation.getMember().getMemberId());
             // 트레이너 -> 멤버 예약이 취소됐다는 알람 전송
             PersonalDetail memberDetail = memberService.getMemberDetail(reservation.getMember().getMemberId());
-
-            notificationService.sendCancelReservationNotification(memberDetail, reservation.getReservationId(),
-                    reservation.getTrainer().getTrainerId(), RESERVATION_REFUSE);
+            notificationService.sendNotification(NotificationCommand.CancelReservation.of(
+                    memberDetail, reservation.getReservationId(), reservation.getTrainer().getTrainerId(), RESERVATION_CANCEL));
 
             return reservation;
         }
@@ -179,9 +180,9 @@ public class ReservationFacade {
         // 멤버 -> 트레이너에게 예약 취소 요청 알림을 보낸다.
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(reservation.getTrainer().getTrainerId());
 
-        notificationService.sendCancelRequestReservationNotification(trainerDetail, reservation.getReservationId(),
+        notificationService.sendNotification(NotificationCommand.CancelRequestReservation.of(trainerDetail, reservation.getReservationId(),
                 reservation.getMember().getMemberId(), reservation.getName(), criteria.cancelDate(),
-                criteria.cancelReason(), RESERVATION_CANCEL);
+                criteria.cancelReason(), RESERVATION_CANCEL));
 
         return reservation;
     }
@@ -199,8 +200,8 @@ public class ReservationFacade {
 
         // 트레이너 -> 멤버에게 예약 취소 여부 결과 알람 발송
         PersonalDetail memberDetail = memberService.getMemberDetail(approvedReservation.getMember().getMemberId());
-        notificationService.sendCancelApproveReservationNotification(memberDetail, approvedReservation.getReservationId(),
-                approvedReservation.getTrainer().getTrainerId(), criteria.isApprove());
+        notificationService.sendNotification(NotificationCommand.CancelApproveReservation.of(memberDetail, approvedReservation.getReservationId(),
+                approvedReservation.getTrainer().getTrainerId(), criteria.isApprove()));
 
         return approvedReservation;
     }
@@ -212,10 +213,10 @@ public class ReservationFacade {
         Reservation requestedReservation = reservationService.changeReqeustReservation(criteria.toCommand());
         // 알람 전송 멤버 -> 트레이너에게 예약 변경 요청했다는 알람 발송
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(requestedReservation.getTrainer().getTrainerId());
-        notificationService.sendChangeRequestReservationNotification(trainerDetail,
+
+        notificationService.sendNotification(NotificationCommand.ChangeRequestReservation.of(trainerDetail,
                 requestedReservation.getReservationId(), requestedReservation.getMember().getMemberId(),
-                requestedReservation.getName(),
-                criteria.reservationDate(), criteria.changeRequestDate());
+                requestedReservation.getName(), criteria.reservationDate(), criteria.changeRequestDate()));
 
         return requestedReservation;
     }
@@ -230,8 +231,8 @@ public class ReservationFacade {
             // 예약이 취소되었다면, 트레이너 -> 멤버 예약 취소됐다는 알람 전송
             cancelledReservations.forEach(r -> {
                 PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-                notificationService.sendCancelReservationNotification(memberDetail, r.getReservationId(),
-                        r.getTrainer().getTrainerId(), RESERVATION_CANCEL);
+                notificationService.sendNotification(NotificationCommand.CancelReservation.of(
+                        memberDetail, r.getReservationId(), r.getTrainer().getTrainerId(), RESERVATION_CANCEL));
             });
         }
         // 예약 변경 요청 승인
@@ -239,8 +240,10 @@ public class ReservationFacade {
 
         // 트레이너 -> 멤버에게 예약 변경 승인 됐다는 알람 전송
         PersonalDetail memberDetail = memberService.getMemberDetail(approvedReservation.getMember().getMemberId());
-        notificationService.sendApproveRequestReservationNotification(memberDetail, approvedReservation.getReservationId(),
-                approvedReservation.getTrainer().getTrainerId(), criteria.isApprove());
+
+        notificationService.sendNotification(NotificationCommand.ApproveRequestReservation.of(memberDetail,
+                approvedReservation.getReservationId(), approvedReservation.getTrainer().getTrainerId(),
+                criteria.isApprove()));
 
         return approvedReservation;
     }
@@ -252,10 +255,14 @@ public class ReservationFacade {
                 user);
         // 세션 하나 차감
         memberService.deductSession(user.getTrainerId(), criteria.memberId());
-        // 알람 전송 트레이너 -> 멤버에게 세션이 완료되서 차감 되었다는 알람 발송
+        PersonalDetail trainerDetail = trainerService.getTrainerDetail(user.getTrainerId());
         PersonalDetail memberDetail = memberService.getMemberDetail(criteria.memberId());
-        notificationService.sendCompleteSessionNotification(memberDetail, completedSession.getSessionId(),
-                user.getTrainerId());
+        // 알람 전송 멤버 -> 트레이너에게 멤버의 세션이 완료되었다는 알람 발송
+        notificationService.sendNotification(NotificationCommand.CompleteSession.of(trainerDetail,
+                completedSession.getSessionId(), user.getTrainerId(), memberDetail.getName()));
+        // 알람 전송 트레이너 -> 멤버에게 세션이 완료되서 차감 되었다는 알람 발송
+        notificationService.sendNotification(NotificationCommand.DeductSession.of(memberDetail,
+                completedSession.getSessionId(), user.getTrainerId()));
 
         return completedSession;
     }
