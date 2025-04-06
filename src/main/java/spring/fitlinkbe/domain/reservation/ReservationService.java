@@ -12,6 +12,7 @@ import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.support.security.SecurityUser;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -340,4 +341,12 @@ public class ReservationService {
     }
 
 
+    /**
+     * 해당 날짜에 확정된 예약이 있는지 검사
+     */
+    public void checkConfirmedReservationExistOrThrow(Long trainerId, List<LocalDate> dates) {
+        if (reservationRepository.isConfirmedReservationExists(trainerId, dates)) {
+            throw new CustomException(ErrorCode.CONFIRMED_RESERVATION_EXISTS);
+        }
+    }
 }

@@ -5,11 +5,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.application.trainer.criteria.AvailableTimeCriteria;
 import spring.fitlinkbe.application.trainer.criteria.AvailableTimesResult;
+import spring.fitlinkbe.application.trainer.criteria.DayOffResult;
 import spring.fitlinkbe.application.trainer.criteria.TrainerInfoResult;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.trainer.AvailableTime;
+import spring.fitlinkbe.domain.trainer.DayOff;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
 
@@ -20,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TrainerFacade {
     private final TrainerService trainerService;
+    private final ReservationService reservationService;
 
     public TrainerInfoResult.Response getTrainerInfo(Long trainerId) {
         Trainer trainer = trainerService.getTrainerInfo(trainerId);
@@ -90,6 +94,7 @@ public class TrainerFacade {
         trainerService.saveAvailableTimes(availableTimes);
     }
 
+
     public void deleteAvailableTimes(Long trainerId, LocalDate applyAt) {
         List<AvailableTime> availableTimes = trainerService.getAvailableTimes(trainerId, applyAt);
         if (availableTimes.isEmpty()) {
@@ -97,5 +102,44 @@ public class TrainerFacade {
         }
 
         trainerService.deleteAvailableTimes(availableTimes);
+    }
+
+    public List<DayOffResult.Response> saveDayOff(Long trainerId, List<LocalDate> dayOffDates) {
+        Trainer trainer = trainerService.getTrainerInfo(trainerId);
+
+        trainerService.checkDayOffDuplicatedOrThrow(trainerId, dayOffDates);
+        reservationService.checkConfirmedReservationExistOrThrow(trainerId, dayOffDates);
+
+        List<DayOff> dayOffs = createAndSaveDayOff(trainer, dayOffDates);
+
+        return dayOffs.stream()
+                .map(DayOffResult.Response::from)
+                .toList();
+    }
+
+    private List<DayOff> createAndSaveDayOff(Trainer trainer, List<LocalDate> dayOffDates) {
+        List<DayOff> dayOffs = dayOffDates.stream()
+                .map(dayOffDate -> {
+                    return DayOff.builder()
+                            .trainer(trainer)
+                            .dayOffDate(dayOffDate)
+                            .build();
+                })
+                .toList();
+        return trainerService.saveAllDayOffs(dayOffs);
+    }
+
+
+    public void deleteDayOff(Long trainerId, Long dayOffId) {
+        DayOff dayOff = trainerService.getDayOff(trainerId, dayOffId);
+        trainerService.deleteDayOff(dayOff);
+    }
+
+    public List<DayOffResult.Response> getDayOff(Long trainerId) {
+        List<DayOff> dayOffs = trainerService.findAllDayOff(trainerId);
+
+        return dayOffs.stream()
+                .map(DayOffResult.Response::from)
+                .toList();
     }
 }

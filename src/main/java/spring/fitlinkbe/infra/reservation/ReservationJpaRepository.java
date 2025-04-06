@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
-public interface ReservationJpaRepository extends JpaRepository<ReservationEntity, Long> {
+public interface ReservationJpaRepository extends JpaRepository<ReservationEntity, Long>, ReservationRepositoryCustom {
     @Query("SELECT r FROM ReservationEntity r " +
             "LEFT JOIN FETCH r.member " +
             "LEFT JOIN FETCH r.trainer " +

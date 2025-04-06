@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 
 import java.time.LocalDate;
@@ -79,11 +80,41 @@ public class TrainerService {
         return availableTimeRepository.getAvailableTimes(trainerId, scheduledAppliedDate);
     }
 
+
     public List<AvailableTime> getAvailableTimes(Long trainerId, LocalDate applyAt) {
         return availableTimeRepository.getAvailableTimes(trainerId, applyAt);
     }
 
     public void deleteAvailableTimes(List<AvailableTime> availableTimes) {
         availableTimeRepository.deleteAll(availableTimes);
+    }
+
+    public void checkDayOffDuplicatedOrThrow(Long trainerId, List<LocalDate> dayOffDates) {
+        if (trainerRepository.isDayOffExists(trainerId, dayOffDates)) {
+            throw new CustomException(ErrorCode.DAY_OFF_DUPLICATED);
+        }
+    }
+
+    public List<DayOff> saveAllDayOffs(List<DayOff> dayOffs) {
+        return trainerRepository.saveAllDayOffs(dayOffs);
+    }
+
+    public DayOff getDayOff(Long trainerId, Long dayOffId) {
+        return trainerRepository.findDayOff(trainerId, dayOffId)
+                .orElseThrow(() -> new CustomException(ErrorCode.DAY_OFF_NOT_FOUND));
+    }
+
+    @Transactional
+    public void deleteDayOff(DayOff dayOff) {
+        trainerRepository.deleteDayOff(dayOff);
+    }
+
+    /**
+     * 트레이너의 휴무일을 조회한다.
+     *
+     * @return 휴무일 목록 (현재 날짜 이후의 휴무일만)
+     */
+    public List<DayOff> findAllDayOff(Long trainerId) {
+        return trainerRepository.findScheduledDayOff(trainerId);
     }
 }
