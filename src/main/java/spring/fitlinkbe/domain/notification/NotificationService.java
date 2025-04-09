@@ -22,6 +22,10 @@ public class NotificationService {
 
     }
 
+    public Notification getNotificationDetail(Long notificationId, SecurityUser user) {
+        return notificationRepository.getNotification(notificationId, user.getPersonalDetailId());
+    }
+
     @Transactional
     public <T extends NotificationRequest> void sendNotification(T request) {
         Notification notification = strategyHandler.handle(request);

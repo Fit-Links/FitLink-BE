@@ -148,17 +148,20 @@ public class NotificationCommand {
     }
 
     @Builder
-    public record RequestReservation(PersonalDetail trainerDetail, Long reservationId, Long memberId, String name)
+    public record RequestReservation(PersonalDetail trainerDetail, Long reservationId, LocalDateTime reservationDate,
+                                     Long memberId, String name)
             implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
             return Notification.NotificationType.RESERVATION_REQUESTED;
         }
 
-        public static RequestReservation of(PersonalDetail trainerDetail, Long reservationId, Long memberId, String name) {
+        public static RequestReservation of(PersonalDetail trainerDetail, Long reservationId, LocalDateTime reservationDate,
+                                            Long memberId, String name) {
             return RequestReservation.builder()
                     .trainerDetail(trainerDetail)
                     .reservationId(reservationId)
+                    .reservationDate(reservationDate)
                     .memberId(memberId)
                     .name(name)
                     .build();

@@ -7,6 +7,8 @@ import spring.fitlinkbe.domain.common.enums.UserRole;
 public interface NotificationRepository {
     Notification getNotification(Long personalDetailId);
 
+    Notification getNotification(Long personalDetailId, Long notificationId);
+
     Notification getNotification(Long personalDetailId, Notification.NotificationType notificationType);
 
     Notification getNotification(Long refId, Notification.ReferenceType refType);

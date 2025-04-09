@@ -87,7 +87,8 @@ public class NotificationStrategyHandler {
 
     private Notification handleRequestReservation(NotificationRequest request) {
         NotificationCommand.RequestReservation dto = (NotificationCommand.RequestReservation) request;
-        return Notification.requestReservation(dto.trainerDetail(), dto.reservationId(), dto.memberId(), dto.name());
+        return Notification.requestReservation(dto.trainerDetail(), dto.reservationId(), dto.reservationDate(),
+                dto.memberId(), dto.name());
     }
 
     private Notification handleCompleteSession(NotificationRequest request) {

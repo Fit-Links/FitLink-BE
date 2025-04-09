@@ -81,7 +81,7 @@ public class Notification {
     public static Notification cancelRequestReservation(PersonalDetail trainerDetail, Long reservationId,
                                                         Long memberId, String name, LocalDateTime cancelDate,
                                                         String cancelReason, Reason reason) {
-        String content = ("%s 회원님의 %s를 요청하였습니다.\n +%s\n +취소 사유: %s")
+        String content = ("%s 회원님의 %s를 요청하였습니다.\n 날짜:%s\n취소 사유: %s")
                 .formatted(name, reason.name, cancelDate.truncatedTo(ChronoUnit.HOURS), cancelReason);
 
         return Notification.builder()
@@ -138,9 +138,9 @@ public class Notification {
     }
 
     public static Notification requestReservation(PersonalDetail trainerDetail, Long reservationId,
-                                                  Long memberId, String name) {
+                                                  LocalDateTime reservationDate, Long memberId, String name) {
 
-        String content = " %s 회원님이 PT 예약을 요청하였습니다.".formatted(name);
+        String content = " %s 회원님이 PT 예약을 요청하였습니다.\n날짜:%s".formatted(name, reservationDate);
 
         return Notification.builder()
                 .refId(reservationId)
@@ -196,7 +196,7 @@ public class Notification {
                                                         LocalDateTime changeDate) {
 
         String content = ("%s 회원님의 PT 예약 변경이 요청되었습니다. \n " +
-                "%s -> %s").formatted(name, reservationDate.truncatedTo(ChronoUnit.HOURS),
+                "날짜:%s -> %s").formatted(name, reservationDate.truncatedTo(ChronoUnit.HOURS),
                 changeDate.truncatedTo(ChronoUnit.HOURS));
 
         return Notification.builder()
