@@ -21,4 +21,9 @@ public interface NotificationJpaRepository extends JpaRepository<NotificationEnt
 
     @EntityGraph(attributePaths = {"personalDetail"})
     Optional<NotificationEntity> findByRefIdAndRefTypeAndTarget(Long refId, Notification.ReferenceType type, UserRole target);
+
+
+    @EntityGraph(attributePaths = {"personalDetail"})
+    Optional<NotificationEntity> findByNotificationIdAndPersonalDetail_PersonalDetailId(Long notificationId,
+                                                                                        Long personalDetailId);
 }
