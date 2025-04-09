@@ -2,6 +2,7 @@ package spring.fitlinkbe.domain.notification.command;
 
 import lombok.Builder;
 import org.springframework.data.domain.Pageable;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.notification.Notification;
 
@@ -34,18 +35,20 @@ public class NotificationCommand {
     public record Disconnect(
             PersonalDetail trainerDetail,
             Long memberId,
-            String memberName
+            String memberName,
+            UserRole target
     ) implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
             return Notification.NotificationType.DISCONNECT;
         }
 
-        public static Disconnect of(PersonalDetail trainerDetail, Long memberId, String memberName) {
+        public static Disconnect of(PersonalDetail trainerDetail, Long memberId, String memberName, UserRole target) {
             return Disconnect.builder()
                     .trainerDetail(trainerDetail)
                     .memberId(memberId)
                     .memberName(memberName)
+                    .target(target)
                     .build();
         }
     }

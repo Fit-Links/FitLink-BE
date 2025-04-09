@@ -42,16 +42,18 @@ public class Notification {
                 .build();
     }
 
-    public static Notification disconnect(PersonalDetail trainerDetail, Long memberId, String memberName) {
-        String content = memberName + " 님과의 연동 (또는 연동 요청) 이 취소되었습니다.";
+    public static Notification disconnect(PersonalDetail userDetail, Long partnerId, String userName,
+                                          UserRole target) {
+        String content = userName + " 님과의 연동 (또는 연동 요청) 이 취소되었습니다.";
 
         return Notification.builder()
                 .refId(null)
                 .refType(ReferenceType.DISCONNECT)
-                .target(UserRole.TRAINER)
-                .notificationType(NotificationType.DISCONNECT)
-                .personalDetail(trainerDetail)
-                .partnerId(memberId)
+                .target(target)
+                .notificationType(target == UserRole.TRAINER ? NotificationType.DISCONNECT :
+                        NotificationType.DISCONNECT_TRAINER)
+                .personalDetail(userDetail)
+                .partnerId(partnerId)
                 .name(NotificationType.DISCONNECT.getName())
                 .content(content)
                 .sendDate(LocalDateTime.now())

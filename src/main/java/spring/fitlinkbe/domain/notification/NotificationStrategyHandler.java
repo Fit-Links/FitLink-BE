@@ -59,7 +59,7 @@ public class NotificationStrategyHandler {
 
     private Notification handleDisconnect(NotificationRequest request) {
         NotificationCommand.Disconnect dto = (NotificationCommand.Disconnect) request;
-        return Notification.disconnect(dto.trainerDetail(), dto.memberId(), dto.memberName());
+        return Notification.disconnect(dto.trainerDetail(), dto.memberId(), dto.memberName(), dto.target());
     }
 
     private Notification handleCancelReservation(NotificationRequest request) {

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.application.member.criteria.*;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
@@ -57,8 +58,9 @@ public class MemberFacade {
 
         Member member = memberService.getMember(memberId);
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(connectingInfo.getTrainer().getTrainerId());
+        // -> 트레이너에게 알림 보내기
         notificationService.sendNotification(NotificationCommand.Disconnect.of(trainerDetail, member.getMemberId(),
-                member.getName()));
+                member.getName(), UserRole.TRAINER));
 
         connectingInfo.disconnect();
         memberService.saveConnectingInfo(connectingInfo);

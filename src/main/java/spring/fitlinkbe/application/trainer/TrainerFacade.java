@@ -7,12 +7,14 @@ import spring.fitlinkbe.application.trainer.criteria.AvailableTimeCriteria;
 import spring.fitlinkbe.application.trainer.criteria.AvailableTimesResult;
 import spring.fitlinkbe.application.trainer.criteria.DayOffResult;
 import spring.fitlinkbe.application.trainer.criteria.TrainerInfoResult;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.notification.NotificationService;
+import spring.fitlinkbe.domain.notification.command.NotificationCommand;
 import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.DayOff;
@@ -151,11 +153,13 @@ public class TrainerFacade {
 
     @Transactional
     public void disconnectTrainer(Long trainerId, Long memberId) {
-        PersonalDetail personalDetail = memberService.getMemberDetail(memberId);
+        PersonalDetail memberDetail = memberService.getMemberDetail(memberId);
         ConnectingInfo connectingInfo = trainerService.getConnectingInfo(trainerId, memberId);
         connectingInfo.disconnect();
 
         trainerService.saveConnectingInfo(connectingInfo);
-        notificationService.sendTrainerDisconnectNotification(personalDetail);
+        // -> 멤버에게 알림 보내기
+        notificationService.sendNotification(NotificationCommand.Disconnect.of(memberDetail,
+                connectingInfo.getTrainer().getTrainerId(), connectingInfo.getTrainer().getName(), UserRole.MEMBER));
     }
 }

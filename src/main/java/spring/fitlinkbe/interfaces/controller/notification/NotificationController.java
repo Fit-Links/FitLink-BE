@@ -49,8 +49,9 @@ public class NotificationController {
 
     /**
      * 알림 상세 조회
+     *
      * @param notificationId 알고 싶은 알림 ID
-     * @param user 인증된 유저 정보
+     * @param user           인증된 유저 정보
      * @return ApiResultResponse 알림 상세 정보를 반환한다.
      */
     @GetMapping("/{notificationId}")
