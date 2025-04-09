@@ -78,6 +78,8 @@ public enum ErrorCode {
     CONNECTING_INFO_NOT_FOUND("연결 정보가 없습니다.", 404),
 
     INVALID_PARAMETER("유효하지 않은 파라미터입니다.", 400),
+    PHONE_NUMBER_NOT_FOUND("전화번호를 찾을 수 없습니다.", 400),
+
     ;
 
     private final String msg;

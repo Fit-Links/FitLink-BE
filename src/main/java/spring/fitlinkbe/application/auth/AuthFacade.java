@@ -6,13 +6,14 @@ import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.auth.AuthService;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.PhoneNumber;
 import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
-import spring.fitlinkbe.interfaces.controller.sns.dto.SnsEmailNotificationDto;
-import spring.fitlinkbe.support.parser.EmailContentParser;
+import spring.fitlinkbe.interfaces.controller.auth.dto.SnsEmailNotificationDto;
+import spring.fitlinkbe.support.parser.EmailParser;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
 
 import static spring.fitlinkbe.support.utils.RandomStringGenerator.generateRandomString;
@@ -78,8 +79,13 @@ public class AuthFacade {
         return authService.createEmailVerificationToken(personalDetailId);
     }
 
-    @Transactional
     public void verifySnsEmail(SnsEmailNotificationDto dto) {
-        String token = EmailContentParser.parseEmailContent(dto.content());
+        String token = EmailParser.parseEmailContent(dto.content());
+        PhoneNumber phoneNumber = new PhoneNumber(EmailParser.extractPhoneNumber(dto.mail().source()));
+
+        PersonalDetail personalDetail = authService.getPersonalDetailByToken(token);
+        personalDetail.verifySnsEmail(phoneNumber);
+
+        authService.savePersonalDetail(personalDetail);
     }
 }

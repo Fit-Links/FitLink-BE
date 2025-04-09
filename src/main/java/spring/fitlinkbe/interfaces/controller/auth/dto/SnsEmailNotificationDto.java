@@ -1,4 +1,4 @@
-package spring.fitlinkbe.interfaces.controller.sns.dto;
+package spring.fitlinkbe.interfaces.controller.auth.dto;
 
 
 import java.util.List;

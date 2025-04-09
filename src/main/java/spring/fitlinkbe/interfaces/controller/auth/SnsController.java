@@ -1,4 +1,4 @@
-package spring.fitlinkbe.interfaces.controller.sns;
+package spring.fitlinkbe.interfaces.controller.auth;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.ConfirmSubscriptionRequest;
 import spring.fitlinkbe.application.auth.AuthFacade;
-import spring.fitlinkbe.interfaces.controller.sns.dto.SnsAlertDto;
-import spring.fitlinkbe.interfaces.controller.sns.dto.SnsEmailNotificationDto;
+import spring.fitlinkbe.interfaces.controller.auth.dto.SnsAlertDto;
+import spring.fitlinkbe.interfaces.controller.auth.dto.SnsEmailNotificationDto;
 
 @Slf4j
 @RestController
@@ -37,7 +37,6 @@ public class SnsController {
     @PostMapping(value = "/v1/sns")
     public void test(@RequestBody String body) throws JsonProcessingException {
         SnsAlertDto snsAlertDto = objectMapper.readValue(body, SnsAlertDto.class);
-        log.info("SNS Triggered : {}", body);
 
         try {
             if (snsAlertDto.type().equals(SnsTypeConstants.SUBSCRIPTION_CONFIRMATION)) {
@@ -52,7 +51,6 @@ public class SnsController {
 
     private void handleNotification(SnsAlertDto dto) throws JsonProcessingException {
         SnsEmailNotificationDto snsEmailNotificationDto = objectMapper.readValue(dto.message(), SnsEmailNotificationDto.class);
-        System.out.println("snsEmailNotificationDto = " + snsEmailNotificationDto);
 
         if (snsEmailNotificationDto.notificationType().equals(NotificationTypeConstants.RECEIVED)) {
             authFacade.verifySnsEmail(snsEmailNotificationDto);
