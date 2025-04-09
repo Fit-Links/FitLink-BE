@@ -8,7 +8,7 @@ import spring.fitlinkbe.domain.notification.Notification;
 
 import java.util.Optional;
 
-public interface NotificationJpaRepository extends JpaRepository<NotificationEntity, Long> {
+public interface NotificationJpaRepository extends JpaRepository<NotificationEntity, Long>, NotificationRepositoryCustom {
 
     @EntityGraph(attributePaths = {"personalDetail"})
     Optional<NotificationEntity> findByPersonalDetail_PersonalDetailId(Long personalDetailId);

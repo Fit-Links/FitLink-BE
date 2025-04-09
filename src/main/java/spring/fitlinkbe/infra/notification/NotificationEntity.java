@@ -40,9 +40,9 @@ public class NotificationEntity {
 
     private String content;
 
-    private Boolean isSent;
+    private boolean isSent;
 
-    private Boolean isProcessed;
+    private boolean isProcessed;
 
     private LocalDateTime sendDate;
 
@@ -57,8 +57,8 @@ public class NotificationEntity {
                 .partnerId(notification.getPartnerId())
                 .name(notification.getName())
                 .content(notification.getContent())
-                .isSent(notification.getIsSent())
-                .isProcessed(notification.getIsProcessed())
+                .isSent(notification.isSent())
+                .isProcessed(notification.isProcessed())
                 .sendDate(notification.getSendDate())
                 .build();
     }

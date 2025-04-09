@@ -2,6 +2,8 @@ package spring.fitlinkbe.infra.notification;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
@@ -46,7 +48,18 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     @Override
-    public void save(Notification notification) {
-        notificationJpaRepository.save(NotificationEntity.of(notification, em));
+    public Notification save(Notification notification) {
+        return notificationJpaRepository.save(NotificationEntity.of(notification, em))
+                .toDomain();
+    }
+
+    @Override
+    public Page<Notification> getNotifications(Notification.ReferenceType type, Pageable pageRequest, UserRole userRole,
+                                               Long userId) {
+        Page<NotificationEntity> notifications = notificationJpaRepository
+                .findNotifications(type, pageRequest, userRole, userId);
+
+        return notifications.map(NotificationEntity::toDomain);
+
     }
 }
