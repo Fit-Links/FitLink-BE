@@ -15,6 +15,7 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.notification.NotificationService;
+import spring.fitlinkbe.domain.notification.command.NotificationCommand;
 import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
@@ -45,7 +46,9 @@ public class MemberFacade {
 
         ConnectingInfo connectingInfo = memberService.requestConnectTrainer(trainer, member);
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(trainer.getTrainerId());
-        notificationService.sendConnectRequestNotification(trainerDetail, member.getName(), connectingInfo.getConnectingInfoId());
+
+        notificationService.sendNotification(NotificationCommand.Connect.of(trainerDetail, member.getMemberId(),
+                member.getName(), connectingInfo.getConnectingInfoId()));
     }
 
     @Transactional
@@ -54,7 +57,8 @@ public class MemberFacade {
 
         Member member = memberService.getMember(memberId);
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(connectingInfo.getTrainer().getTrainerId());
-        notificationService.sendDisconnectNotification(member.getName(), trainerDetail);
+        notificationService.sendNotification(NotificationCommand.Disconnect.of(trainerDetail, member.getMemberId(),
+                member.getName()));
 
         connectingInfo.disconnect();
         memberService.saveConnectingInfo(connectingInfo);

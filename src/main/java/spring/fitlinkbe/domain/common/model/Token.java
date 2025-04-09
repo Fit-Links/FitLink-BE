@@ -15,6 +15,8 @@ public class Token {
 
     private Long personalDetailId;
 
+    private String fcmToken;
+
     private String refreshToken;
 
     private LocalDateTime createdAt;

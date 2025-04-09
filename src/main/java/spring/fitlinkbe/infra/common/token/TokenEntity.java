@@ -23,12 +23,15 @@ public class TokenEntity extends BaseTimeEntity {
 
     private String refreshToken;
 
+    private String fcmToken;
+
 
     public Token toDomain() {
         return Token.builder()
                 .tokenId(tokenId)
                 .personalDetailId(personalDetail.getPersonalDetailId())
                 .refreshToken(refreshToken)
+                .fcmToken(fcmToken)
                 .createdAt(getCreatedAt())
                 .updatedAt(getUpdatedAt())
                 .build();

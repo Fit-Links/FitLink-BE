@@ -76,6 +76,7 @@ CREATE TABLE token
 (
     token_id           BIGINT NOT NULL AUTO_INCREMENT,
     personal_detail_id BIGINT,
+    fcm_token          VARCHAR(255),
     refresh_token      VARCHAR(255),
     created_at         DATETIME(6),
     updated_at         DATETIME(6),
@@ -136,13 +137,13 @@ CREATE TABLE session
 -- 예약 정보 테이블
 CREATE TABLE reservation
 (
-    reservation_id    BIGINT NOT NULL AUTO_INCREMENT,
+    reservation_id    BIGINT       NOT NULL AUTO_INCREMENT,
     member_id         BIGINT,
     trainer_id        BIGINT,
     session_info_id   BIGINT,
     name              VARCHAR(255),
-    reservation_dates VARCHAR(255)  NOT NULL,
-    confirm_date       DATETIME(6),
+    reservation_dates VARCHAR(255) NOT NULL,
+    confirm_date      DATETIME(6),
     change_date       DATETIME(6),
     status            ENUM ('FIXED_RESERVATION','DISABLED_TIME_RESERVATION', 'RESERVATION_WAITING','RESERVATION_APPROVED',
         'RESERVATION_CANCELLED', 'RESERVATION_REFUSED', 'RESERVATION_CHANGE_REQUEST', 'RESERVATION_COMPLETED'),
@@ -167,7 +168,7 @@ CREATE TABLE history
 (
     history_id         BIGINT NOT NULL AUTO_INCREMENT,
     ref_id             BIGINT,
-    ref_type           ENUM ('RESERVATION', 'SESSION', 'CONNECTING'),
+    ref_type           ENUM ('RESERVATION', 'SESSION', 'CONNECT'),
     personal_detail_id BIGINT,
     content            VARCHAR(255),
     created_at         DATETIME(6),
@@ -179,8 +180,11 @@ CREATE TABLE notification
 (
     notification_id    BIGINT NOT NULL AUTO_INCREMENT,
     ref_id             BIGINT,
-    ref_type           ENUM ('RESERVATION', 'SESSION', 'CONNECTING'),
+    ref_type           ENUM ('CONNECT', 'DISCONNECT', 'RESERVATION_REQUEST','RESERVATION_CHANGE_CANCEL',
+        'SESSION' ),
+    target             ENUM ('TRAINER', 'MEMBER'),
     personal_detail_id BIGINT,
+    partner_id         BIGINT,
     name               VARCHAR(255),
     content            VARCHAR(255),
     notification_type  ENUM ('RESERVATION_REQUESTED','RESERVATION_CANCEL_REQUEST','RESERVATION_CHANGE_REQUEST',

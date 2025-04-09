@@ -5,6 +5,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -35,6 +36,14 @@ public class MessageConvertUtils {
                     .map(MessageSourceResolvable::getDefaultMessage)
                     .collect(Collectors.collectingAndThen(Collectors.joining(", "),
                             msg -> msg.isEmpty() ? "보내는 파라미터를 다시 확인해주세요." : msg));
+        }
+
+        if (e instanceof MethodArgumentTypeMismatchException exception) {
+
+            String parameterName = exception.getName();  // 요청 파라미터 이름
+            String value = (String) exception.getValue(); // 전달된 값
+
+            return String.format("요청 파라미터 '%s'의 값 '%s'은(는) 유효하지 않습니다.", parameterName, value);
         }
 
         return e.getMessage();

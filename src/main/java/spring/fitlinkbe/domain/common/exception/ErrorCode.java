@@ -62,6 +62,7 @@ public enum ErrorCode {
 
     // Notification 관련 ErrorCode
     NOTIFICATION_NOT_FOUND("알림 정보를 찾지 못하였습니다.", 404),
+    NOTIFICATION_STRANGE_TYPE("알 수 없는 알림 타입입니다", 400),
 
     // Auth 관련 ErrorCode
     UNSUPPORTED_OAUTH_PROVIDER("지원하지 않는 OAuth 제공자입니다.", 400),

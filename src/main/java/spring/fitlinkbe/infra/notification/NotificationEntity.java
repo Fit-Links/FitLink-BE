@@ -2,6 +2,7 @@ package spring.fitlinkbe.infra.notification;
 
 import jakarta.persistence.*;
 import lombok.*;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailEntity;
 
@@ -24,6 +25,11 @@ public class NotificationEntity {
     private Notification.ReferenceType refType;
 
     @Enumerated(EnumType.STRING)
+    private UserRole target;
+
+    private Long partnerId;
+
+    @Enumerated(EnumType.STRING)
     private Notification.NotificationType notificationType;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -34,9 +40,9 @@ public class NotificationEntity {
 
     private String content;
 
-    private Boolean isSent;
+    private boolean isSent;
 
-    private Boolean isProcessed;
+    private boolean isProcessed;
 
     private LocalDateTime sendDate;
 
@@ -45,12 +51,14 @@ public class NotificationEntity {
                 .notificationId(notification.getNotificationId())
                 .refId(notification.getRefId())
                 .refType(notification.getRefType())
+                .target(notification.getTarget())
                 .notificationType(notification.getNotificationType())
                 .personalDetail(PersonalDetailEntity.of(notification.getPersonalDetail(), em))
+                .partnerId(notification.getPartnerId())
                 .name(notification.getName())
                 .content(notification.getContent())
-                .isSent(notification.getIsSent())
-                .isProcessed(notification.getIsProcessed())
+                .isSent(notification.isSent())
+                .isProcessed(notification.isProcessed())
                 .sendDate(notification.getSendDate())
                 .build();
     }
@@ -60,8 +68,10 @@ public class NotificationEntity {
                 .notificationId(notificationId)
                 .refId(refId)
                 .refType(refType)
+                .target(target)
                 .notificationType(notificationType)
                 .personalDetail(personalDetail.toDomain())
+                .partnerId(partnerId)
                 .name(name)
                 .content(content)
                 .isSent(isSent)
