@@ -1,5 +1,7 @@
 package spring.fitlinkbe.domain.notification;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 
 public interface NotificationRepository {
@@ -11,5 +13,8 @@ public interface NotificationRepository {
 
     Notification getNotification(Long refId, UserRole target, Notification.ReferenceType refType);
 
-    void save(Notification notification);
+    Notification save(Notification notification);
+
+    Page<Notification> getNotifications(Notification.ReferenceType type, Pageable pageRequest, UserRole userRole,
+                                        Long personalDetailId);
 }

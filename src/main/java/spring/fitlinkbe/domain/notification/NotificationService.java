@@ -1,20 +1,32 @@
 package spring.fitlinkbe.domain.notification;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import spring.fitlinkbe.domain.notification.command.NotificationCommand;
 import spring.fitlinkbe.domain.notification.command.NotificationRequest;
+import spring.fitlinkbe.support.security.SecurityUser;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationStrategyHandler strategyHandler;
 
+    public Page<Notification> getNotifications(NotificationCommand.GetNotifications command, SecurityUser user) {
+
+        return notificationRepository.getNotifications(command.type(), command.pageRequest(),
+                user.getUserRole(), user.getPersonalDetailId());
+
+    }
+
+    @Transactional
     public <T extends NotificationRequest> void sendNotification(T request) {
         Notification notification = strategyHandler.handle(request);
         notificationRepository.save(notification);
     }
+
 
 }

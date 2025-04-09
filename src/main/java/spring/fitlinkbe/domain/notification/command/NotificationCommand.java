@@ -1,6 +1,7 @@
 package spring.fitlinkbe.domain.notification.command;
 
 import lombok.Builder;
+import org.springframework.data.domain.Pageable;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.notification.Notification;
 
@@ -102,7 +103,8 @@ public class NotificationCommand {
     }
 
     @Builder
-    public record ApproveReservation(PersonalDetail memberDetail, Long reservationId, Long trainerId, boolean isApprove)
+    public record ApproveReservation(PersonalDetail memberDetail, Long reservationId, LocalDateTime reservationDate,
+                                     Long trainerId, boolean isApprove)
             implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -110,11 +112,13 @@ public class NotificationCommand {
                     Notification.NotificationType.RESERVATION_REFUSE;
         }
 
-        public static ApproveReservation of(PersonalDetail memberDetail, Long reservationId, Long trainerId,
+        public static ApproveReservation of(PersonalDetail memberDetail, Long reservationId, LocalDateTime reservationDate,
+                                            Long trainerId,
                                             boolean isApprove) {
             return ApproveReservation.builder()
                     .memberDetail(memberDetail)
                     .reservationId(reservationId)
+                    .reservationDate(reservationDate)
                     .trainerId(trainerId)
                     .isApprove(isApprove)
                     .build();
@@ -237,5 +241,9 @@ public class NotificationCommand {
                     .isApprove(isApprove)
                     .build();
         }
+    }
+
+    @Builder
+    public record GetNotifications(Notification.ReferenceType type, Pageable pageRequest) {
     }
 }

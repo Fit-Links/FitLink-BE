@@ -21,8 +21,8 @@ public class Notification {
     private PersonalDetail personalDetail;
     private String name;
     private String content;
-    private Boolean isSent;
-    private Boolean isProcessed;
+    private boolean isSent;
+    private boolean isProcessed;
     private LocalDateTime sendDate;
 
     public static Notification connectRequest(PersonalDetail trainerDetail,
@@ -31,15 +31,13 @@ public class Notification {
 
         return Notification.builder()
                 .refId(connectingInfoId)
-                .refType(ReferenceType.CONNECTING)
+                .refType(ReferenceType.CONNECT)
                 .target(UserRole.TRAINER)
                 .notificationType(NotificationType.CONNECT)
                 .personalDetail(trainerDetail)
                 .partnerId(memberId)
                 .name(NotificationType.CONNECT.getName())
                 .content(content)
-                .isSent(true)
-                .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
     }
@@ -49,15 +47,13 @@ public class Notification {
 
         return Notification.builder()
                 .refId(null)
-                .refType(ReferenceType.CONNECTING)
+                .refType(ReferenceType.DISCONNECT)
                 .target(UserRole.TRAINER)
                 .notificationType(NotificationType.DISCONNECT)
                 .personalDetail(trainerDetail)
                 .partnerId(memberId)
                 .name(NotificationType.DISCONNECT.getName())
                 .content(content)
-                .isSent(true)
-                .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
     }
@@ -71,15 +67,13 @@ public class Notification {
 
         return Notification.builder()
                 .refId(reservationId)
-                .refType(ReferenceType.RESERVATION)
+                .refType(ReferenceType.RESERVATION_CHANGE_CANCEL)
                 .target(UserRole.MEMBER)
                 .notificationType(NotificationType.RESERVATION_CANCEL)
                 .personalDetail(memberDetail)
                 .partnerId(trainerId)
                 .name(NotificationType.RESERVATION_CANCEL.getName())
                 .content(content)
-                .isSent(true)
-                .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
     }
@@ -92,35 +86,32 @@ public class Notification {
 
         return Notification.builder()
                 .refId(reservationId)
-                .refType(ReferenceType.RESERVATION)
+                .refType(ReferenceType.RESERVATION_CHANGE_CANCEL)
                 .target(UserRole.TRAINER)
                 .notificationType(NotificationType.RESERVATION_CANCEL)
                 .personalDetail(trainerDetail)
                 .partnerId(memberId)
                 .name(NotificationType.RESERVATION_CANCEL.getName())
                 .content(content)
-                .isSent(true)
-                .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
 
     }
 
     public static Notification approveReservation(PersonalDetail memberDetail, Long reservationId,
-                                                  Long trainerId, boolean isApprove) {
+                                                  LocalDateTime reservationDate, Long trainerId, boolean isApprove) {
 
-        String content = " %s 님의 예약이 %s되었습니다.".formatted(memberDetail.getName(), isApprove ? "승인" : "거절");
+        String content = "%s 님의 예약이 %s되었습니다.\n %s".formatted(memberDetail.getName(), isApprove ? "확정" : "거절",
+                reservationDate.truncatedTo(ChronoUnit.HOURS));
         return Notification.builder()
                 .refId(reservationId)
-                .refType(ReferenceType.RESERVATION)
+                .refType(ReferenceType.RESERVATION_REQUEST)
                 .target(UserRole.MEMBER)
                 .notificationType(isApprove ? NotificationType.RESERVATION_APPROVE : NotificationType.RESERVATION_REFUSE)
                 .personalDetail(memberDetail)
                 .partnerId(trainerId)
                 .name(isApprove ? NotificationType.RESERVATION_APPROVE.name : NotificationType.RESERVATION_REFUSE.name)
                 .content(content)
-                .isSent(true)
-                .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
     }
@@ -133,7 +124,7 @@ public class Notification {
 
         return Notification.builder()
                 .refId(reservationId)
-                .refType(ReferenceType.RESERVATION)
+                .refType(ReferenceType.RESERVATION_CHANGE_CANCEL)
                 .target(UserRole.MEMBER)
                 .notificationType(isApprove ? NotificationType.RESERVATION_CHANGE_REQUEST_APPROVED :
                         NotificationType.RESERVATION_CHANGE_REQUEST_REFUSED)
@@ -142,8 +133,6 @@ public class Notification {
                 .name(isApprove ? NotificationType.RESERVATION_CHANGE_REQUEST_APPROVED.name :
                         NotificationType.RESERVATION_CHANGE_REQUEST_REFUSED.name)
                 .content(content)
-                .isSent(true)
-                .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
     }
@@ -155,15 +144,13 @@ public class Notification {
 
         return Notification.builder()
                 .refId(reservationId)
-                .refType(ReferenceType.RESERVATION)
+                .refType(ReferenceType.RESERVATION_REQUEST)
                 .target(UserRole.TRAINER)
                 .notificationType(NotificationType.RESERVATION_REQUESTED)
                 .personalDetail(trainerDetail)
                 .partnerId(memberId)
                 .name(NotificationType.RESERVATION_REQUESTED.name)
                 .content(content)
-                .isSent(true)
-                .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
     }
@@ -182,8 +169,6 @@ public class Notification {
                 .partnerId(memberId)
                 .name(NotificationType.SESSION_COMPLETED.name)
                 .content(content)
-                .isSent(true)
-                .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
     }
@@ -202,8 +187,6 @@ public class Notification {
                 .partnerId(trainerId)
                 .name(NotificationType.SESSION_DEDUCTED.name)
                 .content(content)
-                .isSent(true)
-                .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
     }
@@ -218,15 +201,13 @@ public class Notification {
 
         return Notification.builder()
                 .refId(reservationId)
-                .refType(ReferenceType.RESERVATION)
+                .refType(ReferenceType.RESERVATION_CHANGE_CANCEL)
                 .target(UserRole.TRAINER)
                 .notificationType(NotificationType.RESERVATION_CHANGE_REQUEST)
                 .personalDetail(trainerDetail)
                 .partnerId(memberId)
                 .name(NotificationType.RESERVATION_CHANGE_REQUEST.name)
                 .content(content)
-                .isSent(true)
-                .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
     }
@@ -240,7 +221,7 @@ public class Notification {
 
         return Notification.builder()
                 .refId(reservationId)
-                .refType(ReferenceType.RESERVATION)
+                .refType(ReferenceType.RESERVATION_CHANGE_CANCEL)
                 .target(UserRole.MEMBER)
                 .notificationType(isApprove ? NotificationType.RESERVATION_CANCEL_REQUEST_APPROVED :
                         NotificationType.RESERVATION_CANCEL_REQUEST_REFUSED)
@@ -249,8 +230,6 @@ public class Notification {
                 .name(isApprove ? NotificationType.RESERVATION_CHANGE_REQUEST.name :
                         NotificationType.RESERVATION_CANCEL_REQUEST_REFUSED.name)
                 .content(content)
-                .isSent(true)
-                .isProcessed(false)
                 .sendDate(LocalDateTime.now())
                 .build();
     }
@@ -258,9 +237,11 @@ public class Notification {
     @RequiredArgsConstructor
     @Getter
     public enum ReferenceType {
-        RESERVATION("예약"),
-        SESSION("세션"),
-        CONNECTING("트레이너 연동");
+        CONNECT("트레이너 연동"),
+        DISCONNECT("트레이너 연동 해제"),
+        RESERVATION_REQUEST("예약 요청"),
+        RESERVATION_CHANGE_CANCEL("예약 변경/취소"),
+        SESSION("세션");
 
         private final String name;
     }
@@ -279,7 +260,7 @@ public class Notification {
         //회원
         RESERVATION_CHANGE_REQUEST_APPROVED("예약 변경 요청 승인", "예약 변경 요청이 승인 되었습니다"),
         RESERVATION_CHANGE_REQUEST_REFUSED("예약 변경 요청 거절", "예약 변경 요청이 거절 되었습니다"),
-        RESERVATION_APPROVE("예약 승인", "예약이 승인되었습니다."),
+        RESERVATION_APPROVE("예약 확정", "예약이 확정되었습니다."),
         RESERVATION_CANCEL("예약 취소", "예약이 취소되었습니다."),
         RESERVATION_REFUSE("예약 거절", "예약이 거절되었습니다."),
         SESSION_DEDUCTED("세션 차감", "세션이 1회 차감되었습니다"),

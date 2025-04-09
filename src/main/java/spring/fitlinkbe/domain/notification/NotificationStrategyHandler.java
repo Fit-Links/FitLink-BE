@@ -2,6 +2,8 @@ package spring.fitlinkbe.domain.notification;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.notification.command.NotificationCommand;
 import spring.fitlinkbe.domain.notification.command.NotificationRequest;
 
@@ -43,7 +45,7 @@ public class NotificationStrategyHandler {
         Function<T, Notification> strategy = (Function<T, Notification>) strategyMap.get(request.getType());
 
         if (strategy == null) {
-            throw new IllegalArgumentException("알 수 없는 알림 타입: " + request.getType());
+            throw new CustomException(ErrorCode.NOTIFICATION_STRANGE_TYPE);
         }
 
         return strategy.apply(request);
@@ -73,7 +75,8 @@ public class NotificationStrategyHandler {
 
     private Notification handleApproveReservation(NotificationRequest request) {
         NotificationCommand.ApproveReservation dto = (NotificationCommand.ApproveReservation) request;
-        return Notification.approveReservation(dto.memberDetail(), dto.reservationId(), dto.trainerId(), dto.isApprove());
+        return Notification.approveReservation(dto.memberDetail(), dto.reservationId(), dto.reservationDate(),
+                dto.trainerId(), dto.isApprove());
     }
 
     private Notification handleApproveRequestReservation(NotificationRequest request) {
