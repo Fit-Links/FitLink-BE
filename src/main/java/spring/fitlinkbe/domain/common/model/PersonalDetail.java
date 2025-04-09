@@ -53,22 +53,21 @@ public class PersonalDetail {
         return phoneNumber.getPhoneNumber();
     }
 
-    public void registerMember(String name, LocalDate birthDate, PhoneNumber phoneNumber,
+    public void registerMember(String name, LocalDate birthDate,
                                String profileUrl, Gender gender, Member member) {
-        register(name, birthDate, phoneNumber, profileUrl, gender);
+        register(name, birthDate, profileUrl, gender);
         this.memberId = member.getMemberId();
     }
 
-    public void registerTrainer(String name, LocalDate birthDate, PhoneNumber phoneNumber,
+    public void registerTrainer(String name, LocalDate birthDate,
                                 String profileUrl, Gender gender, Trainer trainer) {
-        register(name, birthDate, phoneNumber, profileUrl, gender);
+        register(name, birthDate, profileUrl, gender);
         this.trainerId = trainer.getTrainerId();
     }
 
-    private void register(String name, LocalDate birthDate, PhoneNumber phoneNumber, String profileUrl, Gender gender) {
+    private void register(String name, LocalDate birthDate, String profileUrl, Gender gender) {
         this.name = name;
         this.birthDate = birthDate;
-        this.phoneNumber = phoneNumber;
         this.profilePictureUrl = profileUrl;
         this.gender = gender;
         this.status = Status.NORMAL;

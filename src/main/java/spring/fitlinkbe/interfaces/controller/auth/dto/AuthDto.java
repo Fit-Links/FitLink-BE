@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.Gender;
-import spring.fitlinkbe.domain.common.model.PhoneNumber;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -39,7 +38,6 @@ public class AuthDto {
     public record TrainerRegisterRequest(
             @NotNull String name,
             @NotNull LocalDate birthDate,
-            @NotNull String phoneNumber,
             @NotNull Gender gender,
             String profileUrl,
             @Valid List<AvailableTimeRequest> availableTimes
@@ -48,7 +46,6 @@ public class AuthDto {
             return AuthCommand.TrainerRegisterRequest.builder()
                     .name(name)
                     .birthDate(birthDate)
-                    .phoneNumber(new PhoneNumber(phoneNumber))
                     .gender(gender)
                     .profileUrl(profileUrl)
                     .availableTimes(availableTimes.stream().map(AvailableTimeRequest::toCommand).toList())
@@ -112,7 +109,6 @@ public class AuthDto {
     public record MemberRegisterRequest(
             @NotNull String name,
             @NotNull LocalDate birthDate,
-            @NotNull String phoneNumber,
             @NotNull Gender gender,
             String profileUrl,
             @Valid List<WorkoutScheduleRequest> workoutSchedule
@@ -122,7 +118,6 @@ public class AuthDto {
             return AuthCommand.MemberRegisterRequest.builder()
                     .name(name)
                     .birthDate(birthDate)
-                    .phoneNumber(new PhoneNumber(phoneNumber))
                     .gender(gender)
                     .profileUrl(profileUrl)
                     .workoutSchedule(workoutSchedule.stream().map(WorkoutScheduleRequest::toCommand).toList())

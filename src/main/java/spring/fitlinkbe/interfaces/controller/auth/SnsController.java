@@ -64,5 +64,6 @@ public class SnsController {
                 .build();
 
         snsClient.confirmSubscription(request);
+        log.info("Subscription confirmed for topic: {}", dto.topicArn());
     }
 }

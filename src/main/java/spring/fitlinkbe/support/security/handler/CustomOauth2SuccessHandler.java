@@ -50,6 +50,8 @@ public class CustomOauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
     private String determineTargetUrl(Status status, String accessToken, String refreshToken) {
         String url = applicationYmlRead.getFrontUrl();
         if (status.equals(Status.REQUIRED_SMS)) {
+            url += "/sns-verification";
+        } else if (status.equals(Status.REQUIRED_REGISTER)) {
             url += "/register";
         } else {
             url += "/";

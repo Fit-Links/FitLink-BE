@@ -53,10 +53,9 @@ public class AuthFacade {
 
     @Transactional
     public AuthCommand.Response registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command) {
-        Member savedMember = memberService.saveMember(command.toMember());
-
-        // personalDetail 업데이트
-        PersonalDetail personalDetail = memberService.registerMember(personalDetailId, command, savedMember);
+        PersonalDetail personalDetail = memberService.getPersonalDetail(personalDetailId);
+        Member member = memberService.saveMember(command.toMember(personalDetail.getPhoneNumber()));
+        personalDetail.registerMember(command.name(), command.birthDate(), command.profileUrl(), command.gender(), member);
 
         // 토큰 생성 또는 업데이트
         String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId,
@@ -64,7 +63,7 @@ public class AuthFacade {
         String refreshToken = authTokenProvider.createRefreshToken(personalDetailId, personalDetail.getUserRole());
 
         // workoutSchedule 업데이트
-        memberService.saveWorkoutSchedules(command.toWorkoutSchedules(savedMember));
+        memberService.saveWorkoutSchedules(command.toWorkoutSchedules(member));
 
         Token token = Token.builder()
                 .personalDetailId(personalDetailId)
