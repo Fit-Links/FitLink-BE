@@ -61,6 +61,12 @@ public class AuthDto {
         }
 
         @JsonIgnore
+        @AssertTrue(message = "수업 가능 시간은 필수입니다")
+        private boolean isAvailableTimeRequired() {
+            return availableTimes != null;
+        }
+
+        @JsonIgnore
         @AssertTrue(message = "수업 가능 시간의 요일은 겹치면 안됩니다.")
         private boolean isAvailableTimeDayOfWeekUnique() {
             if (availableTimes == null) {
@@ -130,6 +136,12 @@ public class AuthDto {
                     .profileUrl(profileUrl)
                     .workoutSchedule(workoutSchedule.stream().map(WorkoutScheduleRequest::toCommand).toList())
                     .build();
+        }
+
+        @JsonIgnore
+        @AssertTrue(message = "운동 희망일은 필수입니다")
+        private boolean isWorkoutScheduleRequired() {
+            return workoutSchedule != null;
         }
 
         @JsonIgnore
