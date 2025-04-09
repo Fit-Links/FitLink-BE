@@ -13,12 +13,14 @@ public class CustomPageResponse<T> {
     private List<T> content;
     private int totalPages;
     private long totalElements;
+    private boolean hasNext;
 
     @Builder
-    public CustomPageResponse(List<T> content, int totalPages, long totalElements) {
+    public CustomPageResponse(List<T> content, int totalPages, long totalElements, boolean hasNext) {
         this.content = content;
         this.totalPages = totalPages;
         this.totalElements = totalElements;
+        this.hasNext = hasNext;
     }
 
     public CustomPageResponse() {
@@ -31,6 +33,7 @@ public class CustomPageResponse<T> {
                         .collect(Collectors.toList()))
                 .totalPages(page.getTotalPages())
                 .totalElements(page.getTotalElements())
+                .hasNext(page.hasNext())
                 .build();
     }
 
@@ -39,6 +42,7 @@ public class CustomPageResponse<T> {
                 .content(page.getContent())
                 .totalPages(page.getTotalPages())
                 .totalElements(page.getTotalElements())
+                .hasNext(page.hasNext())
                 .build();
     }
 }

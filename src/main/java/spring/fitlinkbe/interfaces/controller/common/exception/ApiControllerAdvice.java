@@ -69,7 +69,7 @@ public class ApiControllerAdvice {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ApiResultResponse<Object> handlerMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
         log.error("MethodArgumentTypeMismatchException is occurred! {}", e.getMessage());
-        return ApiResultResponse.of(HttpStatus.BAD_REQUEST, false, e.getMessage(), null);
+        return ApiResultResponse.of(HttpStatus.BAD_REQUEST, false, getErrorCustomMessage(e), null);
     }
 
     @ResponseStatus(HttpStatus.OK)
