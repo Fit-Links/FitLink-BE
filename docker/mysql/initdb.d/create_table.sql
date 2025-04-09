@@ -168,7 +168,7 @@ CREATE TABLE history
 (
     history_id         BIGINT NOT NULL AUTO_INCREMENT,
     ref_id             BIGINT,
-    ref_type           ENUM ('RESERVATION', 'SESSION', 'CONNECTING'),
+    ref_type           ENUM ('RESERVATION', 'SESSION', 'CONNECT'),
     personal_detail_id BIGINT,
     content            VARCHAR(255),
     created_at         DATETIME(6),
@@ -180,7 +180,8 @@ CREATE TABLE notification
 (
     notification_id    BIGINT NOT NULL AUTO_INCREMENT,
     ref_id             BIGINT,
-    ref_type           ENUM ('RESERVATION', 'SESSION', 'CONNECTING'),
+    ref_type           ENUM ('CONNECT', 'DISCONNECT', 'RESERVATION_REQUEST','RESERVATION_CHANGE_CANCEL',
+        'SESSION' ),
     target             ENUM ('TRAINER', 'MEMBER'),
     personal_detail_id BIGINT,
     partner_id         BIGINT,
