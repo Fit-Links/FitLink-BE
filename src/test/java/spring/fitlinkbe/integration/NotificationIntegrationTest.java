@@ -104,7 +104,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
 
                 Notification notification = notificationRepository.getNotification(memberDetail.getPersonalDetailId());
                 softly.assertThat(notification).isNotNull();
-                softly.assertThat(notification.getContent()).contains("김민수 님의 예약이 확정되었습니다.");
+                softly.assertThat(notification.getContent()).contains("김민수 회원님의 예약이 확정되었습니다.");
 
             });
         }
@@ -156,7 +156,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
     @DisplayName("알림 목록 조회 Integration TEST")
     class GetNotificationsIntegrationTest {
         @Test
-        @DisplayName("알림 목록 조회 - 성공 : 첫 페이지")
+        @DisplayName("알림 목록 조회 - 성공 : 전부 조회")
         void getNotificationsFirstPage() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
@@ -172,12 +172,9 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
             // 알림 20개 저장
             createNotifications(personalDetail, member.getMemberId(), userRole);
 
-            Notification.ReferenceType refType = Notification.ReferenceType.RESERVATION_REQUEST;
-
             Map<String, String> params = new HashMap<>();
             params.put("page", "0");
             params.put("size", "10");
-            params.put("type", refType.name());
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
@@ -235,7 +232,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("알림 목록 조회 - 성공 : 마지막 페이지")
+        @DisplayName("알림 목록 조회 - 성공 : session 타입 조회")
         void getNotificationsLastPage() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
@@ -251,10 +248,10 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
             // 알림 20개 저장
             createNotifications(personalDetail, member.getMemberId(), userRole);
 
-            Notification.ReferenceType refType = Notification.ReferenceType.RESERVATION_REQUEST;
+            Notification.ReferenceType refType = Notification.ReferenceType.SESSION;
 
             Map<String, String> params = new HashMap<>();
-            params.put("page", "1");
+            params.put("page", "0");
             params.put("size", "10");
             params.put("type", refType.name());
 
@@ -266,10 +263,10 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
                 List<NotificationResponseDto.Summary> content = result.body().jsonPath()
                         .getList("data.content", NotificationResponseDto.Summary.class);
-                softly.assertThat(content.get(0).notificationId()).isEqualTo(11);
+                softly.assertThat(content.get(0).notificationId()).isEqualTo(6);
                 softly.assertThat(content.size()).isEqualTo(10);
                 Boolean hasNext = result.body().jsonPath().getBoolean("data.hasNext");
-                softly.assertThat(hasNext).isFalse();
+                softly.assertThat(hasNext).isTrue();
             });
         }
 
@@ -290,12 +287,10 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
             // 알림 20개 저장
             createNotifications(personalDetail, trainer.getTrainerId(), userRole);
 
-            Notification.ReferenceType refType = Notification.ReferenceType.RESERVATION_REQUEST;
 
             Map<String, String> params = new HashMap<>();
             params.put("page", "0");
             params.put("size", "10");
-            params.put("type", refType.name());
 
             // when
             ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
