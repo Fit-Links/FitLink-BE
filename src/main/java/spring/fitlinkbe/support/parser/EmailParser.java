@@ -23,8 +23,17 @@ public class EmailParser {
         byte[] decodedBytes = Base64.getDecoder().decode(encodedContent);
         String decodedContent = new String(decodedBytes, StandardCharsets.UTF_8);
 
-        // 정규표현식: "Content-Type: text/plain" 이후에 빈 줄을 찾고, 그 다음 줄의 첫 번째 non-empty 텍스트를 캡처
-        Pattern pattern = Pattern.compile("(?s)Content-Type:\\s*text/plain.*?\\r?\\n\\r?\\n\\s*([^\\r\\n]+)");
+        /*
+         * 정규표현식 설명:
+         *  - (?s) 플래그로 DOTALL 모드를 활성화하여 개행문자도 '.'에 포함
+         *  - "Content-Type:"으로 시작해서 "text/plain"을 포함하는 부분을 찾은 후,
+         *    헤더와 본문 사이의 빈 줄(\r?\n\r?\n)을 찾음.
+         *  - 그 뒤 이어서 공백 후 대괄호로 감싼 라인(\[[^\]]*\])이 나오고,
+         *    그 다음 줄의 첫 번째 non-empty 라인을 캡처하여 토큰으로 반환.
+         */
+        Pattern pattern = Pattern.compile(
+                "(?s)Content-Type:\\s*text/plain.*?\\r?\\n\\r?\\n\\s*\\[[^\\]]*\\]\\s*\\r?\\n\\s*([^\\r\\n]+)"
+        );
         Matcher matcher = pattern.matcher(decodedContent);
 
         if (matcher.find()) {
