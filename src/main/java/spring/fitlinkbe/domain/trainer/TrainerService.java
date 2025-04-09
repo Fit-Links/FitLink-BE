@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
+import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
+import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 
 import java.time.LocalDate;
@@ -23,6 +25,7 @@ public class TrainerService {
     private final TrainerRepository trainerRepository;
     private final PersonalDetailRepository personalDetailRepository;
     private final AvailableTimeRepository availableTimeRepository;
+    private final ConnectingInfoRepository connectingInfoRepository;
 
     @Transactional(readOnly = true)
     public Trainer getTrainerInfo(Long trainerId) {
@@ -116,5 +119,13 @@ public class TrainerService {
      */
     public List<DayOff> findAllDayOff(Long trainerId) {
         return trainerRepository.findScheduledDayOff(trainerId);
+    }
+
+    public ConnectingInfo getConnectingInfo(Long trainerId, Long memberId) {
+        return connectingInfoRepository.getConnectingInfo(memberId, trainerId);
+    }
+
+    public void saveConnectingInfo(ConnectingInfo connectingInfo) {
+        connectingInfoRepository.save(connectingInfo);
     }
 }

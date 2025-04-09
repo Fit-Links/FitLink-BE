@@ -76,7 +76,7 @@ public enum ErrorCode {
     // Common ErrorCode
     INVALID_PHONE_NUMBER_FORMAT("유효하지 않은 전화번호 형식입니다.", 400),
     PERSONAL_DETAIL_NOT_FOUND("Personal Detail 정보가 존재하지 않습니다.", 404),
-    CONNECTING_INFO_NOT_FOUND("Connecting Info 정보가 존재하지 않습니다.", 404),
+    CONNECTING_INFO_NOT_FOUND("연결 정보가 없습니다.", 404),
 
     INVALID_PARAMETER("유효하지 않은 파라미터입니다.", 400),
     ;

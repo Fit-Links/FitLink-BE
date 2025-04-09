@@ -15,6 +15,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationStrategyHandler strategyHandler;
 
+
     public Page<Notification> getNotifications(NotificationCommand.GetNotifications command, SecurityUser user) {
 
         return notificationRepository.getNotifications(command.type(), command.pageRequest(),
