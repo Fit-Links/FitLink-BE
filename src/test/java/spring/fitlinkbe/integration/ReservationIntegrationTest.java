@@ -728,9 +728,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
                 softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)
                         .reservationId()).isEqualTo(2L);
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(savedReservation.getReservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_CANCEL);
             });
@@ -811,9 +811,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(session).isNotNull();
                 softly.assertThat(session.getStatus()).isEqualTo(SESSION_WAITING);
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_REQUEST);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_APPROVE);
             });
@@ -853,9 +853,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.reservationId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(RESERVATION_WAITING.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_REQUEST);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_REQUESTED);
             });
@@ -897,9 +897,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.reservationId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(RESERVATION_WAITING.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_REQUEST);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_REQUESTED);
             });
@@ -1187,9 +1187,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
                 softly.assertThat(originReservation.getStatus()).isEqualTo(RESERVATION_CANCELLED);
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(originReservation.getReservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_CANCEL);
 
@@ -1460,7 +1460,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
-            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(2);
 
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
                     .cancelDate(requestDate)
@@ -1502,9 +1502,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.reservationId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(RESERVATION_CANCELLED.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_CANCEL);
             });
@@ -1521,7 +1521,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
-            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(2);
 
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
                     .cancelDate(requestDate)
@@ -1564,9 +1564,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.reservationId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(RESERVATION_CANCEL_REQUEST.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_CANCEL);
             });
@@ -1664,7 +1664,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
-            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(2);
 
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
                     .cancelReason("개인 사유")
@@ -1707,7 +1707,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
-            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(2);
 
             ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
                     .cancelReason("개인 사유")
@@ -1840,9 +1840,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.reservationId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(RESERVATION_APPROVED.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_REQUEST);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_APPROVE);
             });
@@ -1906,9 +1906,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.reservationId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(RESERVATION_APPROVED.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        UserRole.MEMBER,Notification.ReferenceType.RESERVATION);
+                        UserRole.MEMBER, Notification.ReferenceType.RESERVATION_REQUEST);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_APPROVE);
 
@@ -1917,9 +1917,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                         .getReservation(otherReservation.getReservationId()).orElseThrow();
                 softly.assertThat(refuseReservation.getStatus()).isEqualTo(RESERVATION_REFUSED);
 
-                // 다른 예약 알람 내용이 거절 내용인지 확인
+                // 다른 예약 알림 내용이 거절 내용인지 확인
                 Notification notification2 = notificationRepository.getNotification(refuseReservation.getReservationId(),
-                        UserRole.MEMBER, Notification.ReferenceType.RESERVATION);
+                        UserRole.MEMBER, Notification.ReferenceType.RESERVATION_REQUEST);
                 softly.assertThat(notification2).isNotNull();
                 softly.assertThat(notification2.getNotificationType()).isEqualTo(RESERVATION_REFUSE);
 
@@ -2193,7 +2193,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.sessionId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(Notification.NotificationType.SESSION_COMPLETED.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.sessionId(),
                         UserRole.MEMBER, Notification.ReferenceType.SESSION);
                 softly.assertThat(notification).isNotNull();
@@ -2251,7 +2251,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.sessionId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(SESSION_NOT_ATTEND.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.sessionId(),
                         UserRole.MEMBER, Notification.ReferenceType.SESSION);
                 softly.assertThat(notification).isNotNull();
@@ -2509,9 +2509,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.reservationId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(RESERVATION_CHANGE_REQUEST.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(Notification.NotificationType.RESERVATION_CHANGE_REQUEST);
             });
@@ -2563,9 +2563,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.reservationId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(RESERVATION_CHANGE_REQUEST.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(Notification.NotificationType.RESERVATION_CHANGE_REQUEST);
             });
@@ -2618,9 +2618,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.reservationId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(RESERVATION_CHANGE_REQUEST.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(Notification.NotificationType.RESERVATION_CHANGE_REQUEST);
             });
@@ -2820,9 +2820,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.reservationId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(RESERVATION_APPROVED.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(
                         Notification.NotificationType.RESERVATION_CHANGE_REQUEST_APPROVED);
@@ -2883,9 +2883,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.reservationId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(Reservation.Status.RESERVATION_CHANGE_REQUEST_REFUSED.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(
                         Notification.NotificationType.RESERVATION_CHANGE_REQUEST_REFUSED);
@@ -2958,16 +2958,16 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(session.getReservation().getReservationId()).isEqualTo(
                         reservation1.getReservationId());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(
                         Notification.NotificationType.RESERVATION_CHANGE_REQUEST_APPROVED);
 
-                // 취소 알람이 잘 생성됐는지 확인
+                // 취소 알림이 잘 생성됐는지 확인
                 Notification notification2 = notificationRepository.getNotification(savedReservation2.getReservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification2).isNotNull();
                 softly.assertThat(notification2.getNotificationType()).isEqualTo(
                         Notification.NotificationType.RESERVATION_CANCEL);
@@ -3125,9 +3125,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(cancelledSession.getStatus()).isEqualTo(SESSION_CANCELLED);
 
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(
                         Notification.NotificationType.RESERVATION_CANCEL_REQUEST_APPROVED);
@@ -3185,9 +3185,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.reservationId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(RESERVATION_CANCEL_REQUEST_REFUSED.getName());
 
-                // 알람이 잘 생성됐는지 확인
+                // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(content.reservationId(),
-                        Notification.ReferenceType.RESERVATION);
+                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(
                         Notification.NotificationType.RESERVATION_CANCEL_REQUEST_REFUSED);
