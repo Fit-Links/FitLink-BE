@@ -16,11 +16,12 @@ public class NotificationFacade {
     private final NotificationService notificationService;
 
     public Page<Notification> getNotifications(Notification.ReferenceType type, Pageable pageRequest,
-                                               SecurityUser user) {
+                                               SecurityUser user, String keyword) {
 
         NotificationCommand.GetNotifications command = NotificationCommand.GetNotifications.builder()
                 .type(type)
                 .pageRequest(pageRequest)
+                .keyword(keyword)
                 .build();
 
         return notificationService.getNotifications(command, user);

@@ -244,6 +244,6 @@ public class NotificationCommand {
     }
 
     @Builder
-    public record GetNotifications(Notification.ReferenceType type, Pageable pageRequest) {
+    public record GetNotifications(Notification.ReferenceType type, Pageable pageRequest, String keyword) {
     }
 }

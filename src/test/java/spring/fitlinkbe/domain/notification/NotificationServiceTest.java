@@ -105,8 +105,10 @@ public class NotificationServiceTest {
             // given
             Pageable pageable = PageRequest.of(0, 10);
             Notification.ReferenceType refType = Notification.ReferenceType.CONNECT;
+            String keyword = "멤버1";
 
-            NotificationCommand.GetNotifications command = new NotificationCommand.GetNotifications(refType, pageable);
+            NotificationCommand.GetNotifications command = new NotificationCommand.GetNotifications(refType,
+                    pageable, keyword);
             SecurityUser user = mock(SecurityUser.class);
 
             when(user.getUserRole()).thenReturn(UserRole.TRAINER);
@@ -115,7 +117,8 @@ public class NotificationServiceTest {
             List<Notification> content = List.of(Notification.builder().notificationId(1L).build());
             Page<Notification> expectedPage = new PageImpl<>(content, pageable, 1L);
 
-            when(notificationRepository.getNotifications(refType, pageable, UserRole.TRAINER, 1L))
+            when(notificationRepository.getNotifications(refType, pageable, UserRole.TRAINER, 1L,
+                    keyword))
                     .thenReturn(expectedPage);
 
             // when
@@ -123,7 +126,8 @@ public class NotificationServiceTest {
 
             // then
             assertThat(result).isEqualTo(expectedPage);
-            verify(notificationRepository).getNotifications(refType, pageable, UserRole.TRAINER, 1L);
+            verify(notificationRepository).getNotifications(refType, pageable, UserRole.TRAINER, 1L,
+                    keyword);
         }
 
         @DisplayName("알림 목록 조회 - 실패: repository 예외 발생")
@@ -131,14 +135,16 @@ public class NotificationServiceTest {
         void getNotificationsWithRepositoryError() {
             // given
             Pageable pageable = PageRequest.of(0, 10);
+            String keyword = "멤버1";
             Notification.ReferenceType refType = Notification.ReferenceType.CONNECT;
-            NotificationCommand.GetNotifications command = new NotificationCommand.GetNotifications(refType, pageable);
+            NotificationCommand.GetNotifications command = new NotificationCommand.GetNotifications(refType, pageable,
+                    keyword);
             SecurityUser user = mock(SecurityUser.class);
 
             when(user.getUserRole()).thenReturn(UserRole.TRAINER);
             when(user.getPersonalDetailId()).thenReturn(1L);
 
-            when(notificationRepository.getNotifications(any(), any(), any(), any()))
+            when(notificationRepository.getNotifications(any(), any(), any(), any(), any()))
                     .thenThrow(new RuntimeException("DB 오류"));
 
             // when & then

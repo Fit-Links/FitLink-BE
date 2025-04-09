@@ -40,9 +40,10 @@ public class NotificationController {
     public ApiResultResponse<CustomPageResponse<NotificationResponseDto.Summary>> getNotifications(
             @RequestParam(required = false) Notification.ReferenceType type,
             @PageableDefault Pageable pageRequest,
+            @RequestParam(required = false) String q,
             @Login SecurityUser user) {
 
-        Page<Notification> result = notificationFacade.getNotifications(type, pageRequest, user);
+        Page<Notification> result = notificationFacade.getNotifications(type, pageRequest, user, q);
 
         return ApiResultResponse.ok(CustomPageResponse.of(result, NotificationResponseDto.Summary::of));
 

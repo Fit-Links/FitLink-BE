@@ -18,7 +18,7 @@ public class NotificationService {
     public Page<Notification> getNotifications(NotificationCommand.GetNotifications command, SecurityUser user) {
 
         return notificationRepository.getNotifications(command.type(), command.pageRequest(),
-                user.getUserRole(), user.getPersonalDetailId());
+                user.getUserRole(), user.getPersonalDetailId(), command.keyword());
 
     }
 

@@ -9,6 +9,7 @@ public class NotificationResponseDto {
     @Builder(toBuilder = true)
     public record Summary(
             Long notificationId,
+            String type,
             String content,
             LocalDateTime sendDate,
             boolean isProcessed
@@ -19,6 +20,7 @@ public class NotificationResponseDto {
 
             return Summary.builder()
                     .notificationId(notification.getNotificationId())
+                    .type(notification.getRefType().getName())
                     .content(notification.getContent())
                     .sendDate(notification.getSendDate())
                     .isProcessed(notification.isProcessed())

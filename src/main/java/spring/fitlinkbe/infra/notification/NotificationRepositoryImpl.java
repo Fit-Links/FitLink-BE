@@ -55,9 +55,9 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Override
     public Page<Notification> getNotifications(Notification.ReferenceType type, Pageable pageRequest, UserRole userRole,
-                                               Long userId) {
+                                               Long userId, String keyword) {
         Page<NotificationEntity> notifications = notificationJpaRepository
-                .findNotifications(type, pageRequest, userRole, userId);
+                .findNotifications(type, pageRequest, userRole, userId, keyword);
 
         return notifications.map(NotificationEntity::toDomain);
 

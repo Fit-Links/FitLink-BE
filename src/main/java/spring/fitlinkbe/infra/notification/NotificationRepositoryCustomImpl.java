@@ -21,7 +21,7 @@ public class NotificationRepositoryCustomImpl implements NotificationRepositoryC
 
     @Override
     public Page<NotificationEntity> findNotifications(Notification.ReferenceType type, Pageable pageRequest, UserRole userRole,
-                                                      Long personalDetailId) {
+                                                      Long personalDetailId, String keyword) {
 
         List<NotificationEntity> notifications = queryFactory.selectFrom(notificationEntity)
                 .leftJoin(personalDetailEntity)
@@ -29,7 +29,8 @@ public class NotificationRepositoryCustomImpl implements NotificationRepositoryC
                 .where(
                         eqRefType(type),
                         eqUserRole(userRole),
-                        eqPersonalDetailId(personalDetailId)
+                        eqPersonalDetailId(personalDetailId),
+                        likeKeyword(keyword)
                 )
                 .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize())
@@ -40,7 +41,8 @@ public class NotificationRepositoryCustomImpl implements NotificationRepositoryC
                 .where(
                         eqRefType(type),
                         eqUserRole(userRole),
-                        eqPersonalDetailId(personalDetailId)
+                        eqPersonalDetailId(personalDetailId),
+                        likeKeyword(keyword)
                 )
                 .fetchOne();
 
@@ -49,6 +51,11 @@ public class NotificationRepositoryCustomImpl implements NotificationRepositoryC
         }
 
         return new PageImpl<>(notifications, pageRequest, totalCount);
+    }
+
+    private BooleanExpression likeKeyword(String keyword) {
+        return keyword != null ? notificationEntity.content.containsIgnoreCase(keyword)
+                .or(notificationEntity.name.containsIgnoreCase(keyword)) : null;
     }
 
     private static BooleanExpression eqPersonalDetailId(Long personalDetailId) {

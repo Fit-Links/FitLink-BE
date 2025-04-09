@@ -61,7 +61,7 @@ public class Notification {
     public static Notification cancelReservation(PersonalDetail memberDetail, Long reservationId, Long trainerId,
                                                  Reason reason) {
 
-        String content = "트레이너님의 %s로 인해 %s 님의 예약이 취소되었습니다.".formatted(
+        String content = "트레이너님의 %s로 인해 %s 회원님의 예약이 취소되었습니다.".formatted(
                 reason.name,
                 memberDetail.getName());
 
@@ -81,7 +81,7 @@ public class Notification {
     public static Notification cancelRequestReservation(PersonalDetail trainerDetail, Long reservationId,
                                                         Long memberId, String name, LocalDateTime cancelDate,
                                                         String cancelReason, Reason reason) {
-        String content = ("회원 %s 님의 %s를 요청하였습니다.\n +%s\n +취소 사유: %s")
+        String content = ("%s 회원님의 %s를 요청하였습니다.\n +%s\n +취소 사유: %s")
                 .formatted(name, reason.name, cancelDate.truncatedTo(ChronoUnit.HOURS), cancelReason);
 
         return Notification.builder()
@@ -101,7 +101,7 @@ public class Notification {
     public static Notification approveReservation(PersonalDetail memberDetail, Long reservationId,
                                                   LocalDateTime reservationDate, Long trainerId, boolean isApprove) {
 
-        String content = "%s 님의 예약이 %s되었습니다.\n %s".formatted(memberDetail.getName(), isApprove ? "확정" : "거절",
+        String content = "%s 회원님의 예약이 %s되었습니다.\n %s".formatted(memberDetail.getName(), isApprove ? "확정" : "거절",
                 reservationDate.truncatedTo(ChronoUnit.HOURS));
         return Notification.builder()
                 .refId(reservationId)
@@ -119,7 +119,7 @@ public class Notification {
     public static Notification approveRequestReservation(PersonalDetail memberDetail, Long reservationId,
                                                          Long trainerId, boolean isApprove) {
 
-        String content = "%s 님의 예약 변경이 %s되었습니다."
+        String content = "%s 회원님의 예약 변경이 %s되었습니다."
                 .formatted(memberDetail.getName(), isApprove ? "승인" : "거절");
 
         return Notification.builder()
@@ -158,7 +158,7 @@ public class Notification {
     public static Notification completeSession(PersonalDetail memberDetail, Long sessionId,
                                                Long memberId, String name) {
 
-        String content = " %s 회원의 PT가 종료되었습니다.".formatted(name);
+        String content = " %s 회원님의 PT가 종료되었습니다.".formatted(name);
 
         return Notification.builder()
                 .refId(sessionId)
@@ -215,7 +215,7 @@ public class Notification {
     public static Notification cancelApproveReservation(PersonalDetail memberDetail, Long reservationId,
                                                         Long trainerId, boolean isApprove) {
 
-        String content = "%s 님의 예약 취소 요청이 %s되었습니다."
+        String content = "%s 회원님의 예약 취소 요청이 %s되었습니다."
                 .formatted(memberDetail.getName(), isApprove ? "승인" : "거절");
 
 
