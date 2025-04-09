@@ -56,6 +56,20 @@ public class Notification {
                 .build();
     }
 
+    public static Notification trainerDisconnectNotification(PersonalDetail memberDetail) {
+        return Notification.builder()
+                .refId(null)
+                .refType(ReferenceType.CONNECTING)
+                .notificationType(NotificationType.DISCONNECT_TRAINER)
+                .personalDetail(memberDetail)
+                .name(NotificationType.DISCONNECT_TRAINER.getName())
+                .content(NotificationType.DISCONNECT_TRAINER.description)
+                .isSent(true)
+                .isProcessed(false)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
     public static Notification cancelReservationNotification(Long reservationId, PersonalDetail memberDetail,
                                                              Reason reason) {
 
@@ -260,7 +274,9 @@ public class Notification {
         RESERVATION_CANCEL_REQUEST_APPROVED("예약 취소 요청 승인", "예약 취소 요청이 승인 되었습니다."),
         RESERVATION_CANCEL_REQUEST_REFUSED("예약 취소 요청 거절", "예약 취소 요청이 거절 되었습니다."),
         SESSION_REMAIN_5("세션 5회 남음", "세션이 5회 남았습니다."),
-        SESSION_EDITED("세션 직접 수정", "트레이너가 세션을 수정하였습니다");
+        SESSION_EDITED("세션 직접 수정", "트레이너가 세션을 수정하였습니다"),
+        DISCONNECT_TRAINER("트레이너 연동 해제", "트레이너와 연동이 해제되었습니다."),
+        ;
 
 
         private final String name;

@@ -26,6 +26,11 @@ public class NotificationService {
         notificationRepository.save(notification);
     }
 
+    public void sendTrainerDisconnectNotification(PersonalDetail personalDetail) {
+        Notification notification = Notification.trainerDisconnectNotification(personalDetail);
+        notificationRepository.save(notification);
+    }
+
     public void sendCancelReservationNotification(Long reservationId, PersonalDetail memberDetail, Reason reason) {
         Notification notification = cancelReservationNotification(reservationId, memberDetail, reason);
         notificationRepository.save(notification);
