@@ -60,4 +60,15 @@ public class AuthController {
         return ApiResultResponse.ok(new AuthDto.EmailAuthTokenResponse(verificationToken));
     }
 
+    /**
+     * 유저의 상태 polling api
+     */
+    @GetMapping("/status")
+    public ApiResultResponse<AuthDto.UserStatusResponse> getUserStatus(@Login SecurityUser user) {
+        PersonalDetail.Status status = user.getStatus();
+        String accessToken = authFacade.createAccessToken(user.getPersonalDetailId(), user.getUserRole(), status);
+
+        return ApiResultResponse.ok(new AuthDto.UserStatusResponse(status, accessToken));
+    }
+
 }

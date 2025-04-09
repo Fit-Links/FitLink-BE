@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.auth.AuthService;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.PhoneNumber;
 import spring.fitlinkbe.domain.common.model.Token;
@@ -57,6 +58,8 @@ public class AuthFacade {
         Member member = memberService.saveMember(command.toMember(personalDetail.getPhoneNumber()));
         personalDetail.registerMember(command.name(), command.birthDate(), command.profileUrl(), command.gender(), member);
 
+        memberService.savePersonalDetail(personalDetail);
+
         // 토큰 생성 또는 업데이트
         String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId,
                 personalDetail.getUserRole());
@@ -86,5 +89,9 @@ public class AuthFacade {
         personalDetail.verifySnsEmail(phoneNumber);
 
         authService.savePersonalDetail(personalDetail);
+    }
+
+    public String createAccessToken(Long personalDetailId, UserRole userRole, PersonalDetail.Status status) {
+        return authTokenProvider.createAccessToken(status, personalDetailId, userRole);
     }
 }

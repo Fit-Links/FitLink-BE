@@ -6,6 +6,7 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
+import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.Gender;
 
 import java.time.DayOfWeek;
@@ -15,6 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AuthDto {
+
+    @Builder
+    public record UserStatusResponse(
+            PersonalDetail.Status status,
+            String accessToken
+    ) {
+    }
 
     @Builder
     public record EmailAuthTokenResponse(
