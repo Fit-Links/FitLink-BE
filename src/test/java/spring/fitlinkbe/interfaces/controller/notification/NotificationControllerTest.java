@@ -55,8 +55,8 @@ public class NotificationControllerTest {
 
 
     @Nested
-    @DisplayName("예약 목록 조회 Controller TEST")
-    class GetReservationsControllerTest {
+    @DisplayName("알림 목록 조회 Controller TEST")
+    class GetNotificationsControllerTest {
         @Test
         @DisplayName("트레이너가 알림 목록 조회 성공")
         void getNotificationsWithTrainer() throws Exception {
@@ -244,6 +244,53 @@ public class NotificationControllerTest {
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.msg").value("요청 파라미터 'type'의 값 '카테고리'은(는) 유효하지 않습니다."))
                     .andExpect(jsonPath("$.data").isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("알림 상세 조회 Controller TEST")
+    class GetNotificationDetailControllerTest {
+        @Test
+        @DisplayName("트레이너가 알림 상세 조회 - 성공")
+        void getNotificationDetail() throws Exception {
+
+            //given
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
+            String accessToken = getAccessToken(personalDetail);
+
+            Long notificationId = 1L;
+
+            Notification notification = Notification.builder()
+                    .notificationId(notificationId)
+                    .refType(Notification.ReferenceType.SESSION)
+                    .personalDetail(personalDetail)
+                    .notificationType(Notification.NotificationType.SESSION_COMPLETED)
+                    .content("알림1")
+                    .sendDate(LocalDateTime.now())
+                    .isProcessed(false)
+                    .build();
+
+            when(notificationFacade.getNotificationDetail(any(Long.class), any(SecurityUser.class)))
+                    .thenReturn(notification);
+
+            //when & then
+            mockMvc.perform(get("/v1/notifications/%s".formatted(notificationId))
+                            .header("Authorization", "Bearer " + accessToken)
+                            .with(oauth2Login().oauth2User(user)))  // OAuth2 인증
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.msg").value("OK"))
+                    .andExpect(jsonPath("$.data").isNotEmpty());
         }
     }
 

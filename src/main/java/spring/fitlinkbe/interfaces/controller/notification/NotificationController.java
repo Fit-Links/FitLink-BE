@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.notification.NotificationFacade;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.notification.Notification;
@@ -50,4 +47,20 @@ public class NotificationController {
     }
 
 
+    /**
+     * 알림 상세 조회
+     * @param notificationId 알고 싶은 알림 ID
+     * @param user 인증된 유저 정보
+     * @return ApiResultResponse 알림 상세 정보를 반환한다.
+     */
+    @GetMapping("/{notificationId}")
+    public ApiResultResponse<NotificationResponseDto.Detail> getNotificationDetail(@PathVariable("notificationId")
+                                                                                   Long notificationId,
+                                                                                   @Login SecurityUser user) {
+
+        Notification result = notificationFacade.getNotificationDetail(notificationId, user);
+
+        return ApiResultResponse.ok(NotificationResponseDto.Detail.of(result));
+
+    }
 }
