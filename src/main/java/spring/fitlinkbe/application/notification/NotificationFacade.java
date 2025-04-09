@@ -26,4 +26,9 @@ public class NotificationFacade {
 
         return notificationService.getNotifications(command, user);
     }
+
+    public Notification getNotificationDetail(Long notificationId, SecurityUser user) {
+        return notificationService.getNotificationDetail(notificationId, user);
+    }
+
 }
