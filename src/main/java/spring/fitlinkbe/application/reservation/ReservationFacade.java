@@ -138,7 +138,8 @@ public class ReservationFacade {
         if (user.getUserRole() == MEMBER) {
             // 멤버가 예약했다면 트레이너에게 예약 요청을 했다는 알림 전송
             PersonalDetail trainerDetail = trainerService.getTrainerDetail(reservation.getTrainer().getTrainerId());
-            notificationService.sendNotification(NotificationCommand.RequestReservation.of(trainerDetail, savedReservation.getReservationId(),
+            notificationService.sendNotification(NotificationCommand.RequestReservation.of(trainerDetail,
+                    savedReservation.getReservationId(), savedReservation.getReservationDate(),
                     savedReservation.getMember().getMemberId(), savedReservation.getName()));
         }
         return savedReservation;

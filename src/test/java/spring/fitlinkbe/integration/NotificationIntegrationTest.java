@@ -157,7 +157,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
     class GetNotificationsIntegrationTest {
         @Test
         @DisplayName("알림 목록 조회 - 성공 : 전부 조회")
-        void getNotificationsFirstPage() {
+        void getNotificationsWithAllType() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -233,7 +233,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("알림 목록 조회 - 성공 : session 타입 조회")
-        void getNotificationsLastPage() {
+        void getNotificationsWithSessionType() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -344,6 +344,74 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
             });
         }
 
+    }
+
+    @Nested
+    @DisplayName("알림 상세 조회 Integration TEST")
+    class GetNotificationDetailIntegrationTest {
+        @Test
+        @DisplayName("알림 상세 조회 - 성공")
+        void getNotificationDetail() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            Member member = memberRepository.getMember(1L).orElseThrow();
+
+            UserRole userRole = UserRole.TRAINER;
+
+            // 알림 20개 저장
+            createNotifications(personalDetail, member.getMemberId(), userRole);
+
+            // when
+            ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/1", accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                NotificationResponseDto.Detail content = result.body().jsonPath()
+                        .getObject("data", NotificationResponseDto.Detail.class);
+
+                softly.assertThat(content.notificationId()).isEqualTo(1L);
+                softly.assertThat(content.content()).contains("예약");
+                softly.assertThat(content.userDetail()).isNotNull();
+            });
+        }
+
+        @Test
+        @DisplayName("알림 상세 조회 - 실패: 없는 알림 ID 조회")
+        void getNotificationDetailWithNoNotificationId() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            Member member = memberRepository.getMember(1L).orElseThrow();
+
+            UserRole userRole = UserRole.TRAINER;
+
+            // 알림 20개 저장
+            createNotifications(personalDetail, member.getMemberId(), userRole);
+
+            // when
+            ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/100", accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Number.class)).isEqualTo(404);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class))
+                        .contains("알림 정보를 찾지 못하였습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", NotificationResponseDto.Detail.class))
+                        .isNull();
+            });
+        }
     }
 
     private void createNotifications(PersonalDetail personalDetail, Long partnerId, UserRole userRole) {
