@@ -195,6 +195,46 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
+        @DisplayName("알림 목록 조회 - 성공 : 검색어 입력")
+        void getNotificationsWithKeyword() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            Member member = memberRepository.getMember(1L).orElseThrow();
+
+            UserRole userRole = UserRole.TRAINER;
+
+            // 알림 20개 저장
+            createNotifications(personalDetail, member.getMemberId(), userRole);
+
+            Notification.ReferenceType refType = Notification.ReferenceType.RESERVATION_REQUEST;
+
+            Map<String, String> params = new HashMap<>();
+            params.put("page", "0");
+            params.put("size", "10");
+            params.put("type", refType.name());
+            params.put("keyword", "예약");
+
+            // when
+            ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                List<NotificationResponseDto.Summary> content = result.body().jsonPath()
+                        .getList("data.content", NotificationResponseDto.Summary.class);
+                softly.assertThat(content.get(0).notificationId()).isEqualTo(1);
+                softly.assertThat(content.size()).isEqualTo(5);
+                Boolean hasNext = result.body().jsonPath().getBoolean("data.hasNext");
+                softly.assertThat(hasNext).isFalse();
+            });
+        }
+
+        @Test
         @DisplayName("알림 목록 조회 - 성공 : 마지막 페이지")
         void getNotificationsLastPage() {
             // given
@@ -313,19 +353,36 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
 
     private void createNotifications(PersonalDetail personalDetail, Long partnerId, UserRole userRole) {
         for (int i = 0; i < 20; i++) {
-            Notification notification = Notification.builder()
-                    .refId((long) i)
-                    .refType(Notification.ReferenceType.RESERVATION_REQUEST)
-                    .target(userRole)
-                    .notificationType(Notification.NotificationType.RESERVATION_APPROVE)
-                    .personalDetail(personalDetail)
-                    .partnerId(partnerId)
-                    .name("알림 " + i)
-                    .content("알림 내용 " + i)
-                    .sendDate(LocalDateTime.now().minusDays(i))
-                    .build();
 
-            notificationRepository.save(notification);
+            if (i < 5) {
+                Notification notification = Notification.builder()
+                        .refId((long) i)
+                        .refType(Notification.ReferenceType.RESERVATION_REQUEST)
+                        .target(userRole)
+                        .notificationType(Notification.NotificationType.RESERVATION_APPROVE)
+                        .personalDetail(personalDetail)
+                        .partnerId(partnerId)
+                        .name("알림 " + i)
+                        .content("예약 내용 " + i)
+                        .sendDate(LocalDateTime.now().minusDays(i))
+                        .build();
+
+                notificationRepository.save(notification);
+            } else {
+                Notification notification = Notification.builder()
+                        .refId((long) i)
+                        .refType(Notification.ReferenceType.SESSION)
+                        .target(userRole)
+                        .notificationType(Notification.NotificationType.SESSION_COMPLETED)
+                        .personalDetail(personalDetail)
+                        .partnerId(partnerId)
+                        .name("알림 " + i)
+                        .content("세션 내용 " + i)
+                        .sendDate(LocalDateTime.now().minusDays(i))
+                        .build();
+
+                notificationRepository.save(notification);
+            }
         }
     }
 

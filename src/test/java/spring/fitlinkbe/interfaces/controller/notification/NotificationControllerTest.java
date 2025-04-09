@@ -100,7 +100,7 @@ public class NotificationControllerTest {
             String accessToken = getAccessToken(personalDetail);
 
             when(notificationFacade.getNotifications(any(Notification.ReferenceType.class), any(PageRequest.class)
-                    , any(SecurityUser.class))).thenReturn(response);
+                    , any(SecurityUser.class), any())).thenReturn(response);
 
             //when & then
             mockMvc.perform(get("/v1/notifications")
@@ -159,7 +159,7 @@ public class NotificationControllerTest {
             String accessToken = getAccessToken(personalDetail);
 
             when(notificationFacade.getNotifications(any(Notification.ReferenceType.class), any(PageRequest.class)
-                    , any(SecurityUser.class))).thenReturn(response);
+                    , any(SecurityUser.class), any())).thenReturn(response);
 
             //when & then
             mockMvc.perform(get("/v1/notifications")
@@ -218,7 +218,7 @@ public class NotificationControllerTest {
             String accessToken = getAccessToken(personalDetail);
 
             when(notificationFacade.getNotifications(any(Notification.ReferenceType.class), any(PageRequest.class)
-                    , any(SecurityUser.class))).thenReturn(response);
+                    , any(SecurityUser.class), any(String.class))).thenReturn(response);
 
             //when & then
             mockMvc.perform(get("/v1/notifications")
