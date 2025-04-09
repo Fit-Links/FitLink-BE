@@ -2,6 +2,7 @@ package spring.fitlinkbe.interfaces.controller.auth;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.auth.AuthFacade;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
@@ -57,6 +58,15 @@ public class AuthController {
         String verificationToken = authFacade.getEmailVerificationToken(user.getPersonalDetailId());
 
         return ApiResultResponse.ok(new AuthDto.EmailAuthTokenResponse(verificationToken));
+    }
+
+    @PostMapping("/email-verification")
+    public ApiResultResponse<Object> verifyEmail(
+            @Login SecurityUser user,
+            @RequestBody String requestBody
+    ) {
+        System.out.println("requestBody = " + requestBody);
+        return ApiResultResponse.of(HttpStatus.CREATED, true, null);
     }
 
     /**

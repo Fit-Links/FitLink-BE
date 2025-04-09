@@ -11,6 +11,8 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
+import spring.fitlinkbe.interfaces.controller.sns.dto.SnsEmailNotificationDto;
+import spring.fitlinkbe.support.parser.EmailContentParser;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
 
 import static spring.fitlinkbe.support.utils.RandomStringGenerator.generateRandomString;
@@ -74,5 +76,10 @@ public class AuthFacade {
 
     public String getEmailVerificationToken(Long personalDetailId) {
         return authService.createEmailVerificationToken(personalDetailId);
+    }
+
+    @Transactional
+    public void verifySnsEmail(SnsEmailNotificationDto dto) {
+        String token = EmailContentParser.parseEmailContent(dto.content());
     }
 }

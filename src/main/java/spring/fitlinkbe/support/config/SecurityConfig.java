@@ -3,6 +3,7 @@ package spring.fitlinkbe.support.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -34,9 +35,9 @@ public class SecurityConfig {
     private final ApplicationYmlRead corsProperties;
 
     private static final WhiteListUrl registerUrls = new WhiteListUrl(List.of(
-            "v1/auth/members/register",
-            "v1/auth/trainers/register",
-            "v1/auth/email-verification-token",
+            "/v1/auth/members/register",
+            "/v1/auth/trainers/register",
+            "/v1/auth/email-verification-token",
             "/oauth2/authorization/**"
     ));
 
@@ -55,6 +56,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.POST, "/v1/sns").permitAll()
                         .requestMatchers(registerUrls.toArray()).permitAll()
                         .anyRequest().authenticated()
                 )
