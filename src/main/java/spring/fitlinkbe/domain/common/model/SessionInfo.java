@@ -63,4 +63,11 @@ public class SessionInfo {
         }
         remainingCount--;
     }
+
+    public void checkEnoughSession() {
+        if (remainingCount < 1) {
+            throw new CustomException(ErrorCode.SESSION_REMAINING_COUNT_NOT_VALID,
+                    "남은 세션을 다 사용하셨습니다.");
+        }
+    }
 }

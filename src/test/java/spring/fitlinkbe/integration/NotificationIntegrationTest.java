@@ -77,7 +77,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
-            ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
+            ReservationRequestDto.CreateFixed request = ReservationRequestDto.CreateFixed.builder()
                     .memberId(1L)
                     .name("홍길동")
                     .dates(List.of(requestDate))
@@ -122,7 +122,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
 
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
-            ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
+            ReservationRequestDto.CreateFixed request = ReservationRequestDto.CreateFixed.builder()
                     .name("홍길동")
                     .dates(List.of(requestDate))
                     .build();

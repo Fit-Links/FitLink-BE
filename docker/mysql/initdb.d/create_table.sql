@@ -67,7 +67,7 @@ CREATE TABLE personal_detail
     phone_number        VARCHAR(15),
     email               VARCHAR(100),
     oauth_provider      ENUM ('GOOGLE', 'KAKAO', 'NAVER', 'APPLE'),
-    status              ENUM ('NORMAL', 'REQUIRED_SMS','SLEEP', 'SUSPEND', 'DELETE'),
+    status              ENUM ('NORMAL', 'REQUIRED_SMS','REQUIRED_REGISTER','SLEEP', 'SUSPEND', 'DELETE'),
     PRIMARY KEY (personal_detail_id)
 );
 

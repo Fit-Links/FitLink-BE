@@ -60,8 +60,8 @@ public class Notification {
                 .build();
     }
 
-    public static Notification cancelReservation(PersonalDetail memberDetail, Long reservationId, Long trainerId,
-                                                 Reason reason) {
+    public static Notification Cancel(PersonalDetail memberDetail, Long reservationId, Long trainerId,
+                                      Reason reason) {
 
         String content = "트레이너님의 %s로 인해 %s 회원님의 예약이 취소되었습니다.".formatted(
                 reason.name,
@@ -103,7 +103,7 @@ public class Notification {
     public static Notification approveReservation(PersonalDetail memberDetail, Long reservationId,
                                                   LocalDateTime reservationDate, Long trainerId, boolean isApprove) {
 
-        String content = "%s 회원님의 예약이 %s되었습니다.\n %s".formatted(memberDetail.getName(), isApprove ? "확정" : "거절",
+        String content = "%s 회원님의 예약이 %s되었습니다.\n 날짜:%s".formatted(memberDetail.getName(), isApprove ? "확정" : "거절",
                 reservationDate.truncatedTo(ChronoUnit.HOURS));
         return Notification.builder()
                 .refId(reservationId)

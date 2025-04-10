@@ -9,6 +9,7 @@ import spring.fitlinkbe.domain.reservation.ReservationRepository;
 import spring.fitlinkbe.domain.reservation.Session;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -88,10 +89,25 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
+    public Optional<Reservation> getReservation(Long reservationId, Long trainerId) {
+        Optional<ReservationEntity> findEntity = reservationJpaRepository.findByIdAndTrainerIdJoinFetch(reservationId,
+                trainerId);
+        if (findEntity.isPresent()) {
+            return findEntity.map(ReservationEntity::toDomain);
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public Optional<Reservation> saveReservation(Reservation reservation) {
         ReservationEntity reservationEntity = reservationJpaRepository.save(ReservationEntity.from(reservation, em));
 
         return Optional.of(reservationEntity.toDomain());
+    }
+
+    @Override
+    public void deleteReservation(Reservation reservation) {
+        reservationJpaRepository.delete(ReservationEntity.from(reservation, em));
     }
 
     @Override
@@ -126,6 +142,16 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public boolean isConfirmedReservationExists(Long trainerId, List<LocalDate> dates) {
         return reservationJpaRepository.isConfirmedReservationExists(trainerId, dates);
+    }
+
+    @Override
+    public boolean isConfirmedReservationsExists(Long trainerId, List<LocalDateTime> checkDates) {
+        return reservationJpaRepository.isConfirmedReservationsExists(trainerId, checkDates);
+    }
+
+    @Override
+    public boolean isConfirmedReservationExists(Long trainerId, LocalDateTime checkDate) {
+        return reservationJpaRepository.existsByTrainerIdAndConfirmDateTime(trainerId, checkDate);
     }
 }
 

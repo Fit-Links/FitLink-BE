@@ -14,12 +14,13 @@ public class ReservationResponseDto {
 
 
     @Builder(toBuilder = true)
-    public record Success(Long reservationId, String status) {
+    public record Success(Long reservationId, String status, LocalDateTime reservationDate) {
         public static ReservationResponseDto.Success of(Reservation reservation) {
 
             return Success.builder()
                     .reservationId(reservation.getReservationId())
                     .status(reservation.getStatus().getName())
+                    .reservationDate(reservation.getConfirmDate())
                     .build();
         }
     }
@@ -36,13 +37,13 @@ public class ReservationResponseDto {
     }
 
     @Builder(toBuilder = true)
-    public record GetList(Long reservationId, Long sessionInfoId,
+    public record Summary(Long reservationId, Long sessionInfoId,
                           boolean isDayOff, DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates,
                           String status, MemberInfo memberInfo) {
 
-        public static ReservationResponseDto.GetList of(Reservation reservation) {
+        public static ReservationResponseDto.Summary of(Reservation reservation) {
 
-            return GetList.builder()
+            return Summary.builder()
                     .reservationId(reservation.getReservationId())
                     .sessionInfoId(reservation.isReservationNotAllowed() ? null :
                             reservation.getSessionInfo().getSessionInfoId())
@@ -61,13 +62,13 @@ public class ReservationResponseDto {
     }
 
     @Builder(toBuilder = true)
-    public record GetDetail(Long reservationId, Long sessionId,
-                            DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates,
-                            Reservation.Status status, PersonalInfo memberInfo) {
+    public record Detail(Long reservationId, Long sessionId,
+                         DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates,
+                         Reservation.Status status, PersonalInfo memberInfo) {
 
-        public static ReservationResponseDto.GetDetail of(ReservationResult.ReservationDetail result) {
+        public static ReservationResponseDto.Detail of(ReservationResult.ReservationDetail result) {
 
-            return GetDetail.builder()
+            return Detail.builder()
                     .reservationId(result.reservation().getReservationId())
                     .sessionId(result.session() != null ? result.session().getSessionId() : null)
                     .dayOfWeek(result.reservation().getDayOfWeek())
@@ -87,13 +88,13 @@ public class ReservationResponseDto {
     }
 
     @Builder(toBuilder = true)
-    public record GetWaitingMember(Long reservationId, Long memberId, String name,
-                                   LocalDate birthDate, String phoneNumber, String profilePictureUrl,
-                                   DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates) {
+    public record WaitingMember(Long reservationId, Long memberId, String name,
+                                LocalDate birthDate, String phoneNumber, String profilePictureUrl,
+                                DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates) {
 
-        public static ReservationResponseDto.GetWaitingMember of(Reservation reservation) {
+        public static ReservationResponseDto.WaitingMember of(Reservation reservation) {
 
-            return GetWaitingMember.builder()
+            return WaitingMember.builder()
                     .memberId(reservation.getMember().getMemberId())
                     .name(reservation.getMember().getName())
                     .birthDate(reservation.getMember().getBirthDate())

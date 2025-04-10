@@ -12,7 +12,7 @@ public class ReservationCommand {
 
 
     @Builder(toBuilder = true)
-    public record SetDisabledTime(LocalDateTime date, Long trainerId) {
+    public record SetDisabledTime(LocalDateTime date, Long reservationId, Long trainerId) {
 
     }
 
@@ -41,7 +41,7 @@ public class ReservationCommand {
     }
 
     @Builder(toBuilder = true)
-    public record ApproveReservation(Long reservationId, LocalDateTime reservationDate) {
+    public record Approve(Long reservationId, LocalDateTime reservationDate) {
 
     }
 
@@ -51,25 +51,25 @@ public class ReservationCommand {
     }
 
     @Builder(toBuilder = true)
-    public record CancelReservation(Long reservationId, LocalDateTime cancelDate,
-                                    String cancelReason) {
+    public record Cancel(Long reservationId, LocalDateTime cancelDate,
+                         String cancelReason) {
 
     }
 
     @Builder(toBuilder = true)
-    public record CompleteSession(Long reservationId, Long memberId, Boolean isJoin) {
+    public record Complete(Long reservationId, Long memberId, Boolean isJoin) {
     }
 
     @Builder(toBuilder = true)
-    public record ChangeReqeustReservation(LocalDateTime reservationDate, LocalDateTime changeRequestDate,
-                                           Long reservationId) {
+    public record ChangeReqeust(LocalDateTime reservationDate, LocalDateTime changeRequestDate,
+                                Long reservationId) {
     }
 
     @Builder(toBuilder = true)
-    public record ChangeApproveReservation(Long reservationId, Long memberId, boolean isApprove) {
+    public record ChangeApproval(Long reservationId, Long memberId, boolean isApprove) {
     }
 
     @Builder(toBuilder = true)
-    public record CancelApproveReservation(Long reservationId, Long memberId, boolean isApprove) {
+    public record CancelApproval(Long reservationId, Long memberId, boolean isApprove) {
     }
 }

@@ -218,11 +218,11 @@ class ReservationServiceTest {
 
     @Nested
     @DisplayName("세션 예약 Service TEST")
-    class SaveReservationServiceTest {
+    class CreateReservationServiceTest {
 
         @Test
         @DisplayName("세션 예약 성공")
-        void saveReservation() {
+        void createReservation() {
             //given
             Reservation reservation = Reservation.builder()
                     .status(RESERVATION_WAITING)
@@ -237,7 +237,7 @@ class ReservationServiceTest {
                     .thenReturn(Optional.ofNullable(savedReservation));
 
             //when
-            Reservation result = reservationService.reserveSession(reservation);
+            Reservation result = reservationService.createReservation(reservation);
 
             //then
             assertThat(result).isNotNull();
@@ -246,14 +246,14 @@ class ReservationServiceTest {
 
         @Test
         @DisplayName("세션 예약 실패 - 예약 정보가 안넘어 왔을 때")
-        void saveReservationNoReservationInfo() {
+        void createReservationNoReservationInfo() {
             //given
             when(reservationRepository.saveReservation(any(Reservation.class))).thenThrow(
                     new CustomException(RESERVATION_NOT_FOUND,
                             RESERVATION_NOT_FOUND.getMsg()));
 
             //when & then
-            assertThatThrownBy(() -> reservationService.reserveSession(Reservation.builder().build()))
+            assertThatThrownBy(() -> reservationService.createReservation(Reservation.builder().build()))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(RESERVATION_NOT_FOUND);
@@ -313,7 +313,7 @@ class ReservationServiceTest {
         @DisplayName("세션 완료 성공")
         void completeSession() {
             //given
-            ReservationCommand.CompleteSession command = ReservationCommand.CompleteSession.builder()
+            ReservationCommand.Complete command = ReservationCommand.Complete.builder()
                     .reservationId(1L)
                     .memberId(1L)
                     .isJoin(true)
@@ -377,7 +377,7 @@ class ReservationServiceTest {
         @DisplayName("세션 완료 실패 - 세션 정보 없음")
         void completeSessionNoSessionInfo() {
             //given
-            ReservationCommand.CompleteSession command = ReservationCommand.CompleteSession.builder()
+            ReservationCommand.Complete command = ReservationCommand.Complete.builder()
                     .reservationId(1L)
                     .isJoin(true)
                     .build();
@@ -405,7 +405,7 @@ class ReservationServiceTest {
         @DisplayName("세션 완료 실패 - 이미 세션 완료")
         void completeSessionAlreadySessionCompleted() {
             //given
-            ReservationCommand.CompleteSession command = ReservationCommand.CompleteSession.builder()
+            ReservationCommand.Complete command = ReservationCommand.Complete.builder()
                     .reservationId(1L)
                     .isJoin(true)
                     .build();
@@ -438,16 +438,16 @@ class ReservationServiceTest {
 
     @Nested
     @DisplayName("예약 변경 요청 Service TEST")
-    class ChangeReqeustReservationServiceTest {
+    class ChangeReservationServiceTest {
 
         @Test
-        @DisplayName("예약 변경 요청 성공")
-        void changeReqeustReservation() {
+        @DisplayName("멤버의 예약 변경 요청 - 성공")
+        void changeReservationWithMember() {
             //given
             LocalDateTime originDate = LocalDateTime.now().plusDays(1);
             LocalDateTime changeRequestDate = LocalDateTime.now().plusDays(2);
 
-            ReservationCommand.ChangeReqeustReservation command = ReservationCommand.ChangeReqeustReservation.builder()
+            ReservationCommand.ChangeReqeust command = ReservationCommand.ChangeReqeust.builder()
                     .reservationId(1L)
                     .reservationDate(originDate)
                     .changeRequestDate(changeRequestDate)
@@ -469,6 +469,15 @@ class ReservationServiceTest {
                     .status(RESERVATION_CHANGE_REQUEST)
                     .build();
 
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(1L)
+                    .trainerId(null)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
             when(reservationRepository.getReservation(command.reservationId()))
                     .thenReturn(Optional.ofNullable(reservation));
 
@@ -476,7 +485,7 @@ class ReservationServiceTest {
                     .thenReturn(Optional.ofNullable(compltedReservation));
 
             //when
-            Reservation result = reservationService.changeReqeustReservation(command);
+            Reservation result = reservationService.changeReservation(command, user);
 
             //then
             assertThat(result).isNotNull();
@@ -485,13 +494,13 @@ class ReservationServiceTest {
         }
 
         @Test
-        @DisplayName("예약 변경 요청 실패 - 예약 변경 요청할 수 있는 상태가 아님")
-        void changeReqeustReservationNotAllowChangeRequestStatus() {
+        @DisplayName("멤버의 예약 변경 요청 - 실패: 예약 변경 요청할 수 있는 상태가 아님")
+        void changeReservationWithMemberNotAllowChangeRequestStatus() {
             //given
             LocalDateTime originDate = LocalDateTime.now().plusDays(1);
             LocalDateTime changeRequestDate = LocalDateTime.now().plusDays(2);
 
-            ReservationCommand.ChangeReqeustReservation command = ReservationCommand.ChangeReqeustReservation.builder()
+            ReservationCommand.ChangeReqeust command = ReservationCommand.ChangeReqeust.builder()
                     .reservationId(1L)
                     .reservationDate(originDate)
                     .changeRequestDate(changeRequestDate)
@@ -505,24 +514,33 @@ class ReservationServiceTest {
                     .status(RESERVATION_REFUSED)
                     .build();
 
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
             when(reservationRepository.getReservation(command.reservationId()))
                     .thenReturn(Optional.ofNullable(reservation));
 
             //when & then
-            assertThatThrownBy(() -> reservationService.changeReqeustReservation(command))
+            assertThatThrownBy(() -> reservationService.changeReservation(command, user))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED);
         }
 
         @Test
-        @DisplayName("예약 변경 요청 실패 - 요청 예약 변경 날짜가 실제 예약 날짜랑 다름")
-        void changeReqeustReservationNotEqualReservationDate() {
+        @DisplayName("멤버의 예약 변경 요청 - 실패: 요청 예약 변경 날짜가 실제 예약 날짜랑 다름")
+        void changeReservationWithMemberNotEqualReservationDate() {
             //given
             LocalDateTime originDate = LocalDateTime.now().plusDays(1);
             LocalDateTime changeRequestDate = LocalDateTime.now().plusDays(2);
 
-            ReservationCommand.ChangeReqeustReservation command = ReservationCommand.ChangeReqeustReservation.builder()
+            ReservationCommand.ChangeReqeust command = ReservationCommand.ChangeReqeust.builder()
                     .reservationId(1L)
                     .reservationDate(originDate)
                     .changeRequestDate(changeRequestDate)
@@ -536,11 +554,20 @@ class ReservationServiceTest {
                     .status(RESERVATION_APPROVED)
                     .build();
 
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(1L)
+                    .trainerId(null)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
             when(reservationRepository.getReservation(command.reservationId()))
                     .thenReturn(Optional.ofNullable(reservation));
 
             //when & then
-            assertThatThrownBy(() -> reservationService.changeReqeustReservation(command))
+            assertThatThrownBy(() -> reservationService.changeReservation(command, user))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(RESERVATION_DATE_NOT_FOUND);
@@ -558,7 +585,7 @@ class ReservationServiceTest {
             //given
             LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
 
-            ReservationCommand.ChangeApproveReservation command = ReservationCommand.ChangeApproveReservation.builder()
+            ReservationCommand.ChangeApproval command = ReservationCommand.ChangeApproval.builder()
                     .reservationId(1L)
                     .memberId(1L)
                     .isApprove(true)
@@ -601,7 +628,7 @@ class ReservationServiceTest {
             //given
             LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
 
-            ReservationCommand.ChangeApproveReservation command = ReservationCommand.ChangeApproveReservation.builder()
+            ReservationCommand.ChangeApproval command = ReservationCommand.ChangeApproval.builder()
                     .reservationId(1L)
                     .memberId(2L)
                     .isApprove(true)
@@ -631,7 +658,7 @@ class ReservationServiceTest {
             //given
             LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
 
-            ReservationCommand.ChangeApproveReservation command = ReservationCommand.ChangeApproveReservation.builder()
+            ReservationCommand.ChangeApproval command = ReservationCommand.ChangeApproval.builder()
                     .reservationId(1L)
                     .memberId(1L)
                     .isApprove(true)
@@ -665,7 +692,7 @@ class ReservationServiceTest {
         @DisplayName("예약 취소 승인 성공")
         void cancelApproveReservation() {
             //given
-            ReservationCommand.CancelApproveReservation command = ReservationCommand.CancelApproveReservation.builder()
+            ReservationCommand.CancelApproval command = ReservationCommand.CancelApproval.builder()
                     .reservationId(1L)
                     .memberId(1L)
                     .isApprove(true)
@@ -704,7 +731,7 @@ class ReservationServiceTest {
         @DisplayName("예약 취소 승인 실패 - 다른 멤버의 예약 취소 요청 수정 시도")
         void cancelApproveReservationTryOtherMemberId() {
             //given
-            ReservationCommand.CancelApproveReservation command = ReservationCommand.CancelApproveReservation.builder()
+            ReservationCommand.CancelApproval command = ReservationCommand.CancelApproval.builder()
                     .reservationId(1L)
                     .memberId(2L)
                     .isApprove(true)
@@ -741,7 +768,7 @@ class ReservationServiceTest {
         @DisplayName("예약 취소 승인 실패 - 예약 변경 요청 상태가 아님")
         void cancelApproveReservationNotChangeRequestStatus() {
             //given
-            ReservationCommand.CancelApproveReservation command = ReservationCommand.CancelApproveReservation.builder()
+            ReservationCommand.CancelApproval command = ReservationCommand.CancelApproval.builder()
                     .reservationId(1L)
                     .memberId(1L)
                     .isApprove(true)

@@ -41,7 +41,7 @@ public class ReservationFacade {
     }
 
 
-    public ReservationResult.ReservationDetail getReservation(Long reservationId) {
+    public ReservationResult.ReservationDetail getReservationDetail(Long reservationId) {
 
         //예약 상세 정보 조회
         Reservation reservation = reservationService.getReservation(reservationId);
@@ -62,36 +62,45 @@ public class ReservationFacade {
 
     @Transactional
     public Reservation setDisabledReservation(ReservationCriteria.SetDisabledTime criteria, SecurityUser user) {
-        // 기존에 있던 예약들 취소
-        List<Reservation> cancelledReservations = reservationService.cancelExistReservations(List.of(criteria.date()),
-                "예약 불가 설정", null);
-        // 예약이 취소되었다면, 트레이너 -> 멤버 예약 취소됐다는 알림 전송
-
-        cancelledReservations.forEach(r -> {
+        //만약 그 시간에 자기가 설정한 예약 불가능 설정이 있다면 취소하기
+        if (criteria.reservationId() != null) {
+            return reservationService.cancelDisabledReservation(criteria.reservationId(),
+                    user.getTrainerId());
+        }
+        // 기존에 확정된 예약이 있는지 확인
+        reservationService.checkConfirmedReservationExistOrThrow(user.getTrainerId(), criteria.date());
+        // 대기중인 예약이 있으면 거절
+        List<Reservation> refusedReservations = reservationService.refuseWaitingReservations(List.of(criteria.date()));
+        // 거절을 했다면 -> 멤버에게 예약이 거절되었다는 알림 전송
+        refusedReservations.forEach((r) -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-            notificationService.sendNotification(NotificationCommand.CancelReservation.of(
-                    memberDetail, r.getReservationId(), r.getTrainer().getTrainerId(), RESERVATION_CANCEL));
+            notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail, r.getReservationId(),
+                    r.getReservationDate(), r.getTrainer().getTrainerId(), false));
         });
+
         // 예약 불가 설정한 정보 리턴
         return reservationService.setDisabledReservation(criteria.toCommand(user.getTrainerId()));
     }
 
     @Transactional
-    public List<Reservation> fixedReserveSession(ReservationCriteria.FixedReserveSession criteria,
-                                                 SecurityUser user) {
-        // 기존에 있던 예약들 취소
-        List<Reservation> cancelledReservations = reservationService.cancelExistReservations(criteria.reservationDates(),
-                "트레이너 고정 예약", null);
-        // 예약이 취소되었다면, 트레이너 -> 멤버 예약 취소됐다는 알림 전송
-        cancelledReservations.forEach(r -> {
+    public List<Reservation> createFixedReservation(ReservationCriteria.CreateFixed criteria,
+                                                    SecurityUser user) {
+        // 세션이 충분한지 확인
+        memberService.isSessionCountEnough(user.getTrainerId(), criteria.memberId());
+        // 기존에 확정된 예약이 있는지 확인
+        reservationService.checkConfirmedReservationsExistOrThrow(user.getTrainerId(), criteria.reservationDates());
+        // 대기중인 예약이 있으면 거절
+        List<Reservation> refusedReservations = reservationService.refuseWaitingReservations(criteria.reservationDates());
+        // 거절을 했다면 -> 멤버에게 예약이 거절되었다는 알림 전송
+        refusedReservations.forEach((r) -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-            notificationService.sendNotification(NotificationCommand.CancelReservation.of(
-                    memberDetail, r.getReservationId(), r.getTrainer().getTrainerId(), RESERVATION_CANCEL));
+            notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail, r.getReservationId(),
+                    r.getReservationDate(), r.getTrainer().getTrainerId(), false));
         });
         // 고정 예약 진행
         List<Reservation> reservationDomains = criteria.toDomain(memberService.getSessionInfo(user.getTrainerId(),
                 criteria.memberId()), user);
-        List<Reservation> fixedReservations = reservationService.fixedReserveSession(reservationDomains);
+        List<Reservation> fixedReservations = reservationService.createFixedReservation(reservationDomains);
         // 트레이너 -> 멤버에게 예약 됐다는 알림 전송
         fixedReservations.forEach(r -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
@@ -102,28 +111,40 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public void checkFixedReserveSession() {
+    public void checkCreateFixedReservation() {
         // 고정 예약 상태의 예약 조회
-        List<Reservation> fixedReservations = reservationService.scheduledFixedReservations();
-
-        // 예약이 취소되었다면, 트레이너 -> 멤버 예약 취소됐다는 알림 전송
-        fixedReservations.forEach(r -> {
-            PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-            notificationService.sendNotification(NotificationCommand.CancelReservation.of(
-                    memberDetail, r.getReservationId(), r.getTrainer().getTrainerId(), RESERVATION_CANCEL));
+        List<Reservation> nextFixedReservations = reservationService.getNextFixedReservations();
+        // 일주일 뒤에 시간에 예약이 있다면 예약 거절 진행
+        nextFixedReservations.forEach((nextfixedReservation) -> {
+            // 세션이 충분한지 확인
+            memberService.isSessionCountEnough(nextfixedReservation.getTrainer().getTrainerId(),
+                    nextfixedReservation.getMember().getMemberId());
+            // 기존에 확정된 예약이 있는지 확인
+            reservationService.checkConfirmedReservationsExistOrThrow(nextfixedReservation.getTrainer().getTrainerId(),
+                    nextfixedReservation.getReservationDates());
+            // 예약 대기중인 예약 확인
+            List<Reservation> refusedReservations =
+                    reservationService.refuseWaitingReservations(nextfixedReservation.getReservationDates());
+            // 예약 거절된 예약은 -> 멤버에게 예약 거절됐다는 메세지 전송
+            refusedReservations.forEach((r) -> {
+                PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
+                notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail, r.getReservationId(),
+                        r.getReservationDate(), r.getTrainer().getTrainerId(), false));
+            });
         });
-
         // 고정 예약 진행
-        reservationService.fixedReserveSession(fixedReservations);
+        reservationService.createFixedReservation(nextFixedReservations);
 
     }
 
     @Transactional
-    public Reservation reserveSession(ReservationCriteria.ReserveSession criteria, SecurityUser user) {
+    public Reservation createReservation(ReservationCriteria.Create criteria, SecurityUser user) {
+        // 세션이 충분한지 확인
+        memberService.isSessionCountEnough(criteria.trainerId(), criteria.memberId());
+        // 새로운 예약 진행
         Reservation reservation = criteria.toDomain(memberService.getSessionInfo(criteria.trainerId(),
                 criteria.memberId()), user);
-        Reservation savedReservation = reservationService.reserveSession(reservation);
-
+        Reservation savedReservation = reservationService.createReservation(reservation);
         if (user.getUserRole() == TRAINER) {
             //만약 트레이너가 예약을 했다면, 바로 세션 생성
             reservationService.saveSession(savedReservation);
@@ -146,8 +167,8 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public Reservation approveReservation(ReservationCriteria.ApproveReservation criteria, SecurityUser user) {
-        Reservation approveReservation = reservationService.approveReservation(criteria.toApproveReservationCommand());
+    public Reservation approveReservation(ReservationCriteria.Approve criteria, SecurityUser user) {
+        Reservation approveReservation = reservationService.approveReservation(criteria.toApproveCommand());
 
         //예약 완료 알림 발송 트레이너 -> 멤버에게 예약 완료되었다는 알림 발송
         PersonalDetail memberDetail = memberService.getMemberDetail(approveReservation.getMember().getMemberId());
@@ -172,7 +193,7 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public Reservation cancelReservation(ReservationCriteria.CancelReservation criteria, SecurityUser user) {
+    public Reservation cancelReservation(ReservationCriteria.Cancel criteria, SecurityUser user) {
         //예약 정보를 취소 한다.
         Reservation reservation = reservationService.cancelReservation(criteria.toCommand(), user);
         //트레이너의 경우
@@ -182,7 +203,7 @@ public class ReservationFacade {
                     reservation.getMember().getMemberId());
             // 트레이너 -> 멤버 예약이 취소됐다는 알림 전송
             PersonalDetail memberDetail = memberService.getMemberDetail(reservation.getMember().getMemberId());
-            notificationService.sendNotification(NotificationCommand.CancelReservation.of(
+            notificationService.sendNotification(NotificationCommand.Cancel.of(
                     memberDetail, reservation.getReservationId(), reservation.getTrainer().getTrainerId(), RESERVATION_CANCEL));
 
             return reservation;
@@ -199,7 +220,7 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public Reservation cancelApproveReservation(ReservationCriteria.CancelApproveReservation criteria,
+    public Reservation cancelApproveReservation(ReservationCriteria.CancelApproval criteria,
                                                 SecurityUser user) {
         // 예약 취소 승인 여부 반영
         Reservation approvedReservation = reservationService.cancelApproveReservation(criteria.toCommand());
@@ -219,31 +240,43 @@ public class ReservationFacade {
 
 
     @Transactional
-    public Reservation changeReqeustReservation(ReservationCriteria.ChangeReqeustReservation criteria) {
-        // 예약 변경 요청
-        Reservation requestedReservation = reservationService.changeReqeustReservation(criteria.toCommand());
-        // 알림 전송 멤버 -> 트레이너에게 예약 변경 요청했다는 알림 발송
-        PersonalDetail trainerDetail = trainerService.getTrainerDetail(requestedReservation.getTrainer().getTrainerId());
+    public Reservation changeReservation(ReservationCriteria.ChangeReqeust criteria, SecurityUser user) {
+        // 트레이너의 경우 고정 예약 변경, 멤버일 경우 예약 변경 요청
+        Reservation requestedReservation = reservationService.changeReservation(criteria.toCommand(), user);
 
-        notificationService.sendNotification(NotificationCommand.ChangeRequestReservation.of(trainerDetail,
-                requestedReservation.getReservationId(), requestedReservation.getMember().getMemberId(),
-                requestedReservation.getName(), criteria.reservationDate(), criteria.changeRequestDate()));
+        // 알림 전송 트레이너 -> 멤버에게 예약 확정 됐다는 알림 발송
+        if (user.getUserRole() == TRAINER) {
+            PersonalDetail memberDetail = memberService.getMemberDetail(requestedReservation.getMember().getMemberId());
+            notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail,
+                    requestedReservation.getReservationId(), requestedReservation.getConfirmDate(),
+                    user.getTrainerId(), true));
+        }
+
+        // 알림 전송 멤버 -> 트레이너에게 예약 변경 요청했다는 알림 발송
+        if (user.getUserRole() == MEMBER) {
+            PersonalDetail trainerDetail = trainerService.getTrainerDetail(requestedReservation.getTrainer().getTrainerId());
+
+            notificationService.sendNotification(NotificationCommand.ChangeRequestReservation.of(trainerDetail,
+                    requestedReservation.getReservationId(), requestedReservation.getMember().getMemberId(),
+                    requestedReservation.getName(), criteria.reservationDate(), criteria.changeRequestDate()));
+        }
+
 
         return requestedReservation;
     }
 
     @Transactional
-    public Reservation changeApproveReservation(ReservationCriteria.ChangeApproveReservation criteria) {
-        // 예약 변경이 승인이면 다른 예약 취소
+    public Reservation changeApproveReservation(ReservationCriteria.ChangeApproval criteria) {
+        // 예약 변경이 승인이면 다른 예약 대기들 거절
         if (criteria.isApprove()) {
-            List<Reservation> cancelledReservations = reservationService.cancelExistReservations(List.of(criteria.approveDate()), "예약 변경 승인",
-                    criteria.reservationId());
-
-            // 예약이 취소되었다면, 트레이너 -> 멤버 예약 취소됐다는 알림 전송
-            cancelledReservations.forEach(r -> {
+            // 대기중인 예약이 있으면 거절
+            List<Reservation> refusedReservations = reservationService.refuseWaitingReservations(
+                    List.of(criteria.approveDate()));
+            // 거절을 했다면 -> 멤버에게 예약이 거절되었다는 알림 전송
+            refusedReservations.forEach((r) -> {
                 PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-                notificationService.sendNotification(NotificationCommand.CancelReservation.of(
-                        memberDetail, r.getReservationId(), r.getTrainer().getTrainerId(), RESERVATION_CANCEL));
+                notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail, r.getReservationId(),
+                        r.getReservationDate(), r.getTrainer().getTrainerId(), false));
             });
         }
         // 예약 변경 요청 승인
@@ -260,9 +293,9 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public Session completeSession(ReservationCriteria.CompleteSession criteria, SecurityUser user) {
+    public Session completeSession(ReservationCriteria.Complete criteria, SecurityUser user) {
         // 세션 처리
-        Session completedSession = reservationService.completeSession(criteria.toCompleteSessionCommand(),
+        Session completedSession = reservationService.completeSession(criteria.toCompleteCommand(),
                 user);
         // 세션 하나 차감
         memberService.deductSession(user.getTrainerId(), criteria.memberId());
