@@ -29,7 +29,7 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
-    public record ReserveSession(Long trainerId, Long memberId, String name, List<LocalDateTime> dates) {
+    public record Create(Long trainerId, Long memberId, String name, List<LocalDateTime> dates) {
         public Reservation toDomain(SessionInfo sessionInfo, SecurityUser user) {
 
             return Reservation.builder()
@@ -47,7 +47,7 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
-    public record FixedReserveSession(List<LocalDateTime> reservationDates, Long memberId, String name) {
+    public record CreateFixed(List<LocalDateTime> reservationDates, Long memberId, String name) {
 
         public List<Reservation> toDomain(SessionInfo sessionInfo, SecurityUser user) {
             return reservationDates.stream()
@@ -66,9 +66,9 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
-    public record CancelReservation(Long reservationId, LocalDateTime cancelDate, String cancelReason) {
-        public ReservationCommand.CancelReservation toCommand() {
-            return ReservationCommand.CancelReservation.builder()
+    public record Cancel(Long reservationId, LocalDateTime cancelDate, String cancelReason) {
+        public ReservationCommand.Cancel toCommand() {
+            return ReservationCommand.Cancel.builder()
                     .reservationId(reservationId)
                     .cancelDate(cancelDate)
                     .cancelReason(cancelReason)
@@ -77,10 +77,10 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
-    public record ApproveReservation(Long reservationId, Long memberId, LocalDateTime reservationDate) {
+    public record Approve(Long reservationId, Long memberId, LocalDateTime reservationDate) {
 
-        public ReservationCommand.ApproveReservation toApproveReservationCommand() {
-            return ReservationCommand.ApproveReservation.builder()
+        public ReservationCommand.Approve toApproveCommand() {
+            return ReservationCommand.Approve.builder()
                     .reservationId(reservationId)
                     .reservationDate(reservationDate)
                     .build();
@@ -94,10 +94,10 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
-    public record CompleteSession(Long memberId, Long reservationId, Boolean isJoin) {
-        public ReservationCommand.CompleteSession toCompleteSessionCommand() {
+    public record Complete(Long memberId, Long reservationId, Boolean isJoin) {
+        public ReservationCommand.Complete toCompleteCommand() {
 
-            return ReservationCommand.CompleteSession.builder()
+            return ReservationCommand.Complete.builder()
                     .reservationId(reservationId)
                     .memberId(memberId)
                     .isJoin(isJoin)
@@ -107,11 +107,11 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
-    public record ChangeReqeustReservation(LocalDateTime reservationDate, LocalDateTime changeRequestDate,
-                                           Long reservationId) {
+    public record ChangeReqeust(LocalDateTime reservationDate, LocalDateTime changeRequestDate,
+                                Long reservationId) {
 
-        public ReservationCommand.ChangeReqeustReservation toCommand() {
-            return ReservationCommand.ChangeReqeustReservation.builder()
+        public ReservationCommand.ChangeReqeust toCommand() {
+            return ReservationCommand.ChangeReqeust.builder()
                     .reservationId(reservationId)
                     .reservationDate(reservationDate)
                     .changeRequestDate(changeRequestDate)
@@ -120,11 +120,11 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
-    public record ChangeApproveReservation(Long reservationId, Long memberId, LocalDateTime approveDate,
-                                           boolean isApprove) {
+    public record ChangeApproval(Long reservationId, Long memberId, LocalDateTime approveDate,
+                                 boolean isApprove) {
 
-        public ReservationCommand.ChangeApproveReservation toCommand() {
-            return ReservationCommand.ChangeApproveReservation.builder()
+        public ReservationCommand.ChangeApproval toCommand() {
+            return ReservationCommand.ChangeApproval.builder()
                     .reservationId(reservationId)
                     .memberId(memberId)
                     .isApprove(isApprove)
@@ -133,10 +133,10 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
-    public record CancelApproveReservation(Long reservationId, Long memberId, boolean isApprove) {
+    public record CancelApproval(Long reservationId, Long memberId, boolean isApprove) {
 
-        public ReservationCommand.CancelApproveReservation toCommand() {
-            return ReservationCommand.CancelApproveReservation.builder()
+        public ReservationCommand.CancelApproval toCommand() {
+            return ReservationCommand.CancelApproval.builder()
                     .reservationId(reservationId)
                     .memberId(memberId)
                     .isApprove(isApprove)

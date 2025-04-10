@@ -60,8 +60,8 @@ public class Notification {
                 .build();
     }
 
-    public static Notification cancelReservation(PersonalDetail memberDetail, Long reservationId, Long trainerId,
-                                                 Reason reason) {
+    public static Notification Cancel(PersonalDetail memberDetail, Long reservationId, Long trainerId,
+                                      Reason reason) {
 
         String content = "트레이너님의 %s로 인해 %s 회원님의 예약이 취소되었습니다.".formatted(
                 reason.name,

@@ -21,7 +21,7 @@ public class NotificationStrategyHandler {
     public void init() {
         strategyMap.put(Notification.NotificationType.CONNECT, this::handleConnectRequest);
         strategyMap.put(Notification.NotificationType.DISCONNECT, this::handleDisconnect);
-        strategyMap.put(Notification.NotificationType.RESERVATION_CANCEL, this::handleCancelReservation);
+        strategyMap.put(Notification.NotificationType.RESERVATION_CANCEL, this::handleCancel);
         strategyMap.put(Notification.NotificationType.RESERVATION_CANCEL_REQUEST, this::handleCancelRequestReservation);
         strategyMap.put(Notification.NotificationType.RESERVATION_APPROVE, this::handleApproveReservation);
         strategyMap.put(Notification.NotificationType.RESERVATION_REFUSE, this::handleApproveReservation);
@@ -62,9 +62,9 @@ public class NotificationStrategyHandler {
         return Notification.disconnect(dto.trainerDetail(), dto.memberId(), dto.memberName(), dto.target());
     }
 
-    private Notification handleCancelReservation(NotificationRequest request) {
-        NotificationCommand.CancelReservation dto = (NotificationCommand.CancelReservation) request;
-        return Notification.cancelReservation(dto.memberDetail(), dto.reservationId(), dto.trainerId(), dto.reason());
+    private Notification handleCancel(NotificationRequest request) {
+        NotificationCommand.Cancel dto = (NotificationCommand.Cancel) request;
+        return Notification.Cancel(dto.memberDetail(), dto.reservationId(), dto.trainerId(), dto.reason());
     }
 
     private Notification handleCancelRequestReservation(NotificationRequest request) {

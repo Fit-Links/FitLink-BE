@@ -41,7 +41,7 @@ public class ReservationFacade {
     }
 
 
-    public ReservationResult.ReservationDetail getReservation(Long reservationId) {
+    public ReservationResult.ReservationDetail getReservationDetail(Long reservationId) {
 
         //예약 상세 정보 조회
         Reservation reservation = reservationService.getReservation(reservationId);
@@ -69,7 +69,7 @@ public class ReservationFacade {
 
         cancelledReservations.forEach(r -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-            notificationService.sendNotification(NotificationCommand.CancelReservation.of(
+            notificationService.sendNotification(NotificationCommand.Cancel.of(
                     memberDetail, r.getReservationId(), r.getTrainer().getTrainerId(), RESERVATION_CANCEL));
         });
         // 예약 불가 설정한 정보 리턴
@@ -77,21 +77,21 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public List<Reservation> fixedReserveSession(ReservationCriteria.FixedReserveSession criteria,
-                                                 SecurityUser user) {
+    public List<Reservation> createFixedReservation(ReservationCriteria.CreateFixed criteria,
+                                                    SecurityUser user) {
         // 기존에 있던 예약들 취소
         List<Reservation> cancelledReservations = reservationService.cancelExistReservations(criteria.reservationDates(),
                 "트레이너 고정 예약", null);
         // 예약이 취소되었다면, 트레이너 -> 멤버 예약 취소됐다는 알림 전송
         cancelledReservations.forEach(r -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-            notificationService.sendNotification(NotificationCommand.CancelReservation.of(
+            notificationService.sendNotification(NotificationCommand.Cancel.of(
                     memberDetail, r.getReservationId(), r.getTrainer().getTrainerId(), RESERVATION_CANCEL));
         });
         // 고정 예약 진행
         List<Reservation> reservationDomains = criteria.toDomain(memberService.getSessionInfo(user.getTrainerId(),
                 criteria.memberId()), user);
-        List<Reservation> fixedReservations = reservationService.fixedReserveSession(reservationDomains);
+        List<Reservation> fixedReservations = reservationService.createFixedReservation(reservationDomains);
         // 트레이너 -> 멤버에게 예약 됐다는 알림 전송
         fixedReservations.forEach(r -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
@@ -102,27 +102,27 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public void checkFixedReserveSession() {
+    public void checkCreateFixedReservation() {
         // 고정 예약 상태의 예약 조회
         List<Reservation> fixedReservations = reservationService.scheduledFixedReservations();
 
         // 예약이 취소되었다면, 트레이너 -> 멤버 예약 취소됐다는 알림 전송
         fixedReservations.forEach(r -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-            notificationService.sendNotification(NotificationCommand.CancelReservation.of(
+            notificationService.sendNotification(NotificationCommand.Cancel.of(
                     memberDetail, r.getReservationId(), r.getTrainer().getTrainerId(), RESERVATION_CANCEL));
         });
 
         // 고정 예약 진행
-        reservationService.fixedReserveSession(fixedReservations);
+        reservationService.createFixedReservation(fixedReservations);
 
     }
 
     @Transactional
-    public Reservation reserveSession(ReservationCriteria.ReserveSession criteria, SecurityUser user) {
+    public Reservation createReservation(ReservationCriteria.Create criteria, SecurityUser user) {
         Reservation reservation = criteria.toDomain(memberService.getSessionInfo(criteria.trainerId(),
                 criteria.memberId()), user);
-        Reservation savedReservation = reservationService.reserveSession(reservation);
+        Reservation savedReservation = reservationService.createReservation(reservation);
 
         if (user.getUserRole() == TRAINER) {
             //만약 트레이너가 예약을 했다면, 바로 세션 생성
@@ -146,8 +146,8 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public Reservation approveReservation(ReservationCriteria.ApproveReservation criteria, SecurityUser user) {
-        Reservation approveReservation = reservationService.approveReservation(criteria.toApproveReservationCommand());
+    public Reservation approveReservation(ReservationCriteria.Approve criteria, SecurityUser user) {
+        Reservation approveReservation = reservationService.approveReservation(criteria.toApproveCommand());
 
         //예약 완료 알림 발송 트레이너 -> 멤버에게 예약 완료되었다는 알림 발송
         PersonalDetail memberDetail = memberService.getMemberDetail(approveReservation.getMember().getMemberId());
@@ -172,7 +172,7 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public Reservation cancelReservation(ReservationCriteria.CancelReservation criteria, SecurityUser user) {
+    public Reservation cancelReservation(ReservationCriteria.Cancel criteria, SecurityUser user) {
         //예약 정보를 취소 한다.
         Reservation reservation = reservationService.cancelReservation(criteria.toCommand(), user);
         //트레이너의 경우
@@ -182,7 +182,7 @@ public class ReservationFacade {
                     reservation.getMember().getMemberId());
             // 트레이너 -> 멤버 예약이 취소됐다는 알림 전송
             PersonalDetail memberDetail = memberService.getMemberDetail(reservation.getMember().getMemberId());
-            notificationService.sendNotification(NotificationCommand.CancelReservation.of(
+            notificationService.sendNotification(NotificationCommand.Cancel.of(
                     memberDetail, reservation.getReservationId(), reservation.getTrainer().getTrainerId(), RESERVATION_CANCEL));
 
             return reservation;
@@ -199,7 +199,7 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public Reservation cancelApproveReservation(ReservationCriteria.CancelApproveReservation criteria,
+    public Reservation cancelApproveReservation(ReservationCriteria.CancelApproval criteria,
                                                 SecurityUser user) {
         // 예약 취소 승인 여부 반영
         Reservation approvedReservation = reservationService.cancelApproveReservation(criteria.toCommand());
@@ -219,7 +219,7 @@ public class ReservationFacade {
 
 
     @Transactional
-    public Reservation changeReqeustReservation(ReservationCriteria.ChangeReqeustReservation criteria) {
+    public Reservation changeReqeustReservation(ReservationCriteria.ChangeReqeust criteria) {
         // 예약 변경 요청
         Reservation requestedReservation = reservationService.changeReqeustReservation(criteria.toCommand());
         // 알림 전송 멤버 -> 트레이너에게 예약 변경 요청했다는 알림 발송
@@ -233,7 +233,7 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public Reservation changeApproveReservation(ReservationCriteria.ChangeApproveReservation criteria) {
+    public Reservation changeApproveReservation(ReservationCriteria.ChangeApproval criteria) {
         // 예약 변경이 승인이면 다른 예약 취소
         if (criteria.isApprove()) {
             List<Reservation> cancelledReservations = reservationService.cancelExistReservations(List.of(criteria.approveDate()), "예약 변경 승인",
@@ -242,7 +242,7 @@ public class ReservationFacade {
             // 예약이 취소되었다면, 트레이너 -> 멤버 예약 취소됐다는 알림 전송
             cancelledReservations.forEach(r -> {
                 PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-                notificationService.sendNotification(NotificationCommand.CancelReservation.of(
+                notificationService.sendNotification(NotificationCommand.Cancel.of(
                         memberDetail, r.getReservationId(), r.getTrainer().getTrainerId(), RESERVATION_CANCEL));
             });
         }
@@ -260,9 +260,9 @@ public class ReservationFacade {
     }
 
     @Transactional
-    public Session completeSession(ReservationCriteria.CompleteSession criteria, SecurityUser user) {
+    public Session completeSession(ReservationCriteria.Complete criteria, SecurityUser user) {
         // 세션 처리
-        Session completedSession = reservationService.completeSession(criteria.toCompleteSessionCommand(),
+        Session completedSession = reservationService.completeSession(criteria.toCompleteCommand(),
                 user);
         // 세션 하나 차감
         memberService.deductSession(user.getTrainerId(), criteria.memberId());

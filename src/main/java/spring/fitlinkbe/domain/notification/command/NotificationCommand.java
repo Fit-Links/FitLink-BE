@@ -54,7 +54,7 @@ public class NotificationCommand {
     }
 
     @Builder
-    public record CancelReservation(
+    public record Cancel(
             PersonalDetail memberDetail,
             Long reservationId,
             Long trainerId,
@@ -65,11 +65,11 @@ public class NotificationCommand {
             return Notification.NotificationType.RESERVATION_CANCEL;
         }
 
-        public static CancelReservation of(PersonalDetail memberDetail,
-                                           Long reservationId,
-                                           Long trainerId,
-                                           Notification.Reason reason) {
-            return CancelReservation.builder()
+        public static Cancel of(PersonalDetail memberDetail,
+                                Long reservationId,
+                                Long trainerId,
+                                Notification.Reason reason) {
+            return Cancel.builder()
                     .memberDetail(memberDetail)
                     .reservationId(reservationId)
                     .trainerId(trainerId)

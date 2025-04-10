@@ -37,13 +37,13 @@ public class ReservationController {
      * @return ApiResultResponse 예약 목록을 반환한다.
      */
     @GetMapping
-    public ApiResultResponse<List<ReservationResponseDto.GetList>> getReservations(@RequestParam LocalDate date,
+    public ApiResultResponse<List<ReservationResponseDto.Summary>> getReservations(@RequestParam LocalDate date,
                                                                                    @Login SecurityUser user) {
 
         List<Reservation> result = reservationFacade.getReservations(date, user);
 
         return ApiResultResponse.ok(result.stream()
-                .map(ReservationResponseDto.GetList::of)
+                .map(ReservationResponseDto.Summary::of)
                 .toList());
     }
 
@@ -55,11 +55,11 @@ public class ReservationController {
      */
 
     @GetMapping("/{reservationId}")
-    public ApiResultResponse<ReservationResponseDto.GetDetail> getReservation(@PathVariable("reservationId")
-                                                                              @NotNull Long reservationId) {
+    public ApiResultResponse<ReservationResponseDto.Detail> getReservationDetail(@PathVariable("reservationId")
+                                                                                 @NotNull Long reservationId) {
 
-        return ApiResultResponse.ok(ReservationResponseDto.GetDetail.of(
-                reservationFacade.getReservation(reservationId)));
+        return ApiResultResponse.ok(ReservationResponseDto.Detail.of(
+                reservationFacade.getReservationDetail(reservationId)));
 
     }
 
@@ -71,15 +71,15 @@ public class ReservationController {
      */
     @RoleCheck(allowedRoles = {UserRole.TRAINER})
     @GetMapping("/waiting-members/{reservationDate}")
-    public ApiResultResponse<List<ReservationResponseDto.GetWaitingMember>> getWaitingMembers(@PathVariable("reservationDate")
-                                                                                              @NotNull(message = "예약 날짜는 필수입니다.")
-                                                                                              LocalDateTime reservationDate,
-                                                                                              @Login SecurityUser user) {
+    public ApiResultResponse<List<ReservationResponseDto.WaitingMember>> getWaitingMembers(@PathVariable("reservationDate")
+                                                                                           @NotNull(message = "예약 날짜는 필수입니다.")
+                                                                                           LocalDateTime reservationDate,
+                                                                                           @Login SecurityUser user) {
         List<Reservation> result = reservationFacade.getWaitingMembers(reservationDate, user);
 
 
         return ApiResultResponse.ok(result.stream()
-                .map(ReservationResponseDto.GetWaitingMember::of)
+                .map(ReservationResponseDto.WaitingMember::of)
                 .toList());
     }
 
@@ -108,12 +108,12 @@ public class ReservationController {
      */
     @RoleCheck(allowedRoles = {UserRole.TRAINER})
     @PostMapping("/fixed-reservations")
-    public ApiResultResponse<List<ReservationResponseDto.Success>> fixedReserveSession(@RequestBody @Valid
-                                                                                       ReservationRequestDto.FixedReserveSession
-                                                                                               request,
-                                                                                       @Login SecurityUser user) {
+    public ApiResultResponse<List<ReservationResponseDto.Success>> createFixedReservation(@RequestBody @Valid
+                                                                                          ReservationRequestDto.CreateFixed
+                                                                                                  request,
+                                                                                          @Login SecurityUser user) {
 
-        List<Reservation> result = reservationFacade.fixedReserveSession(request.toCriteria(), user);
+        List<Reservation> result = reservationFacade.createFixedReservation(request.toCriteria(), user);
 
         return ApiResultResponse.ok(result.stream()
                 .map(ReservationResponseDto.Success::of)
@@ -128,13 +128,13 @@ public class ReservationController {
      * @return ApiResultResponse 예약이 된 reservationId 목록 정보를 반환한다.
      */
     @PostMapping
-    public ApiResultResponse<ReservationResponseDto.Success> reserveSession(@RequestBody @Valid
-                                                                            ReservationRequestDto.ReserveSession
-                                                                                    request,
-                                                                            @Login SecurityUser user
+    public ApiResultResponse<ReservationResponseDto.Success> createReservation(@RequestBody @Valid
+                                                                               ReservationRequestDto.Create
+                                                                                       request,
+                                                                               @Login SecurityUser user
     ) {
 
-        Reservation result = reservationFacade.reserveSession(request.toCriteria(), user);
+        Reservation result = reservationFacade.createReservation(request.toCriteria(), user);
 
         return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
 
@@ -152,7 +152,7 @@ public class ReservationController {
                                                                                 @NotNull(message = "예약 ID는 필수값입니다.")
                                                                                 Long reservationId,
                                                                                 @RequestBody @Valid
-                                                                                ReservationRequestDto.ApproveReservation
+                                                                                ReservationRequestDto.Approve
                                                                                         request,
                                                                                 @Login SecurityUser user
     ) {
@@ -174,7 +174,7 @@ public class ReservationController {
                                                                                @NotNull(message = "예약 ID는 필수값입니다.")
                                                                                Long reservationId,
                                                                                @RequestBody @Valid
-                                                                               ReservationRequestDto.CancelReservation
+                                                                               ReservationRequestDto.Cancel
                                                                                        request,
                                                                                @Login SecurityUser user
     ) {
@@ -197,7 +197,7 @@ public class ReservationController {
                                                                                       @NotNull(message = "예약 ID는 필수값입니다.")
                                                                                       Long reservationId,
                                                                                       @RequestBody @Valid
-                                                                                      ReservationRequestDto.CancelApproveReservation
+                                                                                      ReservationRequestDto.CancelApproval
                                                                                               request,
                                                                                       @Login SecurityUser user
 
@@ -221,7 +221,7 @@ public class ReservationController {
                                                                                       @NotNull(message = "예약 ID는 필수값입니다.")
                                                                                       Long reservationId,
                                                                                       @RequestBody @Valid
-                                                                                      ReservationRequestDto.ChangeReqeustReservation
+                                                                                      ReservationRequestDto.ChangeReqeust
                                                                                               request) {
         Reservation result = reservationFacade.changeReqeustReservation(request.toCriteria(reservationId));
 
@@ -240,7 +240,7 @@ public class ReservationController {
                                                                                       @NotNull(message = "예약 ID는 필수값입니다.")
                                                                                       Long reservationId,
                                                                                       @RequestBody @Valid
-                                                                                      ReservationRequestDto.ChangeApproveReservation
+                                                                                      ReservationRequestDto.ChangeApproval
                                                                                               request) {
 
         Reservation result = reservationFacade.changeApproveReservation(request.toCriteria(reservationId));
@@ -260,7 +260,7 @@ public class ReservationController {
                                                                                     @NotNull(message = "예약 ID는 필수값입니다.")
                                                                                     Long reservationId,
                                                                                     @RequestBody @Valid
-                                                                                    ReservationRequestDto.CompleteSession
+                                                                                    ReservationRequestDto.Complete
                                                                                             request,
                                                                                     @Login SecurityUser user
     ) {

@@ -318,10 +318,10 @@ class ReservationControllerTest {
 
     @Nested
     @DisplayName("예약 상세 조회 Controller TEST")
-    class GetReservationControllerTest {
+    class GetReservationDetailControllerTest {
         @Test
         @DisplayName("트레이너가 예약 상세 목록을 조회한다.")
-        void getReservationWithTrainer() throws Exception {
+        void getReservationDetailWithTrainer() throws Exception {
             //given
             Reservation reservation = Reservation.builder()
                     .reservationId(1L)
@@ -351,7 +351,7 @@ class ReservationControllerTest {
             ReservationResult.ReservationDetail result = ReservationResult.ReservationDetail
                     .from(reservation, session, personalDetail);
 
-            when(reservationFacade.getReservation(any(Long.class))).thenReturn(result);
+            when(reservationFacade.getReservationDetail(any(Long.class))).thenReturn(result);
 
             //when & then
             mockMvc.perform(get("/v1/reservations/%s".formatted(reservation.getReservationId()))
@@ -367,7 +367,7 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("없는 예약을 조회하면 success를 false를 반환한다.")
-        void getReservationWithNotFound() throws Exception {
+        void getReservationDetailWithNotFound() throws Exception {
             //given
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -381,7 +381,7 @@ class ReservationControllerTest {
             String accessToken = getAccessToken(personalDetail);
 
             //when
-            when(reservationFacade.getReservation(any(Long.class))).thenThrow(
+            when(reservationFacade.getReservationDetail(any(Long.class))).thenThrow(
                     new CustomException(RESERVATION_NOT_FOUND,
                             RESERVATION_NOT_FOUND.getMsg())
             );
@@ -402,7 +402,7 @@ class ReservationControllerTest {
     class GetWaitingMembersControllerTest {
         @Test
         @DisplayName("트레이너가 예약 상세 대기 목록을 조회한다.")
-        void getReservationWithTrainer() throws Exception {
+        void getWaitingMembersWithTrainer() throws Exception {
             //given
             LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
 
@@ -439,7 +439,7 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("예약 날짜를 안넣어준 경우 success를 false를 반환한다.")
-        void getReservationWithNotFound() throws Exception {
+        void getWaitingMembersWithNotFound() throws Exception {
             //given
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -603,13 +603,13 @@ class ReservationControllerTest {
 
     @Nested
     @DisplayName("세션 예약 Controller TEST")
-    class SaveReservationControllerTest {
+    class CreateReservationControllerTest {
 
         @Test
         @DisplayName("트레이너가 세션 예약 성공")
-        void saveReservationWithTrainer() throws Exception {
+        void createReservationWithTrainer() throws Exception {
             //given
-            ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
+            ReservationRequestDto.Create request = ReservationRequestDto.Create.builder()
                     .trainerId(1L)
                     .memberId(1L)
                     .name("멤버1")
@@ -630,7 +630,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.reserveSession(any(ReservationCriteria.ReserveSession.class),
+            when(reservationFacade.createReservation(any(ReservationCriteria.Create.class),
                     any(SecurityUser.class))).thenReturn(reservation);
 
             //when & then
@@ -651,9 +651,9 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("멤버가 세션 예약 성공")
-        void saveReservationWithMember() throws Exception {
+        void createReservationWithMember() throws Exception {
             //given
-            ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
+            ReservationRequestDto.Create request = ReservationRequestDto.Create.builder()
                     .trainerId(1L)
                     .memberId(1L)
                     .name("멤버1")
@@ -674,7 +674,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.reserveSession(any(ReservationCriteria.ReserveSession.class)
+            when(reservationFacade.createReservation(any(ReservationCriteria.Create.class)
                     , any(SecurityUser.class))).thenReturn(reservation);
 
             //when & then
@@ -694,10 +694,10 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("세션 예약 실패 - memberId 누락")
-        void saveReservationWithNoMemberId() throws Exception {
+        void createReservationWithNoMemberId() throws Exception {
             //given
 
-            ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
+            ReservationRequestDto.Create request = ReservationRequestDto.Create.builder()
                     .trainerId(1L)
                     .name("멤버1")
                     .dates(List.of(LocalDateTime.now().plusSeconds(2)))
@@ -717,7 +717,7 @@ class ReservationControllerTest {
             String accessToken = getAccessToken(personalDetail);
 
             //when
-            when(reservationFacade.reserveSession(any(ReservationCriteria.ReserveSession.class),
+            when(reservationFacade.createReservation(any(ReservationCriteria.Create.class),
                     any(SecurityUser.class))).thenReturn(reservation);
 
             //then
@@ -737,10 +737,10 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("세션 예약 실패 - date 정보 누락")
-        void saveReservationWithNoDate() throws Exception {
+        void createReservationWithNoDate() throws Exception {
             //given
 
-            ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
+            ReservationRequestDto.Create request = ReservationRequestDto.Create.builder()
                     .trainerId(1L)
                     .memberId(1L)
                     .name("멤버1")
@@ -760,7 +760,7 @@ class ReservationControllerTest {
             String accessToken = getAccessToken(personalDetail);
 
             //when
-            when(reservationFacade.reserveSession(any(ReservationCriteria.ReserveSession.class),
+            when(reservationFacade.createReservation(any(ReservationCriteria.Create.class),
                     any(SecurityUser.class))).thenReturn(reservation);
 
             //then
@@ -780,9 +780,9 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("세션 예약 실패 - name 정보 누락")
-        void saveReservationWithNoName() throws Exception {
+        void createReservationWithNoName() throws Exception {
             //given
-            ReservationRequestDto.ReserveSession request = ReservationRequestDto.ReserveSession.builder()
+            ReservationRequestDto.Create request = ReservationRequestDto.Create.builder()
                     .trainerId(1L)
                     .memberId(1L)
                     .dates(List.of(LocalDateTime.now().plusSeconds(2)))
@@ -803,7 +803,7 @@ class ReservationControllerTest {
             String accessToken = getAccessToken(personalDetail);
 
             //when
-            when(reservationFacade.reserveSession(any(ReservationCriteria.ReserveSession.class),
+            when(reservationFacade.createReservation(any(ReservationCriteria.Create.class),
                     any(SecurityUser.class))).thenReturn(reservation);
 
             //then
@@ -825,13 +825,13 @@ class ReservationControllerTest {
 
     @Nested
     @DisplayName("고정 세션 예약 Controller TEST")
-    class FixedSaveReservationControllerTest {
+    class CreateFixedReservationReservationControllerTest {
 
         @Test
         @DisplayName("트레이너가 고정 세션 예약 성공")
-        void FixedSaveReservationWithTrainer() throws Exception {
+        void createFixedReservationWithTrainer() throws Exception {
             //given
-            ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
+            ReservationRequestDto.CreateFixed request = ReservationRequestDto.CreateFixed.builder()
                     .memberId(1L)
                     .name("멤버1")
                     .dates(List.of(LocalDateTime.now().plusSeconds(2)))
@@ -851,7 +851,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.fixedReserveSession(any(ReservationCriteria.FixedReserveSession.class),
+            when(reservationFacade.createFixedReservation(any(ReservationCriteria.CreateFixed.class),
                     any(SecurityUser.class))).thenReturn(reservations);
 
             //when & then
@@ -873,9 +873,9 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("고정 세션 예약 실패 - memberID 정보 누락")
-        void saveReservationWithNoMemberId() throws Exception {
+        void createFixedReservationWithNoMemberId() throws Exception {
             //given
-            ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
+            ReservationRequestDto.CreateFixed request = ReservationRequestDto.CreateFixed.builder()
                     .name("멤버1")
                     .dates(List.of(LocalDateTime.now().plusSeconds(2)))
                     .build();
@@ -894,7 +894,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.fixedReserveSession(any(ReservationCriteria.FixedReserveSession.class),
+            when(reservationFacade.createFixedReservation(any(ReservationCriteria.CreateFixed.class),
                     any(SecurityUser.class))).thenReturn(reservations);
 
             //when & then
@@ -914,9 +914,9 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("고정 세션 예약 실패 - name 정보 누락")
-        void saveReservationWithNoName() throws Exception {
+        void createFixedReservationWithNoName() throws Exception {
             //given
-            ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
+            ReservationRequestDto.CreateFixed request = ReservationRequestDto.CreateFixed.builder()
                     .memberId(1L)
                     .dates(List.of(LocalDateTime.now().plusSeconds(2)))
                     .build();
@@ -935,7 +935,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.fixedReserveSession(any(ReservationCriteria.FixedReserveSession.class),
+            when(reservationFacade.createFixedReservation(any(ReservationCriteria.CreateFixed.class),
                     any(SecurityUser.class))).thenReturn(reservations);
 
             //when & then
@@ -955,9 +955,9 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("고정 세션 예약 실패 - dates 정보 누락")
-        void saveReservationWithNoDates() throws Exception {
+        void createFixedReservationWithNoDates() throws Exception {
             //given
-            ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
+            ReservationRequestDto.CreateFixed request = ReservationRequestDto.CreateFixed.builder()
                     .name("멤버1")
                     .memberId(1L)
                     .build();
@@ -976,7 +976,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.fixedReserveSession(any(ReservationCriteria.FixedReserveSession.class),
+            when(reservationFacade.createFixedReservation(any(ReservationCriteria.CreateFixed.class),
                     any(SecurityUser.class))).thenReturn(reservations);
 
             //when & then
@@ -996,9 +996,9 @@ class ReservationControllerTest {
 
         @Test
         @DisplayName("고정 세션 예약 실패 - 현재 날짜보다 이전 dates 정보")
-        void saveReservationWithBeforeDates() throws Exception {
+        void createFixedReservationWithBeforeDates() throws Exception {
             //given
-            ReservationRequestDto.FixedReserveSession request = ReservationRequestDto.FixedReserveSession.builder()
+            ReservationRequestDto.CreateFixed request = ReservationRequestDto.CreateFixed.builder()
                     .name("멤버1")
                     .memberId(1L)
                     .dates(List.of(LocalDateTime.now().minusSeconds(2)))
@@ -1018,7 +1018,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.fixedReserveSession(any(ReservationCriteria.FixedReserveSession.class),
+            when(reservationFacade.createFixedReservation(any(ReservationCriteria.CreateFixed.class),
                     any(SecurityUser.class))).thenReturn(reservations);
 
             //when & then
@@ -1048,7 +1048,7 @@ class ReservationControllerTest {
             //given
             LocalDateTime cancelDate = LocalDateTime.now().plusHours(2);
 
-            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+            ReservationRequestDto.Cancel request = ReservationRequestDto.Cancel.builder()
                     .cancelReason("개인 사정으로 인한 취소")
                     .cancelDate(cancelDate)
                     .build();
@@ -1068,7 +1068,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.cancelReservation(any(ReservationCriteria.CancelReservation.class),
+            when(reservationFacade.cancelReservation(any(ReservationCriteria.Cancel.class),
                     any(SecurityUser.class))).thenReturn(result);
 
             //when & then
@@ -1094,7 +1094,7 @@ class ReservationControllerTest {
             //given
             LocalDateTime cancelDate = LocalDateTime.now().plusHours(2);
 
-            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+            ReservationRequestDto.Cancel request = ReservationRequestDto.Cancel.builder()
                     .cancelReason("개인 사정으로 인한 취소")
                     .cancelDate(cancelDate)
                     .build();
@@ -1114,7 +1114,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.cancelReservation(any(ReservationCriteria.CancelReservation.class),
+            when(reservationFacade.cancelReservation(any(ReservationCriteria.Cancel.class),
                     any(SecurityUser.class))).thenReturn(result);
 
             //when & then
@@ -1140,7 +1140,7 @@ class ReservationControllerTest {
             //given
             LocalDateTime cancelDate = LocalDateTime.now().plusHours(2);
 
-            ReservationRequestDto.CancelReservation request = ReservationRequestDto.CancelReservation.builder()
+            ReservationRequestDto.Cancel request = ReservationRequestDto.Cancel.builder()
                     .cancelDate(cancelDate)
                     .build();
 
@@ -1159,7 +1159,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.cancelReservation(any(ReservationCriteria.CancelReservation.class),
+            when(reservationFacade.cancelReservation(any(ReservationCriteria.Cancel.class),
                     any(SecurityUser.class))).thenReturn(result);
 
             //when & then
@@ -1186,7 +1186,7 @@ class ReservationControllerTest {
         @DisplayName("트레이너의 예약 승인 - 성공")
         void approveReservation() throws Exception {
             //given
-            ReservationRequestDto.ApproveReservation request = ReservationRequestDto.ApproveReservation.builder()
+            ReservationRequestDto.Approve request = ReservationRequestDto.Approve.builder()
                     .memberId(1L)
                     .reservationDate(LocalDateTime.now().plusSeconds(2))
                     .build();
@@ -1209,7 +1209,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.approveReservation(any(ReservationCriteria.ApproveReservation.class),
+            when(reservationFacade.approveReservation(any(ReservationCriteria.Approve.class),
                     any(SecurityUser.class))).thenReturn(result);
 
             //when & then
@@ -1232,7 +1232,7 @@ class ReservationControllerTest {
         @DisplayName("트레이너의 예약 실패 - 멤버 ID 부재")
         void approveReservationWithNoMemberId() throws Exception {
             //given
-            ReservationRequestDto.ApproveReservation request = ReservationRequestDto.ApproveReservation.builder()
+            ReservationRequestDto.Approve request = ReservationRequestDto.Approve.builder()
                     .reservationDate(LocalDateTime.now().plusSeconds(2))
                     .build();
 
@@ -1254,7 +1254,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.approveReservation(any(ReservationCriteria.ApproveReservation.class),
+            when(reservationFacade.approveReservation(any(ReservationCriteria.Approve.class),
                     any(SecurityUser.class))).thenReturn(result);
 
             //when & then
@@ -1280,7 +1280,7 @@ class ReservationControllerTest {
         @DisplayName("트레이너의 PT 처리 성공 - 참석 O")
         void completeSessionJoin() throws Exception {
             //given
-            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+            ReservationRequestDto.Complete request = ReservationRequestDto.Complete.builder()
                     .isJoin(true)
                     .memberId(1L)
                     .build();
@@ -1303,7 +1303,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.completeSession(any(ReservationCriteria.CompleteSession.class),
+            when(reservationFacade.completeSession(any(ReservationCriteria.Complete.class),
                     any(SecurityUser.class))).thenReturn(result);
 
             //when & then
@@ -1325,7 +1325,7 @@ class ReservationControllerTest {
         @DisplayName("트레이너의 PT 처리 성공 - 참석 X")
         void completeSessionNotJoin() throws Exception {
             //given
-            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+            ReservationRequestDto.Complete request = ReservationRequestDto.Complete.builder()
                     .isJoin(false)
                     .memberId(1L)
                     .build();
@@ -1348,7 +1348,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.completeSession(any(ReservationCriteria.CompleteSession.class),
+            when(reservationFacade.completeSession(any(ReservationCriteria.Complete.class),
                     any(SecurityUser.class))).thenReturn(result);
 
             //when & then
@@ -1370,7 +1370,7 @@ class ReservationControllerTest {
         @DisplayName("트레이너의 PT 처리 실패 - 참석 여부 부재")
         void completeSessionWithNoJoin() throws Exception {
             //given
-            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+            ReservationRequestDto.Complete request = ReservationRequestDto.Complete.builder()
                     .memberId(1L)
                     .build();
 
@@ -1392,7 +1392,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.completeSession(any(ReservationCriteria.CompleteSession.class),
+            when(reservationFacade.completeSession(any(ReservationCriteria.Complete.class),
                     any(SecurityUser.class))).thenReturn(result);
 
             //when & then
@@ -1414,7 +1414,7 @@ class ReservationControllerTest {
         @DisplayName("트레이너의 PT 처리 실패 - 멤버 ID 부재")
         void completeSessionWithNoMemberId() throws Exception {
             //given
-            ReservationRequestDto.CompleteSession request = ReservationRequestDto.CompleteSession.builder()
+            ReservationRequestDto.Complete request = ReservationRequestDto.Complete.builder()
                     .isJoin(true)
                     .build();
 
@@ -1436,7 +1436,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.completeSession(any(ReservationCriteria.CompleteSession.class),
+            when(reservationFacade.completeSession(any(ReservationCriteria.Complete.class),
                     any(SecurityUser.class))).thenReturn(result);
 
             //when & then
@@ -1462,7 +1462,7 @@ class ReservationControllerTest {
         @DisplayName("멤버의 예약 변경 요청 성공")
         void changeReqeustReservation() throws Exception {
             //given
-            ReservationRequestDto.ChangeReqeustReservation request = ReservationRequestDto.ChangeReqeustReservation
+            ReservationRequestDto.ChangeReqeust request = ReservationRequestDto.ChangeReqeust
                     .builder()
                     .reservationDate(LocalDateTime.now().plusDays(1))
                     .changeRequestDate(LocalDateTime.now().plusDays(2))
@@ -1486,7 +1486,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeustReservation.class))).thenReturn(result);
+            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeust.class))).thenReturn(result);
 
             //when & then
             mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
@@ -1507,7 +1507,7 @@ class ReservationControllerTest {
         @DisplayName("멤버의 예약 변경 요청 실패 - 현재보다 이전 날짜로 요청")
         void changeReqeustReservationBeforeReservationDate() throws Exception {
             //given
-            ReservationRequestDto.ChangeReqeustReservation request = ReservationRequestDto.ChangeReqeustReservation
+            ReservationRequestDto.ChangeReqeust request = ReservationRequestDto.ChangeReqeust
                     .builder()
                     .reservationDate(LocalDateTime.now().minusDays(1))
                     .changeRequestDate(LocalDateTime.now().plusDays(2))
@@ -1531,7 +1531,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeustReservation.class))).thenReturn(result);
+            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeust.class))).thenReturn(result);
 
             //when & then
             mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
@@ -1552,7 +1552,7 @@ class ReservationControllerTest {
         @DisplayName("멤버의 예약 변경 요청 실패 - 예약 날짜 부재")
         void changeReqeustReservationNoReservationDate() throws Exception {
             //given
-            ReservationRequestDto.ChangeReqeustReservation request = ReservationRequestDto.ChangeReqeustReservation
+            ReservationRequestDto.ChangeReqeust request = ReservationRequestDto.ChangeReqeust
                     .builder()
                     .changeRequestDate(LocalDateTime.now().plusDays(2))
                     .build();
@@ -1575,7 +1575,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeustReservation.class))).thenReturn(result);
+            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeust.class))).thenReturn(result);
 
             //when & then
             mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
@@ -1596,7 +1596,7 @@ class ReservationControllerTest {
         @DisplayName("멤버의 예약 변경 요청 실패 - 예약 날짜와 변경 날짜 동일")
         void changeReqeustReservationSameDate() throws Exception {
             //given
-            ReservationRequestDto.ChangeReqeustReservation request = ReservationRequestDto.ChangeReqeustReservation
+            ReservationRequestDto.ChangeReqeust request = ReservationRequestDto.ChangeReqeust
                     .builder()
                     .reservationDate(LocalDateTime.now().plusDays(1))
                     .changeRequestDate(LocalDateTime.now().plusDays(1))
@@ -1620,7 +1620,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeustReservation.class))).thenReturn(result);
+            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeust.class))).thenReturn(result);
 
             //when & then
             mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
@@ -1649,7 +1649,7 @@ class ReservationControllerTest {
             //given
             LocalDateTime approveDate = LocalDateTime.now().plusHours(1);
 
-            ReservationRequestDto.ChangeApproveReservation request = ReservationRequestDto.ChangeApproveReservation
+            ReservationRequestDto.ChangeApproval request = ReservationRequestDto.ChangeApproval
                     .builder()
                     .memberId(1L)
                     .isApprove(true)
@@ -1674,7 +1674,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeApproveReservation(any(ReservationCriteria.ChangeApproveReservation.class)))
+            when(reservationFacade.changeApproveReservation(any(ReservationCriteria.ChangeApproval.class)))
                     .thenReturn(result);
 
             //when & then
@@ -1698,7 +1698,7 @@ class ReservationControllerTest {
             //given
             LocalDateTime approveDate = LocalDateTime.now().plusHours(1);
 
-            ReservationRequestDto.ChangeApproveReservation request = ReservationRequestDto.ChangeApproveReservation
+            ReservationRequestDto.ChangeApproval request = ReservationRequestDto.ChangeApproval
                     .builder()
                     .isApprove(true)
                     .approveDate(approveDate)
@@ -1722,7 +1722,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeApproveReservation(any(ReservationCriteria.ChangeApproveReservation.class)))
+            when(reservationFacade.changeApproveReservation(any(ReservationCriteria.ChangeApproval.class)))
                     .thenReturn(result);
 
             //when & then
@@ -1746,7 +1746,7 @@ class ReservationControllerTest {
             LocalDateTime approveDate = LocalDateTime.now().plusHours(1);
 
             //given
-            ReservationRequestDto.ChangeApproveReservation request = ReservationRequestDto.ChangeApproveReservation
+            ReservationRequestDto.ChangeApproval request = ReservationRequestDto.ChangeApproval
                     .builder()
                     .memberId(1L)
                     .approveDate(approveDate)
@@ -1770,7 +1770,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeApproveReservation(any(ReservationCriteria.ChangeApproveReservation.class)))
+            when(reservationFacade.changeApproveReservation(any(ReservationCriteria.ChangeApproval.class)))
                     .thenReturn(result);
 
             //when & then
@@ -1796,7 +1796,7 @@ class ReservationControllerTest {
         @DisplayName("멤버의 예약 취소 승인 성공")
         void cancelApproveReservation() throws Exception {
             //given
-            ReservationRequestDto.CancelApproveReservation request = ReservationRequestDto.CancelApproveReservation
+            ReservationRequestDto.CancelApproval request = ReservationRequestDto.CancelApproval
                     .builder()
                     .memberId(1L)
                     .isApprove(true)
@@ -1820,7 +1820,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.cancelApproveReservation(any(ReservationCriteria.CancelApproveReservation.class),
+            when(reservationFacade.cancelApproveReservation(any(ReservationCriteria.CancelApproval.class),
                     any(SecurityUser.class)))
                     .thenReturn(result);
 
@@ -1843,7 +1843,7 @@ class ReservationControllerTest {
         @DisplayName("멤버의 예약 취소 승인 실패 - 멤버 ID 부재")
         void cancelApproveReservationNoMemberId() throws Exception {
             //given
-            ReservationRequestDto.CancelApproveReservation request = ReservationRequestDto.CancelApproveReservation
+            ReservationRequestDto.CancelApproval request = ReservationRequestDto.CancelApproval
                     .builder()
                     .isApprove(true)
                     .build();
@@ -1866,7 +1866,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.cancelApproveReservation(any(ReservationCriteria.CancelApproveReservation.class),
+            when(reservationFacade.cancelApproveReservation(any(ReservationCriteria.CancelApproval.class),
                     any(SecurityUser.class)))
                     .thenReturn(result);
 
@@ -1889,7 +1889,7 @@ class ReservationControllerTest {
         @DisplayName("멤버의 예약 취소 승인 실패 - 승인 여부 부재")
         void cancelApproveReservationNoIsApprove() throws Exception {
             //given
-            ReservationRequestDto.CancelApproveReservation request = ReservationRequestDto.CancelApproveReservation
+            ReservationRequestDto.CancelApproval request = ReservationRequestDto.CancelApproval
                     .builder()
                     .memberId(1L)
                     .build();
@@ -1912,7 +1912,7 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.cancelApproveReservation(any(ReservationCriteria.CancelApproveReservation.class),
+            when(reservationFacade.cancelApproveReservation(any(ReservationCriteria.CancelApproval.class),
                     any(SecurityUser.class)))
                     .thenReturn(result);
 
