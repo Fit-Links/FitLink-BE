@@ -5,12 +5,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.auth.AuthService;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.PhoneNumber;
 import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
+import spring.fitlinkbe.interfaces.controller.auth.dto.SnsEmailNotificationDto;
+import spring.fitlinkbe.support.parser.EmailParser;
 import spring.fitlinkbe.support.security.AuthTokenProvider;
 
 import static spring.fitlinkbe.support.utils.RandomStringGenerator.generateRandomString;
@@ -50,10 +54,11 @@ public class AuthFacade {
 
     @Transactional
     public AuthCommand.Response registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command) {
-        Member savedMember = memberService.saveMember(command.toMember());
+        PersonalDetail personalDetail = memberService.getPersonalDetail(personalDetailId);
+        Member member = memberService.saveMember(command.toMember(personalDetail.getPhoneNumber()));
+        personalDetail.registerMember(command.name(), command.birthDate(), command.profileUrl(), command.gender(), member);
 
-        // personalDetail 업데이트
-        PersonalDetail personalDetail = memberService.registerMember(personalDetailId, command, savedMember);
+        memberService.savePersonalDetail(personalDetail);
 
         // 토큰 생성 또는 업데이트
         String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId,
@@ -61,7 +66,7 @@ public class AuthFacade {
         String refreshToken = authTokenProvider.createRefreshToken(personalDetailId, personalDetail.getUserRole());
 
         // workoutSchedule 업데이트
-        memberService.saveWorkoutSchedules(command.toWorkoutSchedules(savedMember));
+        memberService.saveWorkoutSchedules(command.toWorkoutSchedules(member));
 
         Token token = Token.builder()
                 .personalDetailId(personalDetailId)
@@ -74,5 +79,19 @@ public class AuthFacade {
 
     public String getEmailVerificationToken(Long personalDetailId) {
         return authService.createEmailVerificationToken(personalDetailId);
+    }
+
+    public void verifySnsEmail(SnsEmailNotificationDto dto) {
+        String token = EmailParser.parseEmailContent(dto.content());
+        PhoneNumber phoneNumber = new PhoneNumber(EmailParser.extractPhoneNumber(dto.mail().source()));
+
+        PersonalDetail personalDetail = authService.getPersonalDetailByToken(token);
+        personalDetail.verifySnsEmail(phoneNumber);
+
+        authService.savePersonalDetail(personalDetail);
+    }
+
+    public String createAccessToken(Long personalDetailId, UserRole userRole, PersonalDetail.Status status) {
+        return authTokenProvider.createAccessToken(status, personalDetailId, userRole);
     }
 }

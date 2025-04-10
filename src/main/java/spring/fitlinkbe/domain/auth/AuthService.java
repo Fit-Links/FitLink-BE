@@ -4,7 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.EmailTokenRepository;
+import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.TokenRepository;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
+import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.Token;
 
 import java.security.SecureRandom;
@@ -17,6 +21,7 @@ public class AuthService {
 
     private final TokenRepository tokenRepository;
     private final EmailTokenRepository emailTokenRepository;
+    private final PersonalDetailRepository personalDetailRepository;
 
     public void saveOrUpdateToken(Token token) {
         tokenRepository.saveOrUpdate(token);
@@ -29,7 +34,16 @@ public class AuthService {
         return emailVerificationToken;
     }
 
-    public static String generateToken() {
+    public PersonalDetail getPersonalDetailByToken(String token) {
+        Long personalDetailId = emailTokenRepository.findPersonalDetailIdByToken(token);
+        if (personalDetailId == null) {
+            throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+        }
+
+        return personalDetailRepository.getById(personalDetailId);
+    }
+
+    private String generateToken() {
         // 128비트(16바이트) 난수 생성
         SecureRandom secureRandom = new SecureRandom();
         byte[] randomBytes = new byte[16];
@@ -37,5 +51,9 @@ public class AuthService {
 
         // URL-safe Base64 인코딩, 패딩 없이
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+    }
+
+    public void savePersonalDetail(PersonalDetail personalDetail) {
+        personalDetailRepository.savePersonalDetail(personalDetail);
     }
 }

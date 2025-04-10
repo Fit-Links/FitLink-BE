@@ -37,7 +37,7 @@ public class TrainerService {
 
     public PersonalDetail registerTrainer(Long personalDetailId, AuthCommand.TrainerRegisterRequest command, Trainer savedTrainer) {
         PersonalDetail personalDetail = personalDetailRepository.getById(personalDetailId);
-        personalDetail.registerTrainer(command.name(), command.birthDate(), command.phoneNumber(), command.profileUrl(), command.gender(), savedTrainer);
+        personalDetail.registerTrainer(command.name(), command.birthDate(), command.profileUrl(), command.gender(), savedTrainer);
         personalDetailRepository.savePersonalDetail(personalDetail);
 
         return personalDetail;

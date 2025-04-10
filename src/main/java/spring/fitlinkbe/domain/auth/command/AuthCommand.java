@@ -31,7 +31,6 @@ public class AuthCommand {
     public record TrainerRegisterRequest(
             String name,
             LocalDate birthDate,
-            PhoneNumber phoneNumber,
             PersonalDetail.Gender gender,
             String profileUrl,
             List<AuthCommand.AvailableTimeRequest> availableTimes
@@ -62,7 +61,7 @@ public class AuthCommand {
 
 
     @Builder
-    public record MemberRegisterRequest(String name, LocalDate birthDate, PhoneNumber phoneNumber,
+    public record MemberRegisterRequest(String name, LocalDate birthDate,
                                         PersonalDetail.Gender gender,
                                         String profileUrl, List<WorkoutScheduleRequest> workoutSchedule) {
 
@@ -72,12 +71,12 @@ public class AuthCommand {
          *
          * @return Member
          */
-        public Member toMember() {
+        public Member toMember(String phoneNumber) {
             return Member.builder()
                     .name(name)
                     .birthDate(birthDate)
-                    .phoneNumber(phoneNumber)
                     .profilePictureUrl(profileUrl)
+                    .phoneNumber(new PhoneNumber(phoneNumber))
                     .isRequest(false)
                     .isConnected(false)
                     .build();

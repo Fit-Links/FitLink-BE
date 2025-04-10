@@ -6,8 +6,8 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
+import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.Gender;
-import spring.fitlinkbe.domain.common.model.PhoneNumber;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -16,6 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AuthDto {
+
+    @Builder
+    public record UserStatusResponse(
+            PersonalDetail.Status status,
+            String accessToken
+    ) {
+    }
 
     @Builder
     public record EmailAuthTokenResponse(
@@ -39,7 +46,6 @@ public class AuthDto {
     public record TrainerRegisterRequest(
             @NotNull String name,
             @NotNull LocalDate birthDate,
-            @NotNull String phoneNumber,
             @NotNull Gender gender,
             String profileUrl,
             @Valid List<AvailableTimeRequest> availableTimes
@@ -48,11 +54,16 @@ public class AuthDto {
             return AuthCommand.TrainerRegisterRequest.builder()
                     .name(name)
                     .birthDate(birthDate)
-                    .phoneNumber(new PhoneNumber(phoneNumber))
                     .gender(gender)
                     .profileUrl(profileUrl)
                     .availableTimes(availableTimes.stream().map(AvailableTimeRequest::toCommand).toList())
                     .build();
+        }
+
+        @JsonIgnore
+        @AssertTrue(message = "수업 가능 시간은 필수입니다")
+        private boolean isAvailableTimeRequired() {
+            return availableTimes != null;
         }
 
         @JsonIgnore
@@ -112,7 +123,6 @@ public class AuthDto {
     public record MemberRegisterRequest(
             @NotNull String name,
             @NotNull LocalDate birthDate,
-            @NotNull String phoneNumber,
             @NotNull Gender gender,
             String profileUrl,
             @Valid List<WorkoutScheduleRequest> workoutSchedule
@@ -122,11 +132,16 @@ public class AuthDto {
             return AuthCommand.MemberRegisterRequest.builder()
                     .name(name)
                     .birthDate(birthDate)
-                    .phoneNumber(new PhoneNumber(phoneNumber))
                     .gender(gender)
                     .profileUrl(profileUrl)
                     .workoutSchedule(workoutSchedule.stream().map(WorkoutScheduleRequest::toCommand).toList())
                     .build();
+        }
+
+        @JsonIgnore
+        @AssertTrue(message = "운동 희망일은 필수입니다")
+        private boolean isWorkoutScheduleRequired() {
+            return workoutSchedule != null;
         }
 
         @JsonIgnore

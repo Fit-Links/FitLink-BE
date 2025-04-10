@@ -1,5 +1,6 @@
 package spring.fitlinkbe.support.argumentresolver;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
@@ -29,8 +30,8 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
     }
 
     @Override
-    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+    public Object resolveArgument(@Nonnull MethodParameter parameter, ModelAndViewContainer mavContainer,
+                                  @Nonnull NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
         try {
             HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
             String accessToken = HeaderUtils.getAccessToken(request);

@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.auth.AuthFacade;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.enums.UserRole;
-import spring.fitlinkbe.domain.common.exception.CustomException;
-import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.interfaces.controller.auth.dto.AuthDto;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
@@ -25,12 +23,12 @@ public class AuthController {
 
     /**
      * Trainer 등록 API </br>
-     * 소셜 로그인 진행 후 REQUIRED_SMS 상태의 Trainer 를 휴대폰 인증 및 회원가입 진행
+     * sns 인증 진행 후 REQUIRED_REGISTER 상태의 Trainer 를 회원가입 진행
      */
     @PostMapping("/trainers/register")
     public ApiResultResponse<Object> registerTrainer(@Login SecurityUser user,
                                                      @RequestBody @Valid AuthDto.TrainerRegisterRequest requestBody) {
-        checkUserStatusOrThrow(user);
+        user.checkUserStatusOrThrow(PersonalDetail.Status.REQUIRED_REGISTER);
         AuthCommand.Response result = authFacade.registerTrainer(user.getPersonalDetailId(), requestBody.toCommand());
 
         return ApiResultResponse.ok(AuthDto.Response.from(result));
@@ -38,36 +36,39 @@ public class AuthController {
 
     /**
      * Member 등록 API </br>
-     * 소셜 로그인 진행 후 REQUIRED_SMS 상태의 Member 를 휴대폰 인증 및 회원가입 진행
+     * sns 인증 진행 후 REQUIRED_REGISTER 상태의 Member 를 회원가입 진행
      */
     @PostMapping("/members/register")
     public ApiResultResponse<Object> registerMember(@Login SecurityUser user,
                                                     @RequestBody @Valid AuthDto.MemberRegisterRequest requestBody) {
-        checkUserStatusOrThrow(user);
+        user.checkUserStatusOrThrow(PersonalDetail.Status.REQUIRED_REGISTER);
         AuthCommand.Response result = authFacade.registerMember(user.getPersonalDetailId(), requestBody.toCommand());
 
         return ApiResultResponse.ok(AuthDto.Response.from(result));
     }
 
+    /**
+     * sns 인증을 위한 Token 발급 API
+     */
     @GetMapping("/email-verification-token")
     public ApiResultResponse<AuthDto.EmailAuthTokenResponse> getEmailVerificationToken(
             @Login SecurityUser user
     ) {
-        checkUserStatusOrThrow(user);
+        user.checkUserStatusOrThrow(PersonalDetail.Status.REQUIRED_SMS);
         String verificationToken = authFacade.getEmailVerificationToken(user.getPersonalDetailId());
 
         return ApiResultResponse.ok(new AuthDto.EmailAuthTokenResponse(verificationToken));
     }
 
     /**
-     * 유저의 상태가 REQUIRED_SMS 상태인지 확인
-     *
-     * @throws CustomException REQUIRED_SMS 상태가 아닐 경우
+     * 유저의 상태 polling api
      */
-    private void checkUserStatusOrThrow(SecurityUser user) {
-        if (user.getStatus() != PersonalDetail.Status.REQUIRED_SMS) {
-            throw new CustomException(ErrorCode.NEED_REQUIRED_SMS_STATUS);
-        }
+    @GetMapping("/status")
+    public ApiResultResponse<AuthDto.UserStatusResponse> getUserStatus(@Login SecurityUser user) {
+        PersonalDetail.Status status = user.getStatus();
+        String accessToken = authFacade.createAccessToken(user.getPersonalDetailId(), user.getUserRole(), status);
+
+        return ApiResultResponse.ok(new AuthDto.UserStatusResponse(status, accessToken));
     }
 
 }

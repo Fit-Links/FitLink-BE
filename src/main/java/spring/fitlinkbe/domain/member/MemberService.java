@@ -34,7 +34,6 @@ public class MemberService {
 
     public PersonalDetail registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command, Member savedMember) {
         PersonalDetail personalDetail = personalDetailRepository.getById(personalDetailId);
-        personalDetail.registerMember(command.name(), command.birthDate(), command.phoneNumber(), command.profileUrl(), command.gender(), savedMember);
         personalDetailRepository.savePersonalDetail(personalDetail);
 
         return personalDetail;
@@ -192,4 +191,7 @@ public class MemberService {
         this.saveSessionInfo(getSessionInfo);
     }
 
+    public PersonalDetail getPersonalDetail(Long personalDetailId) {
+        return personalDetailRepository.getById(personalDetailId);
+    }
 }

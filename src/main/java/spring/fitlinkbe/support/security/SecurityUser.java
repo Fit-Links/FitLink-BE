@@ -4,6 +4,8 @@ import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import spring.fitlinkbe.domain.common.enums.UserRole;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.Status;
 
@@ -59,5 +61,12 @@ public class SecurityUser implements OAuth2User {
 
     public Long getUserId() {
         return trainerId == null ? memberId : trainerId;
+    }
+
+    public void checkUserStatusOrThrow(Status status) {
+        if (this.status != status) {
+            throw new CustomException(ErrorCode.USER_STATUS_NOT_ALLOWED,
+                    "사용자의 상태가 %s 가 아닙니다. [userId: %d, status: %s]".formatted(status, personalDetailId, this.status));
+        }
     }
 }

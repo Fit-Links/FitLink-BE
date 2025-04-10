@@ -68,9 +68,9 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         @DisplayName("멤버 등록 성공")
         public void registerMemberSuccess() throws Exception {
             // given
-            // REQUIRED_SMS 상태의 유저가 있을 때
+            // REQUIRED_REGISTER 상태의 유저가 있을 때
 
-            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_REGISTER);
             String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
                     personalDetail.getUserRole());
 
@@ -94,7 +94,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(updatedPersonalDetail.getStatus()).isEqualTo(PersonalDetail.Status.NORMAL);
                 softly.assertThat(updatedPersonalDetail.getName()).isEqualTo(request.name());
                 softly.assertThat(updatedPersonalDetail.getBirthDate()).isEqualTo(request.birthDate());
-                softly.assertThat(updatedPersonalDetail.getPhoneNumber()).isEqualTo(request.phoneNumber());
                 softly.assertThat(updatedPersonalDetail.getProfilePictureUrl()).isEqualTo(request.profileUrl());
                 softly.assertThat(updatedPersonalDetail.getGender()).isEqualTo(request.gender());
 
@@ -102,7 +101,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(member).isNotNull();
                 softly.assertThat(member.getName()).isEqualTo(request.name());
                 softly.assertThat(member.getBirthDate()).isEqualTo(request.birthDate());
-                softly.assertThat(member.getPhoneNumber()).isEqualTo(request.phoneNumber());
                 softly.assertThat(member.getProfilePictureUrl()).isEqualTo(request.profileUrl());
 
                 List<WorkoutSchedule> workoutSchedules = new ArrayList<>(workoutScheduleRepository.findAllByMemberId(member.getMemberId()));
@@ -134,9 +132,9 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         @DisplayName("멤버 등록 실패 - 운동 희망일의 요일이 중복되는 경우")
         public void registerMemberFailBecauseOfDuplicateDayOfWeek() throws Exception {
             // given
-            // REQUIRED_SMS 상태의 유저가 있을 때
+            // REQUIRED_REGISTER 상태의 유저가 있을 때
 
-            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_REGISTER);
             String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
                     personalDetail.getUserRole());
 
@@ -159,7 +157,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("멤버 등록 실패 - 멤버 상태 REQUIRED_SMS 가 아닌 경우")
+        @DisplayName("멤버 등록 실패 - 멤버 상태 REQUIRED_REGISTER 가 아닌 경우")
         public void registerMemberFailBecauseOfNotRequiredSmsStatus() throws Exception {
             // given
             // NORMAL 상태의 유저가 있을 때
@@ -190,9 +188,9 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         @DisplayName("멤버 등록 실패 - 필수값 누락")
         public void registerMemberFailBecauseOfMissingRequiredValue(AuthDto.MemberRegisterRequest request) throws Exception {
             // given
-            // REQUIRED_SMS 상태의 유저가 있을 때
+            // REQUIRED_REGISTER 상태의 유저가 있을 때
 
-            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_REGISTER);
             String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
                     personalDetail.getUserRole());
 
@@ -231,7 +229,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             return new AuthDto.MemberRegisterRequest(
                     "홍길동",
                     LocalDate.of(1990, 1, 1),
-                    "01012345678",
                     PersonalDetail.Gender.MALE,
                     "http://test.com",
                     workoutScheduleRequests
@@ -253,22 +250,12 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     new AuthDto.MemberRegisterRequest(
                             null,
                             LocalDate.of(1990, 1, 1),
-                            "01012345678",
                             PersonalDetail.Gender.MALE,
                             "http://test.com",
                             null
                     ),
                     new AuthDto.MemberRegisterRequest(
                             "홍길동",
-                            null,
-                            "01012345678",
-                            PersonalDetail.Gender.MALE,
-                            "http://test.com",
-                            null
-                    ),
-                    new AuthDto.MemberRegisterRequest(
-                            "홍길동",
-                            LocalDate.of(1990, 1, 1),
                             null,
                             PersonalDetail.Gender.MALE,
                             "http://test.com",
@@ -277,7 +264,13 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     new AuthDto.MemberRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
-                            "01012345678",
+                            PersonalDetail.Gender.MALE,
+                            "http://test.com",
+                            null
+                    ),
+                    new AuthDto.MemberRegisterRequest(
+                            "홍길동",
+                            LocalDate.of(1990, 1, 1),
                             null,
                             "http://test.com",
                             null
@@ -285,7 +278,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     new AuthDto.MemberRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
-                            "01012345678",
                             PersonalDetail.Gender.MALE,
                             "http://test.com",
                             List.of(workoutScheduleRequest1)
@@ -293,7 +285,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     new AuthDto.MemberRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
-                            "01012345678",
                             PersonalDetail.Gender.MALE,
                             "http://test.com",
                             List.of(workoutScheduleRequest2)
@@ -325,7 +316,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             return new AuthDto.MemberRegisterRequest(
                     "홍길동",
                     LocalDate.of(1990, 1, 1),
-                    "01012345678",
                     PersonalDetail.Gender.MALE,
                     "http://test.com",
                     workoutSchedules
@@ -343,9 +333,9 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         @DisplayName("트레이너 등록 성공")
         public void registerTrainerSuccess() throws Exception {
             // given
-            // REQUIRED_SMS 상태의 유저가 있을 때
+            // REQUIRED_REGISTER 상태의 유저가 있을 때
 
-            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_REGISTER);
             String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId()
                     , personalDetail.getUserRole());
 
@@ -369,7 +359,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(updatedPersonalDetail.getStatus()).isEqualTo(PersonalDetail.Status.NORMAL);
                 softly.assertThat(updatedPersonalDetail.getName()).isEqualTo(request.name());
                 softly.assertThat(updatedPersonalDetail.getBirthDate()).isEqualTo(request.birthDate());
-                softly.assertThat(updatedPersonalDetail.getPhoneNumber()).isEqualTo(request.phoneNumber());
                 softly.assertThat(updatedPersonalDetail.getProfilePictureUrl()).isEqualTo(request.profileUrl());
                 softly.assertThat(updatedPersonalDetail.getGender()).isEqualTo(request.gender());
 
@@ -391,9 +380,9 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         @DisplayName("트레이너 등록 성공 - 수업 가능 시간이 holiday 인 경우 시작 시간과 종료 시간은 null 가능")
         public void registerTrainerSuccessWithHoliday() throws Exception {
             // given
-            // REQUIRED_SMS 상태의 유저가 있을 때
+            // REQUIRED_REGISTER 상태의 유저가 있을 때
 
-            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_REGISTER);
             String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
                     personalDetail.getUserRole());
 
@@ -417,7 +406,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("트레이너 등록 실패 - 유저의 상태가 REQUIRED_SMS 가 아닌 경우")
+        @DisplayName("트레이너 등록 실패 - 유저의 상태가 REQUIRED_REGISTER 가 아닌 경우")
         public void registerMemberFailBecauseOfNotRequiredSmsStatus() throws Exception {
             // given
             // NORMAL 상태의 유저가 있을 때
@@ -447,9 +436,9 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         @DisplayName("트레이너 등록 실패 - 수업 가능 시작 시간이 종료 시간보다 늦은 경우")
         public void registerTrainerFailBecauseOfInvalidTime() throws Exception {
             // given
-            // REQUIRED_SMS 상태의 유저가 있을 때
+            // REQUIRED_REGISTER 상태의 유저가 있을 때
 
-            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_REGISTER);
             String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
                     personalDetail.getUserRole());
 
@@ -475,9 +464,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         @DisplayName("트레이너 등록 실패 - 수업 가능 시간 요일이 중복되는 경우")
         public void registerTrainerFailBecauseOfDuplicateDayOfWeek() throws Exception {
             // given
-            // REQUIRED_SMS 상태의 유저가 있을 때
-
-            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            // REQUIRED_REGISTER 상태의 유저가 있을 때
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_REGISTER);
             String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
                     personalDetail.getUserRole());
 
@@ -513,7 +501,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             return new AuthDto.TrainerRegisterRequest(
                     "홍길동",
                     LocalDate.of(1990, 1, 1),
-                    "01012345678",
                     PersonalDetail.Gender.MALE,
                     "http://test.com",
                     availableTimes
@@ -533,7 +520,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             return new AuthDto.TrainerRegisterRequest(
                     "홍길동",
                     LocalDate.of(1990, 1, 1),
-                    "01012345678",
                     PersonalDetail.Gender.MALE,
                     "http://test.com",
                     availableTimes
@@ -559,7 +545,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             return new AuthDto.TrainerRegisterRequest(
                     "홍길동",
                     LocalDate.of(1990, 1, 1),
-                    "01012345678",
                     PersonalDetail.Gender.MALE,
                     "http://test.com",
                     availableTimes
@@ -568,12 +553,12 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
 
         @ParameterizedTest
         @MethodSource("invalidRequests")
-        @DisplayName("멤버 등록 실패 - 필수값 누락")
+        @DisplayName("트레이너 등록 실패 - 필수값 누락")
         public void registerMemberFailBecauseOfMissingRequiredValue(AuthDto.TrainerRegisterRequest request) throws Exception {
             // given
-            // REQUIRED_SMS 상태의 유저가 있을 때
+            // REQUIRED_REGISTER 상태의 유저가 있을 때
 
-            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_SMS);
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_REGISTER);
             String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
                     personalDetail.getUserRole());
 
@@ -628,22 +613,12 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     new AuthDto.TrainerRegisterRequest(
                             null,
                             LocalDate.of(1990, 1, 1),
-                            "01012345678",
                             PersonalDetail.Gender.MALE,
                             "http://test.com",
                             null
                     ),
                     new AuthDto.TrainerRegisterRequest(
                             "홍길동",
-                            null,
-                            "01012345678",
-                            PersonalDetail.Gender.MALE,
-                            "http://test.com",
-                            null
-                    ),
-                    new AuthDto.TrainerRegisterRequest(
-                            "홍길동",
-                            LocalDate.of(1990, 1, 1),
                             null,
                             PersonalDetail.Gender.MALE,
                             "http://test.com",
@@ -652,7 +627,13 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     new AuthDto.TrainerRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
-                            "01012345678",
+                            PersonalDetail.Gender.MALE,
+                            "http://test.com",
+                            null
+                    ),
+                    new AuthDto.TrainerRegisterRequest(
+                            "홍길동",
+                            LocalDate.of(1990, 1, 1),
                             null,
                             "http://test.com",
                             null
@@ -660,7 +641,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     new AuthDto.TrainerRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
-                            "01012345678",
                             PersonalDetail.Gender.MALE,
                             "http://test.com",
                             availableTimeRequest1
@@ -668,7 +648,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     new AuthDto.TrainerRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
-                            "01012345678",
                             PersonalDetail.Gender.MALE,
                             "http://test.com",
                             availableTimeRequest2
@@ -696,7 +675,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             return new AuthDto.TrainerRegisterRequest(
                     "홍길동",
                     LocalDate.of(1990, 1, 1),
-                    "01012345678",
                     PersonalDetail.Gender.MALE,
                     "http://test.com",
                     availableTimes

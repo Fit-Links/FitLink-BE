@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import spring.fitlinkbe.domain.common.enums.UserRole;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
@@ -51,22 +53,21 @@ public class PersonalDetail {
         return phoneNumber.getPhoneNumber();
     }
 
-    public void registerMember(String name, LocalDate birthDate, PhoneNumber phoneNumber,
+    public void registerMember(String name, LocalDate birthDate,
                                String profileUrl, Gender gender, Member member) {
-        register(name, birthDate, phoneNumber, profileUrl, gender);
+        register(name, birthDate, profileUrl, gender);
         this.memberId = member.getMemberId();
     }
 
-    public void registerTrainer(String name, LocalDate birthDate, PhoneNumber phoneNumber,
+    public void registerTrainer(String name, LocalDate birthDate,
                                 String profileUrl, Gender gender, Trainer trainer) {
-        register(name, birthDate, phoneNumber, profileUrl, gender);
+        register(name, birthDate, profileUrl, gender);
         this.trainerId = trainer.getTrainerId();
     }
 
-    private void register(String name, LocalDate birthDate, PhoneNumber phoneNumber, String profileUrl, Gender gender) {
+    private void register(String name, LocalDate birthDate, String profileUrl, Gender gender) {
         this.name = name;
         this.birthDate = birthDate;
-        this.phoneNumber = phoneNumber;
         this.profilePictureUrl = profileUrl;
         this.gender = gender;
         this.status = Status.NORMAL;
@@ -93,6 +94,14 @@ public class PersonalDetail {
         this.phoneNumber = new PhoneNumber(phoneNumber);
     }
 
+    public void verifySnsEmail(PhoneNumber phoneNumber) {
+        if (this.status != Status.REQUIRED_SMS) {
+            throw new CustomException(ErrorCode.USER_STATUS_NOT_ALLOWED);
+        }
+        this.phoneNumber = phoneNumber;
+        this.status = Status.REQUIRED_REGISTER;
+    }
+
     public enum Gender {
         MALE, FEMALE
     }
@@ -104,6 +113,7 @@ public class PersonalDetail {
     public enum Status {
         NORMAL, // 기본 상태
         REQUIRED_SMS, // SMS 연동이 필요한 상태
+        REQUIRED_REGISTER, // 회원 또는 트레이너 등록 필요 상태
         SLEEP, // 잠시 중지된 상태
         SUSPEND, // 중지된 상태
         DELETE // 삭제된 상태

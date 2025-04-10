@@ -20,5 +20,11 @@ public class TokenCaffeineCacheRepository implements EmailTokenRepository {
         Cache tokenCache = cacheManager.getCache(CacheConfig.TOKEN_CACHE);
         Objects.requireNonNull(tokenCache).put(emailVerificationToken, personalDetailId);
     }
-}
 
+    @Override
+    public Long findPersonalDetailIdByToken(String token) {
+        Cache tokenCache = cacheManager.getCache(CacheConfig.TOKEN_CACHE);
+
+        return Objects.requireNonNull(tokenCache).get(token, Long.class);
+    }
+}

@@ -34,10 +34,12 @@ public class SecurityConfig {
     private final ApplicationYmlRead corsProperties;
 
     private static final WhiteListUrl registerUrls = new WhiteListUrl(List.of(
-            "v1/auth/members/register",
-            "v1/auth/trainers/register",
-            "v1/auth/email-verification-token",
-            "/oauth2/authorization/**"
+            "/v1/auth/members/register",
+            "/v1/auth/trainers/register",
+            "/v1/auth/email-verification-token",
+            "/v1/auth/status",
+            "/oauth2/authorization/**",
+            "/v1/sns"
     ));
 
     public static List<String> getWhiteListUrls() {
