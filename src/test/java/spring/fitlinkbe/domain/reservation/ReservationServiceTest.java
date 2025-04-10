@@ -438,11 +438,11 @@ class ReservationServiceTest {
 
     @Nested
     @DisplayName("예약 변경 요청 Service TEST")
-    class ChangeReqeustReservationServiceTest {
+    class ChangeReservationServiceTest {
 
         @Test
-        @DisplayName("예약 변경 요청 성공")
-        void changeReqeustReservation() {
+        @DisplayName("멤버의 예약 변경 요청 - 성공")
+        void changeReservationWithMember() {
             //given
             LocalDateTime originDate = LocalDateTime.now().plusDays(1);
             LocalDateTime changeRequestDate = LocalDateTime.now().plusDays(2);
@@ -469,6 +469,15 @@ class ReservationServiceTest {
                     .status(RESERVATION_CHANGE_REQUEST)
                     .build();
 
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(1L)
+                    .trainerId(null)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
             when(reservationRepository.getReservation(command.reservationId()))
                     .thenReturn(Optional.ofNullable(reservation));
 
@@ -476,7 +485,7 @@ class ReservationServiceTest {
                     .thenReturn(Optional.ofNullable(compltedReservation));
 
             //when
-            Reservation result = reservationService.changeReqeustReservation(command);
+            Reservation result = reservationService.changeReservation(command, user);
 
             //then
             assertThat(result).isNotNull();
@@ -485,8 +494,8 @@ class ReservationServiceTest {
         }
 
         @Test
-        @DisplayName("예약 변경 요청 실패 - 예약 변경 요청할 수 있는 상태가 아님")
-        void changeReqeustReservationNotAllowChangeRequestStatus() {
+        @DisplayName("멤버의 예약 변경 요청 - 실패: 예약 변경 요청할 수 있는 상태가 아님")
+        void changeReservationWithMemberNotAllowChangeRequestStatus() {
             //given
             LocalDateTime originDate = LocalDateTime.now().plusDays(1);
             LocalDateTime changeRequestDate = LocalDateTime.now().plusDays(2);
@@ -505,19 +514,28 @@ class ReservationServiceTest {
                     .status(RESERVATION_REFUSED)
                     .build();
 
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("트레이너1")
+                    .memberId(null)
+                    .trainerId(1L)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
             when(reservationRepository.getReservation(command.reservationId()))
                     .thenReturn(Optional.ofNullable(reservation));
 
             //when & then
-            assertThatThrownBy(() -> reservationService.changeReqeustReservation(command))
+            assertThatThrownBy(() -> reservationService.changeReservation(command, user))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED);
         }
 
         @Test
-        @DisplayName("예약 변경 요청 실패 - 요청 예약 변경 날짜가 실제 예약 날짜랑 다름")
-        void changeReqeustReservationNotEqualReservationDate() {
+        @DisplayName("멤버의 예약 변경 요청 - 실패: 요청 예약 변경 날짜가 실제 예약 날짜랑 다름")
+        void changeReservationWithMemberNotEqualReservationDate() {
             //given
             LocalDateTime originDate = LocalDateTime.now().plusDays(1);
             LocalDateTime changeRequestDate = LocalDateTime.now().plusDays(2);
@@ -536,11 +554,20 @@ class ReservationServiceTest {
                     .status(RESERVATION_APPROVED)
                     .build();
 
+            PersonalDetail personalDetail = PersonalDetail.builder()
+                    .personalDetailId(1L)
+                    .name("멤버1")
+                    .memberId(1L)
+                    .trainerId(null)
+                    .build();
+
+            SecurityUser user = new SecurityUser(personalDetail);
+
             when(reservationRepository.getReservation(command.reservationId()))
                     .thenReturn(Optional.ofNullable(reservation));
 
             //when & then
-            assertThatThrownBy(() -> reservationService.changeReqeustReservation(command))
+            assertThatThrownBy(() -> reservationService.changeReservation(command, user))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(RESERVATION_DATE_NOT_FOUND);

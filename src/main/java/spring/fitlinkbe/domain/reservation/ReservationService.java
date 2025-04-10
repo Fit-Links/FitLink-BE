@@ -188,7 +188,7 @@ public class ReservationService {
         if (user.getUserRole() == TRAINER) {
             // 예약을 취소한다.
             reservation.cancelRequest("트레이너가 예약을 취소하였습니다", command.cancelDate(), user.getUserRole());
-            Reservation Cancel = reservationRepository.saveReservation(reservation)
+            Reservation canceledReservation = reservationRepository.saveReservation(reservation)
                     .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_CANCEL_FAILED,
                             "예약 취소를 실패하였습니다. [reservationId: %d]".formatted(command.reservationId())));
             // 세션이 있는 경우, 세션도 취소한다.
@@ -198,7 +198,7 @@ public class ReservationService {
             getSession.cancel("트레이너의 요청으로 세션이 최소되었습니다");
             reservationRepository.saveSession(getSession);
 
-            return Cancel;
+            return canceledReservation;
         }
         // 멤버의 경우
         // 예약 취소 요청
@@ -267,9 +267,21 @@ public class ReservationService {
     }
 
     @Transactional
-    public Reservation changeReqeustReservation(ReservationCommand.ChangeReqeust command) {
-
+    public Reservation changeReservation(ReservationCommand.ChangeReqeust command,
+                                         SecurityUser user) {
         Reservation reservation = this.getReservation(command.reservationId());
+        // 변경하고자 하는 날짜에 확정된 예약이 있는지 확인
+        this.checkConfirmedReservationExistOrThrow(reservation.getTrainer().getTrainerId(),
+                command.changeRequestDate());
+        // 트레이너의 경우 고정 예약 변경
+        if (user.getUserRole() == TRAINER) {
+            reservation.changeFixedDate(command.reservationDate(), command.changeRequestDate());
+
+            return reservationRepository.saveReservation(reservation)
+                    .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED,
+                            "예약 요청 변경에 실패하였습니다."));
+        }
+        // 멤버의 경우 예약 변경 요청
         reservation.changeRequestDate(command.reservationDate(), command.changeRequestDate());
 
         return reservationRepository.saveReservation(reservation)
@@ -363,5 +375,12 @@ public class ReservationService {
         }
     }
 
-
+    /**
+     * 해당 날짜와 시간에 확정된 예약이 있는지 검사
+     */
+    public void checkConfirmedReservationExistOrThrow(Long trainerId, LocalDateTime checkDate) {
+        if (reservationRepository.isConfirmedReservationExists(trainerId, checkDate)) {
+            throw new CustomException(ErrorCode.CONFIRMED_RESERVATION_EXISTS);
+        }
+    }
 }

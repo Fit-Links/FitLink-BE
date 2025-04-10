@@ -1486,10 +1486,11 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeust.class))).thenReturn(result);
+            when(reservationFacade.changeReservation(any(ReservationCriteria.ChangeReqeust.class),
+                    any(SecurityUser.class))).thenReturn(result);
 
             //when & then
-            mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
+            mockMvc.perform(post("/v1/reservations/%s/change".formatted(reservationId))
                             .header("Authorization", "Bearer " + accessToken)
                             .with(oauth2Login().oauth2User(user))
                             .with(csrf())
@@ -1531,10 +1532,11 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeust.class))).thenReturn(result);
+            when(reservationFacade.changeReservation(any(ReservationCriteria.ChangeReqeust.class),
+                    any(SecurityUser.class))).thenReturn(result);
 
             //when & then
-            mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
+            mockMvc.perform(post("/v1/reservations/%s/change".formatted(reservationId))
                             .header("Authorization", "Bearer " + accessToken)
                             .with(oauth2Login().oauth2User(user))
                             .with(csrf())
@@ -1575,10 +1577,11 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeust.class))).thenReturn(result);
+            when(reservationFacade.changeReservation(any(ReservationCriteria.ChangeReqeust.class),
+                    any(SecurityUser.class))).thenReturn(result);
 
             //when & then
-            mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
+            mockMvc.perform(post("/v1/reservations/%s/change".formatted(reservationId))
                             .header("Authorization", "Bearer " + accessToken)
                             .with(oauth2Login().oauth2User(user))
                             .with(csrf())
@@ -1620,10 +1623,11 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeReqeustReservation(any(ReservationCriteria.ChangeReqeust.class))).thenReturn(result);
+            when(reservationFacade.changeReservation(any(ReservationCriteria.ChangeReqeust.class),
+                    any(SecurityUser.class))).thenReturn(result);
 
             //when & then
-            mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
+            mockMvc.perform(post("/v1/reservations/%s/change".formatted(reservationId))
                             .header("Authorization", "Bearer " + accessToken)
                             .with(oauth2Login().oauth2User(user))
                             .with(csrf())

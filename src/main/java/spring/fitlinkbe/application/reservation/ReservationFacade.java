@@ -63,7 +63,7 @@ public class ReservationFacade {
     @Transactional
     public Reservation setDisabledReservation(ReservationCriteria.SetDisabledTime criteria, SecurityUser user) {
         //만약 그 시간에 자기가 설정한 예약 불가능 설정이 있다면 취소하기
-        if(criteria.reservationId() != null) {
+        if (criteria.reservationId() != null) {
             return reservationService.cancelDisabledReservation(criteria.reservationId(),
                     user.getTrainerId());
         }
@@ -223,9 +223,9 @@ public class ReservationFacade {
 
 
     @Transactional
-    public Reservation changeReqeustReservation(ReservationCriteria.ChangeReqeust criteria) {
-        // 예약 변경 요청
-        Reservation requestedReservation = reservationService.changeReqeustReservation(criteria.toCommand());
+    public Reservation changeReservation(ReservationCriteria.ChangeReqeust criteria, SecurityUser user) {
+        // 트레이너의 경우 고정 예약 변경, 멤버일 경우 예약 변경 요청
+        Reservation requestedReservation = reservationService.changeReservation(criteria.toCommand(), user);
         // 알림 전송 멤버 -> 트레이너에게 예약 변경 요청했다는 알림 발송
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(requestedReservation.getTrainer().getTrainerId());
 

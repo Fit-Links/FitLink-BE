@@ -9,6 +9,7 @@ import spring.fitlinkbe.domain.reservation.ReservationRepository;
 import spring.fitlinkbe.domain.reservation.Session;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -106,7 +107,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
 
     @Override
     public void deleteReservation(Reservation reservation) {
-        reservationJpaRepository.delete(ReservationEntity.from(reservation,em));
+        reservationJpaRepository.delete(ReservationEntity.from(reservation, em));
     }
 
     @Override
@@ -141,6 +142,11 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public boolean isConfirmedReservationExists(Long trainerId, List<LocalDate> dates) {
         return reservationJpaRepository.isConfirmedReservationExists(trainerId, dates);
+    }
+
+    @Override
+    public boolean isConfirmedReservationExists(Long trainerId, LocalDateTime checkDate) {
+        return reservationJpaRepository.existsByTrainerIdAndConfirmDateTime(trainerId, checkDate);
     }
 }
 
