@@ -151,6 +151,17 @@ public class MemberService {
     }
 
     /**
+     * 세션 잔여횟수가 충분한지 확인
+     */
+    public void isSessionCountEnough(Long trainerId, Long memberId) {
+        SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(trainerId, memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND));
+
+        sessionInfo.checkEnoughSession();
+    }
+
+
+    /**
      * 연결된 정보 조회
      *
      * @return 해당 회원과 연동 완료된 (Connected) 상태의 연결 정보

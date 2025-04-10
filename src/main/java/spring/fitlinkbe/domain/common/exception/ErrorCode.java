@@ -58,7 +58,7 @@ public enum ErrorCode {
     SESSION_NOT_FOUND("세션 정보를 찾지 못하였습니다.", 404),
     SESSION_IS_ALREADY_CANCEL("이미 세션이 취소되었습니다.", 400),
     SESSION_IS_ALREADY_END("이미 세션이 종료되었습니다.", 400),
-    SESSION_REMAINING_COUNT_NOT_VALID("세션 남은 횟수가 0보다 작습니다", 400),
+    SESSION_REMAINING_COUNT_NOT_VALID("세션 남은 횟수가 적절하지 않습니다.", 400),
 
     // Notification 관련 ErrorCode
     NOTIFICATION_NOT_FOUND("알림 정보를 찾지 못하였습니다.", 404),

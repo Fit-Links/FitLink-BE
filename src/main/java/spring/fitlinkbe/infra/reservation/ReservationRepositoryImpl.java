@@ -145,6 +145,11 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
+    public boolean isConfirmedReservationsExists(Long trainerId, List<LocalDateTime> checkDates) {
+        return reservationJpaRepository.isConfirmedReservationsExists(trainerId, checkDates);
+    }
+
+    @Override
     public boolean isConfirmedReservationExists(Long trainerId, LocalDateTime checkDate) {
         return reservationJpaRepository.existsByTrainerIdAndConfirmDateTime(trainerId, checkDate);
     }

@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.SessionInfoRepository;
 import spring.fitlinkbe.domain.common.enums.UserRole;
-import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
@@ -37,9 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
-import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_NOT_ALLOWED;
 import static spring.fitlinkbe.domain.notification.Notification.NotificationType.*;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_CANCEL_REQUEST;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_CANCEL_REQUEST_REFUSED;
@@ -677,7 +674,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("예약 불가 설정을 하면 이전의 확정된 예약들과 함께 세션도 취소되며, 예약 불가 설정한 예약은 저장됩니다.")
+        @DisplayName("예약 불가 설정 - 성공 ")
         void setDisabledReservationWithCancelSession() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
@@ -731,9 +728,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                         .reservationId()).isEqualTo(2L);
                 // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(savedReservation.getReservationId(),
-                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
+                        Notification.ReferenceType.RESERVATION_REQUEST);
                 softly.assertThat(notification).isNotNull();
-                softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_CANCEL);
+                softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_REFUSE);
             });
         }
 
@@ -1226,7 +1223,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("트레이너가 고정 세션 예약 성공 - 기존에 존재하던 예약 취소")
+        @DisplayName("트레이너가 고정 세션 예약 성공 - 기존에 존재하던 예약 거절")
         void createFixedReservationWithCancelAlreadySaveReservation() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
@@ -1247,7 +1244,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .reservationDates(List.of(requestDate))
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
-                    .status(RESERVATION_APPROVED)
+                    .status(RESERVATION_WAITING)
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
 
@@ -1280,13 +1277,13 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                         .getReservation(savedReservation.getReservationId())
                         .orElseThrow();
 
-                softly.assertThat(originReservation.getStatus()).isEqualTo(RESERVATION_CANCELLED);
+                softly.assertThat(originReservation.getStatus()).isEqualTo(RESERVATION_REFUSED);
 
                 // 알림이 잘 생성됐는지 확인
                 Notification notification = notificationRepository.getNotification(originReservation.getReservationId(),
-                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
+                        Notification.ReferenceType.RESERVATION_REQUEST);
                 softly.assertThat(notification).isNotNull();
-                softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_CANCEL);
+                softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_REFUSE);
 
 
             });
@@ -1387,91 +1384,6 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             });
         }
 
-        @Test
-        @DisplayName("트레이너가 고정 세션 예약 실패 - 예약 불가 설정")
-        void createFixedReservationWithDisableTime() {
-            // given
-            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
-                    .orElseThrow();
-
-            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
-
-            LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
-
-            ReservationRequestDto.CreateFixed request = ReservationRequestDto.CreateFixed.builder()
-                    .memberId(1L)
-                    .name("홍길동")
-                    .dates(List.of(requestDate))
-                    .build();
-
-            Reservation reservation = Reservation.builder()
-                    .reservationDates(List.of(requestDate))
-                    .trainer(Trainer.builder().trainerId(1L).build())
-                    .member(Member.builder().memberId(1L).build())
-                    .status(DISABLED_TIME_RESERVATION)
-                    .createdAt(LocalDateTime.now().plusSeconds(2))
-                    .build();
-
-            reservationRepository.saveReservation(reservation);
-
-            // when
-            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/fixed-reservations",
-                    request,
-                    accessToken);
-
-            // then
-            assertSoftly(softly -> {
-                softly.assertThat(result.statusCode()).isEqualTo(200);
-                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
-                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("예약을 할 수 있는 상태가 아닙니다.");
-                softly.assertThat(result.body().jsonPath().getList("data", ReservationResponseDto.Success.class))
-                        .isEmpty();
-            });
-        }
-
-        @Test
-        @DisplayName("트레이너가 고정 세션 예약 실패 - 이미 예약 종료")
-        void createFixedReservationAlreadyExited() {
-            // given
-            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
-                    .orElseThrow();
-
-            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
-                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
-
-            LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
-
-            ReservationRequestDto.CreateFixed request = ReservationRequestDto.CreateFixed.builder()
-                    .memberId(1L)
-                    .name("홍길동")
-                    .dates(List.of(requestDate))
-                    .build();
-
-            Reservation reservation = Reservation.builder()
-                    .reservationDates(List.of(requestDate))
-                    .trainer(Trainer.builder().trainerId(1L).build())
-                    .member(Member.builder().memberId(1L).build())
-                    .status(RESERVATION_COMPLETED)
-                    .createdAt(LocalDateTime.now().plusSeconds(2))
-                    .build();
-
-            reservationRepository.saveReservation(reservation);
-
-            // when
-            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/fixed-reservations",
-                    request,
-                    accessToken);
-
-            // then
-            assertSoftly(softly -> {
-                softly.assertThat(result.statusCode()).isEqualTo(200);
-                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isFalse();
-                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).isEqualTo("예약을 할 수 있는 상태가 아닙니다.");
-                softly.assertThat(result.body().jsonPath().getList("data", ReservationResponseDto.Success.class))
-                        .isEmpty();
-            });
-        }
     }
 
     @Nested
@@ -1494,7 +1406,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             reservationRepository.saveReservation(reservation);
 
             // when
-            fixedReservationScheduler.CreateFixed();
+            fixedReservationScheduler.createFixedReservations();
 
             // then
             assertSoftly(softly -> {
@@ -1506,39 +1418,6 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(reservations.get(1).getReservationId()).isEqualTo(2L);
                 softly.assertThat(reservations.get(1).getStatus()).isEqualTo(FIXED_RESERVATION);
             });
-        }
-
-        @Test
-        @DisplayName("스케줄 고정 세션 예약 실패 - 예약 불가 설정")
-        void scheduledCreateFixedReservationSetDisableTime() {
-            // given
-            LocalDateTime requestDate = LocalDateTime.now().plusHours(1);
-
-            Reservation reservation = Reservation.builder()
-                    .reservationDates(List.of(requestDate))
-                    .trainer(Trainer.builder().trainerId(1L).build())
-                    .member(Member.builder().memberId(1L).build())
-                    .status(FIXED_RESERVATION)
-                    .createdAt(LocalDateTime.now().plusSeconds(2))
-                    .build();
-
-            reservationRepository.saveReservation(reservation);
-
-            Reservation reservation2 = Reservation.builder()
-                    .reservationDates(List.of(requestDate.plusDays(7)))
-                    .trainer(Trainer.builder().trainerId(1L).build())
-                    .member(Member.builder().memberId(1L).build())
-                    .status(DISABLED_TIME_RESERVATION)
-                    .createdAt(LocalDateTime.now().plusSeconds(2))
-                    .build();
-
-            reservationRepository.saveReservation(reservation2);
-
-            //when & then
-            assertThatThrownBy(() -> fixedReservationScheduler.CreateFixed())
-                    .isInstanceOf(CustomException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(RESERVATION_NOT_ALLOWED);
         }
     }
 
@@ -3172,8 +3051,8 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("멤버의 예약 변경 승인 성공 - 같은 시간 대 다른 예약 대기 취소")
-        void changeReqeustReservationWithCancelOtherReservations() {
+        @DisplayName("멤버의 예약 변경 승인 성공 - 같은 시간 대 다른 예약 대기 거절")
+        void changeReqeustReservationWithRefuseOtherReservations() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -3244,12 +3123,12 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(notification.getNotificationType()).isEqualTo(
                         Notification.NotificationType.RESERVATION_CHANGE_REQUEST_APPROVED);
 
-                // 취소 알림이 잘 생성됐는지 확인
+                // 거절 알림이 잘 생성됐는지 확인
                 Notification notification2 = notificationRepository.getNotification(savedReservation2.getReservationId(),
-                        Notification.ReferenceType.RESERVATION_CHANGE_CANCEL);
+                        Notification.ReferenceType.RESERVATION_REQUEST);
                 softly.assertThat(notification2).isNotNull();
                 softly.assertThat(notification2.getNotificationType()).isEqualTo(
-                        Notification.NotificationType.RESERVATION_CANCEL);
+                        RESERVATION_REFUSE);
             });
         }
 

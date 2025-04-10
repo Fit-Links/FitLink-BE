@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import spring.fitlinkbe.domain.reservation.Reservation;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static spring.fitlinkbe.infra.reservation.QReservationEntity.reservationEntity;
@@ -33,4 +34,19 @@ public class ReservationRepositoryCustomImpl implements ReservationRepositoryCus
                 )
                 .fetchFirst() != null;
     }
+
+    @Override
+    public boolean isConfirmedReservationsExists(Long trainerId, List<LocalDateTime> checkDates) {
+
+        return queryFactory
+                .selectOne()
+                .from(reservationEntity)
+                .where(
+                        reservationEntity.trainer.trainerId.eq(trainerId),
+                        reservationEntity.confirmDate.in(checkDates),
+                        reservationEntity.status.eq(Reservation.Status.RESERVATION_APPROVED)
+                )
+                .fetchFirst() != null;
+    }
+
 }

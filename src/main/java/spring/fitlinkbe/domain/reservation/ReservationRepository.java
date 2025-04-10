@@ -35,5 +35,7 @@ public interface ReservationRepository {
 
     boolean isConfirmedReservationExists(Long trainerId, List<LocalDate> dates);
 
+    boolean isConfirmedReservationsExists(Long trainerId, List<LocalDateTime> dates);
+
     boolean isConfirmedReservationExists(Long trainerId, LocalDateTime checkDate);
 }

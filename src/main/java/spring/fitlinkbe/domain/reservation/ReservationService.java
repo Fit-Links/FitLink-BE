@@ -115,18 +115,13 @@ public class ReservationService {
     }
 
     @Transactional
-    public List<Reservation> scheduledFixedReservations() {
+    public List<Reservation> getNextFixedReservations() {
         // 고정 예약 상태의 예약 조회
         List<Reservation> fixedReservations = reservationRepository.getFixedReservations();
         // 일주일 뒤에 시간으로 예약 도메인 생성
-        List<Reservation> newReservations = fixedReservations.stream()
+        return fixedReservations.stream()
                 .map(Reservation::toFixedDomain)
                 .toList();
-        // 일주일 뒤에 시간에 예약이 있다면(예약 대기 포함) 취소 절차 진행
-        newReservations.forEach((r) -> cancelExistReservations(r.getReservationDates(), "트레이너 고정 예약"
-                , null));
-
-        return newReservations;
     }
 
     @Transactional
@@ -209,42 +204,23 @@ public class ReservationService {
     }
 
     @Transactional
-    public List<Reservation> cancelExistReservations(List<LocalDateTime> reservationDates,
-                                                     String cancelReason, Long reservationId) {
-        //1. 일치하는 날짜의 예약 조회
+    public List<Reservation> refuseWaitingReservations(List<LocalDateTime> dates) {
+        //1. 일치하는 날짜의 대기 예약 조회
         List<Reservation> reservations = reservationRepository.getReservations()
                 .stream()
-                .filter(Reservation::isAlreadyCancel)
-                .filter(r -> !r.getReservationId().equals(reservationId))
-                .filter(r -> r.isReservationDateSame(reservationDates))
+                .filter(r -> r.getStatus() == RESERVATION_WAITING)
+                .filter(r -> r.isReservationDateSame(dates))
                 .toList();
 
-        //2. 이미 존재하는 예약 취소 절차 진행
-        if (!reservations.isEmpty()) {
-            reservations.forEach(Reservation::checkPossibleReserveStatus);
-            cancelReservations(reservations, cancelReason);
+        //2. 대기 중인 예약 거절
+        reservations.forEach((r) -> {
+            r.refuse();
+            reservationRepository.saveReservation(r);
+        });
 
-            return reservations;
-        }
+        if (!reservations.isEmpty()) return reservations;
 
         return List.of();
-    }
-
-    @Transactional
-    public void cancelReservations(List<Reservation> reservations, String message) {
-        // 예약 정보 취소
-        reservations.forEach(reservation -> reservation.cancel(message));
-        // 취소한 예약 정보 저장
-        reservationRepository.saveReservations(reservations);
-        // 세션 정보 찾기
-        List<Session> sessions = reservations.stream()
-                .map(reservation -> reservationRepository.getSession(reservation.getReservationId()))
-                .flatMap(Optional::stream)
-                .toList();
-        //세션 정보 취소
-        sessions.forEach(session -> session.cancel(message));
-        // 세션 취소 정보 저장
-        reservationRepository.saveSessions(sessions);
     }
 
     @Transactional
@@ -371,6 +347,15 @@ public class ReservationService {
      */
     public void checkConfirmedReservationExistOrThrow(Long trainerId, List<LocalDate> dates) {
         if (reservationRepository.isConfirmedReservationExists(trainerId, dates)) {
+            throw new CustomException(ErrorCode.CONFIRMED_RESERVATION_EXISTS);
+        }
+    }
+
+    /**
+     * 해당 날짜와 시간에 확정된 예약이 있는지 검사
+     */
+    public void checkConfirmedReservationsExistOrThrow(Long trainerId, List<LocalDateTime> checkDates) {
+        if (reservationRepository.isConfirmedReservationsExists(trainerId, checkDates)) {
             throw new CustomException(ErrorCode.CONFIRMED_RESERVATION_EXISTS);
         }
     }

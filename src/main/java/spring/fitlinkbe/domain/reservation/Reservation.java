@@ -147,20 +147,9 @@ public class Reservation {
         this.status = isApprove ? RESERVATION_CANCELLED : RESERVATION_CANCEL_REQUEST_REFUSED;
     }
 
-    public boolean isAlreadyCancel() {
-        return this.status != RESERVATION_CANCELLED && this.status != RESERVATION_REFUSED && this.status != FIXED_RESERVATION;
-    }
-
     public void checkDisableStatus() {
         if (this.status != DISABLED_TIME_RESERVATION) {
             throw new CustomException(SET_DISABLE_DATE_FAILED, "예약 불가 해지할 수 있는 상태가 아닙니다.");
-        }
-    }
-
-
-    public void checkPossibleReserveStatus() {
-        if (this.status == DISABLED_TIME_RESERVATION || this.status == RESERVATION_COMPLETED) {
-            throw new CustomException(RESERVATION_NOT_ALLOWED);
         }
     }
 
@@ -189,7 +178,9 @@ public class Reservation {
 
     public LocalDateTime getReservationDate() {
 
-        if (this.reservationDates == null) return LocalDateTime.now().minusYears(1);
+        if (this.reservationDates == null) {
+            throw new CustomException(RESERVATION_DATE_NOT_FOUND);
+        }
 
         return this.reservationDates.size() == 1 ? this.reservationDates.get(0)
                 : findEarlierDate(this.reservationDates);
