@@ -18,7 +18,7 @@ import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
 public class ReservationCriteria {
 
     @Builder(toBuilder = true)
-    public record SetDisabledTime(LocalDateTime date) {
+    public record SetDisabledTime(LocalDateTime date, Long reservationId) {
 
         public ReservationCommand.SetDisabledTime toCommand(Long trainerId) {
             return ReservationCommand.SetDisabledTime.builder()

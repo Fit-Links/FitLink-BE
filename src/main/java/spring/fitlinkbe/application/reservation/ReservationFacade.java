@@ -62,11 +62,15 @@ public class ReservationFacade {
 
     @Transactional
     public Reservation setDisabledReservation(ReservationCriteria.SetDisabledTime criteria, SecurityUser user) {
+        //만약 그 시간에 자기가 설정한 예약 불가능 설정이 있다면 취소하기
+        if(criteria.reservationId() != null) {
+            return reservationService.cancelDisabledReservation(criteria.reservationId(),
+                    user.getTrainerId());
+        }
         // 기존에 있던 예약들 취소
         List<Reservation> cancelledReservations = reservationService.cancelExistReservations(List.of(criteria.date()),
                 "예약 불가 설정", null);
         // 예약이 취소되었다면, 트레이너 -> 멤버 예약 취소됐다는 알림 전송
-
         cancelledReservations.forEach(r -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
             notificationService.sendNotification(NotificationCommand.Cancel.of(

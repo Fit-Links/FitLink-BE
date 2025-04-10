@@ -14,11 +14,13 @@ public class ReservationRequestDto {
     @Builder(toBuilder = true)
     public record SetDisabledTime(@NotNull(message = "예약 날짜는 필수입니다.")
                                   @FutureOrPresent(message = "현재 날짜보다 이전일 수 없습니다.")
-                                  LocalDateTime date) {
+                                  LocalDateTime date,
+                                  Long reservationId) {
 
         public ReservationCriteria.SetDisabledTime toCriteria() {
             return ReservationCriteria.SetDisabledTime.builder()
                     .date(date)
+                    .reservationId(reservationId)
                     .build();
         }
     }

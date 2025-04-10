@@ -35,6 +35,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -763,6 +764,100 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
                 softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)
                         .reservationId()).isEqualTo(1L);
+            });
+        }
+
+        @Test
+        @DisplayName("예약 불가 설정 취소 - 성공")
+        void setDisabledReservationCancel() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+            Member member = memberRepository.getMember(1L).orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            Reservation reservation = Reservation.builder()
+                    .trainer(trainer)
+                    .member(member)
+                    .reservationDates(List.of(LocalDateTime.now().plusDays(1)))
+                    .status(DISABLED_TIME_RESERVATION)
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+
+            ReservationRequestDto.SetDisabledTime request = ReservationRequestDto.SetDisabledTime
+                    .builder()
+                    .date(requestDate)
+                    .reservationId(savedReservation.getReservationId())
+                    .build();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/availability/disable",
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)
+                        .reservationId()).isEqualTo(1L);
+
+                // 예약 불가 설정이 삭제되었는지 확인
+                Optional<Reservation> deleteReservation = reservationRepository
+                        .getReservation(savedReservation.getReservationId());
+
+                softly.assertThat(deleteReservation.isPresent()).isFalse();
+            });
+        }
+
+        @Test
+        @DisplayName("예약 불가 설정 취소 - 실패 : 예약 불가 설정 상태가 아님")
+        void setDisabledReservationCancelWithNotThatStatus() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+            Member member = memberRepository.getMember(1L).orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            Reservation reservation = Reservation.builder()
+                    .trainer(trainer)
+                    .member(member)
+                    .reservationDates(List.of(LocalDateTime.now().plusDays(1)))
+                    .status(RESERVATION_CANCEL_REQUEST)
+                    .build();
+
+            Reservation savedReservation = reservationRepository.saveReservation(reservation).orElseThrow();
+
+            LocalDateTime requestDate = LocalDateTime.now().plusDays(1);
+
+            ReservationRequestDto.SetDisabledTime request = ReservationRequestDto.SetDisabledTime
+                    .builder()
+                    .date(requestDate)
+                    .reservationId(savedReservation.getReservationId())
+                    .build();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/availability/disable",
+                    request,
+                    accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("예약 불가 해지할 수 있는 상태가 아닙니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
             });
         }
     }

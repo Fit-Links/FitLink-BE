@@ -22,7 +22,11 @@ public interface ReservationRepository {
 
     Optional<Reservation> getReservation(Long reservationId);
 
+    Optional<Reservation> getReservation(Long reservationId, Long trainerId);
+
     Optional<Reservation> saveReservation(Reservation reservation);
+
+    void deleteReservation(Reservation reservation);
 
     Optional<Session> getSession(Long reservationId);
 

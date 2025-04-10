@@ -12,7 +12,7 @@ public class ReservationCommand {
 
 
     @Builder(toBuilder = true)
-    public record SetDisabledTime(LocalDateTime date, Long trainerId) {
+    public record SetDisabledTime(LocalDateTime date,Long reservationId, Long trainerId) {
 
     }
 

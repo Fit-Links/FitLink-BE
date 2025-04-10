@@ -85,6 +85,19 @@ public class ReservationService {
     }
 
     @Transactional
+    public Reservation cancelDisabledReservation(Long reservationId, Long trainerId) {
+
+        Reservation reservation = reservationRepository.getReservation(reservationId, trainerId)
+                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND,
+                        "예약 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(reservationId)));
+
+        reservation.checkDisableStatus();
+        reservationRepository.deleteReservation(reservation);
+
+        return reservation;
+    }
+
+    @Transactional
     public List<Reservation> createFixedReservation(List<Reservation> reservations) {
         // 고정 예약 진행
         List<Reservation> savedReservations = reservationRepository.saveReservations(reservations);
@@ -209,7 +222,7 @@ public class ReservationService {
         //2. 이미 존재하는 예약 취소 절차 진행
         if (!reservations.isEmpty()) {
             reservations.forEach(Reservation::checkPossibleReserveStatus);
-            Cancels(reservations, cancelReason);
+            cancelReservations(reservations, cancelReason);
 
             return reservations;
         }
@@ -218,7 +231,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public void Cancels(List<Reservation> reservations, String message) {
+    public void cancelReservations(List<Reservation> reservations, String message) {
         // 예약 정보 취소
         reservations.forEach(reservation -> reservation.cancel(message));
         // 취소한 예약 정보 저장
@@ -349,4 +362,6 @@ public class ReservationService {
             throw new CustomException(ErrorCode.CONFIRMED_RESERVATION_EXISTS);
         }
     }
+
+
 }
