@@ -341,6 +341,14 @@ public class ReservationService {
                 .orElseThrow(() -> new CustomException(SESSION_CREATE_FAILED));
     }
 
+    public List<Reservation> getTodayReservations() {
+        LocalDate today = LocalDateTime.now().toLocalDate();
+        List<Reservation> reservations = reservationRepository.getReservations();
+
+        return reservations.stream().filter(r -> r.getConfirmDate().toLocalDate().isEqual(today))
+                .toList();
+    }
+
 
     /**
      * 해당 날짜에 확정된 예약이 있는지 검사

@@ -21,7 +21,7 @@ public class NotificationStrategyHandler {
     public void init() {
         strategyMap.put(Notification.NotificationType.CONNECT, this::handleConnectRequest);
         strategyMap.put(Notification.NotificationType.DISCONNECT, this::handleDisconnect);
-        strategyMap.put(Notification.NotificationType.RESERVATION_CANCEL, this::handleCancel);
+        strategyMap.put(Notification.NotificationType.RESERVATION_CANCEL, this::handleCancelReservation);
         strategyMap.put(Notification.NotificationType.RESERVATION_CANCEL_REQUEST, this::handleCancelRequestReservation);
         strategyMap.put(Notification.NotificationType.RESERVATION_APPROVE, this::handleApproveReservation);
         strategyMap.put(Notification.NotificationType.RESERVATION_REFUSE, this::handleApproveReservation);
@@ -33,11 +33,11 @@ public class NotificationStrategyHandler {
         strategyMap.put(Notification.NotificationType.RESERVATION_CHANGE_REQUEST, this::handleChangeRequestReservation);
         strategyMap.put(Notification.NotificationType.RESERVATION_CANCEL_REQUEST_APPROVED, this::handleCancelApproveReservation);
         strategyMap.put(Notification.NotificationType.RESERVATION_CANCEL_REQUEST_REFUSED, this::handleCancelApproveReservation);
+        strategyMap.put(Notification.NotificationType.SESSION_REMINDER, this::handleSessionTodayReminder);
+        strategyMap.put(Notification.NotificationType.SESSION_EDITED, this::handleEditSession);
+        strategyMap.put(Notification.NotificationType.SESSION_REMAIN_5, this::handleSessionChargeReminder);
 
 
-//        strategyMap.put(Notification.NotificationType.SESSION_REMINDER, this::handleCancelRequestReservation);
-//        strategyMap.put(Notification.NotificationType.SESSION_REMAIN_5, this::handleCancelRequestReservation);
-//        strategyMap.put(Notification.NotificationType.SESSION_EDITED, this::handleCancelRequestReservation);
     }
 
     @SuppressWarnings("unchecked")
@@ -62,9 +62,9 @@ public class NotificationStrategyHandler {
         return Notification.disconnect(dto.trainerDetail(), dto.memberId(), dto.memberName(), dto.target());
     }
 
-    private Notification handleCancel(NotificationRequest request) {
+    private Notification handleCancelReservation(NotificationRequest request) {
         NotificationCommand.Cancel dto = (NotificationCommand.Cancel) request;
-        return Notification.Cancel(dto.memberDetail(), dto.reservationId(), dto.trainerId(), dto.reason());
+        return Notification.cancelReservation(dto.memberDetail(), dto.reservationId(), dto.trainerId(), dto.reason());
     }
 
     private Notification handleCancelRequestReservation(NotificationRequest request) {
@@ -111,5 +111,21 @@ public class NotificationStrategyHandler {
         NotificationCommand.CancelApproveReservation dto = (NotificationCommand.CancelApproveReservation) request;
         return Notification.cancelApproveReservation(dto.memberDetail(), dto.reservationId(), dto.trainerId(),
                 dto.isApprove());
+    }
+
+    private Notification handleSessionTodayReminder(NotificationRequest request) {
+        NotificationCommand.SessionTodayReminder dto = (NotificationCommand.SessionTodayReminder) request;
+        return Notification.sessionTodayReminder(dto.memberDetail(), dto.sessionId(), dto.trainerId(), dto.confirmDate());
+    }
+
+    private Notification handleSessionChargeReminder(NotificationRequest request) {
+        NotificationCommand.SessionChargeReminder dto = (NotificationCommand.SessionChargeReminder) request;
+        return Notification.sessionChargeReminder(dto.memberDetail(), dto.sessionInfoId(), dto.trainerId());
+    }
+
+    private Notification handleEditSession(NotificationRequest request) {
+        NotificationCommand.EditSession dto = (NotificationCommand.EditSession) request;
+        return Notification.editSession(dto.memberDetail(), dto.sessionInfoId(), dto.trainerId(), dto.beforeTotalCnt(),
+                dto.afterTotalCnt(), dto.beforeRemainingCnt(), dto.afterRemainingCnt());
     }
 }

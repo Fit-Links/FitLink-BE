@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.application.reservation.criteria.ReservationCriteria;
 import spring.fitlinkbe.application.reservation.criteria.ReservationResult;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.notification.NotificationService;
 import spring.fitlinkbe.domain.notification.command.NotificationCommand;
@@ -298,7 +299,7 @@ public class ReservationFacade {
         Session completedSession = reservationService.completeSession(criteria.toCompleteCommand(),
                 user);
         // 세션 하나 차감
-        memberService.deductSession(user.getTrainerId(), criteria.memberId());
+        SessionInfo sessionInfo = memberService.deductSession(user.getTrainerId(), criteria.memberId());
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(user.getTrainerId());
         PersonalDetail memberDetail = memberService.getMemberDetail(criteria.memberId());
         // 알림 전송 멤버 -> 트레이너에게 멤버의 세션이 완료되었다는 알림 발송
@@ -307,7 +308,24 @@ public class ReservationFacade {
         // 알림 전송 트레이너 -> 멤버에게 세션이 완료되서 차감 되었다는 알림 발송
         notificationService.sendNotification(NotificationCommand.DeductSession.of(memberDetail,
                 completedSession.getSessionId(), user.getTrainerId()));
+        // 만약 남은 세션 횟수가 5회면 세션 5회 남았다는 알림 전송
+        if (sessionInfo.getRemainingCount() == 5) {
+            notificationService.sendNotification(NotificationCommand.SessionChargeReminder.of(memberDetail,
+                    sessionInfo.getSessionInfoId(), user.getTrainerId()));
+        }
 
         return completedSession;
+    }
+
+    public void checkTodaySessionReminder() {
+        List<Reservation> todayReservations = reservationService.getTodayReservations();
+
+        // 알림 전송 트레이너 -> 멤버에게 오늘 세션있다고 알림 전송
+        todayReservations.forEach(r -> {
+            PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
+            Session session = reservationService.getSession(r.getStatus(), r.getReservationId());
+            notificationService.sendNotification(NotificationCommand.SessionTodayReminder.of(memberDetail,
+                    session.getSessionId(), r.getTrainer().getTrainerId(), r.getConfirmDate()));
+        });
     }
 }

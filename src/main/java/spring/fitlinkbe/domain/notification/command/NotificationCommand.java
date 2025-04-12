@@ -252,4 +252,66 @@ public class NotificationCommand {
     @Builder
     public record GetNotifications(Notification.ReferenceType type, Pageable pageRequest, String keyword) {
     }
+
+    @Builder
+    public record SessionTodayReminder(PersonalDetail memberDetail, Long sessionId,
+                                       Long trainerId, LocalDateTime confirmDate)
+            implements NotificationRequest {
+        @Override
+        public Notification.NotificationType getType() {
+            return Notification.NotificationType.SESSION_REMINDER;
+        }
+
+        public static SessionTodayReminder of(PersonalDetail memberDetail, Long sessionId,
+                                              Long trainerId, LocalDateTime confirmDate) {
+            return SessionTodayReminder.builder()
+                    .memberDetail(memberDetail)
+                    .sessionId(sessionId)
+                    .trainerId(trainerId)
+                    .confirmDate(confirmDate)
+                    .build();
+        }
+    }
+
+    @Builder
+    public record EditSession(PersonalDetail memberDetail, Long sessionInfoId, Long trainerId, int beforeTotalCnt,
+                              int afterTotalCnt, int beforeRemainingCnt, int afterRemainingCnt)
+            implements NotificationRequest {
+        @Override
+        public Notification.NotificationType getType() {
+            return Notification.NotificationType.SESSION_EDITED;
+        }
+
+        public static EditSession of(PersonalDetail memberDetail, Long sessionInfoId, Long trainerId, int beforeTotalCnt,
+                                     int afterTotalCnt, int beforeRemainingCnt, int afterRemainingCnt) {
+            return EditSession.builder()
+                    .memberDetail(memberDetail)
+                    .sessionInfoId(sessionInfoId)
+                    .trainerId(trainerId)
+                    .beforeTotalCnt(beforeTotalCnt)
+                    .afterTotalCnt(afterTotalCnt)
+                    .beforeRemainingCnt(beforeRemainingCnt)
+                    .afterRemainingCnt(afterRemainingCnt)
+                    .build();
+        }
+
+    }
+
+    @Builder
+    public record SessionChargeReminder(PersonalDetail memberDetail, Long sessionInfoId, Long trainerId)
+            implements NotificationRequest {
+        @Override
+        public Notification.NotificationType getType() {
+            return Notification.NotificationType.SESSION_REMAIN_5;
+        }
+
+        public static SessionChargeReminder of(PersonalDetail memberDetail, Long sessionInfoId, Long trainerId) {
+            return SessionChargeReminder.builder()
+                    .memberDetail(memberDetail)
+                    .sessionInfoId(sessionInfoId)
+                    .trainerId(trainerId)
+                    .build();
+        }
+
+    }
 }

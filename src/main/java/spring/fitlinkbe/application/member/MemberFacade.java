@@ -179,8 +179,18 @@ public class MemberFacade {
         memberService.checkConnected(trainerId, memberId);
         SessionInfo sessionInfo = memberService.getSessionInfo(sessionInfoId);
 
+        int beforeTotalCnt = sessionInfo.getTotalCount();
+        int beforeRemainingCnt = sessionInfo.getRemainingCount();
+        int afterTotalCnt = request.totalCount() == null ? sessionInfo.getTotalCount() : request.totalCount();
+        int afterRemainingCnt = request.remainingCount() == null ? sessionInfo.getRemainingCount() : request.remainingCount();
+
         request.patch(sessionInfo);
         memberService.saveSessionInfo(sessionInfo);
+
+        PersonalDetail memberDetail = memberService.getMemberDetail(memberId);
+        // 트레이너 -> 멤버에게 세션 직접 수정했다는 알림 전송
+        notificationService.sendNotification(NotificationCommand.EditSession.of(memberDetail, sessionInfoId, trainerId,
+                beforeTotalCnt, afterTotalCnt, beforeRemainingCnt, afterRemainingCnt));
 
         return SessionInfoCriteria.Response.from(sessionInfo);
     }

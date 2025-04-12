@@ -213,7 +213,8 @@ public class TestDataHandler {
         SessionInfo sessionInfo = SessionInfo.builder()
                 .trainer(trainer)
                 .member(member)
-                .remainingCount(10)
+                .totalCount(10)
+                .remainingCount(6)
                 .build();
 
         sessionInfoRepository.saveSessionInfo(sessionInfo);
