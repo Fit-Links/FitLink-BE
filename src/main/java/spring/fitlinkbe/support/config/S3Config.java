@@ -6,24 +6,24 @@ import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.sns.SnsClient;
+import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
 @RequiredArgsConstructor
-public class SnsConfig {
+public class S3Config {
 
     private final AwsProperties awsProperties;
 
     @Bean
-    public SnsClient snsClient() {
+    public S3Client s3Client() {
         StaticCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(
                 AwsBasicCredentials.create(awsProperties.getAccessKey(), awsProperties.getSecretKey())
         );
 
-        return SnsClient.builder()
+        return S3Client.builder()
                 .region(Region.of(awsProperties.getRegion()))
                 .credentialsProvider(credentialsProvider)
                 .build();
     }
-}
 
+}
