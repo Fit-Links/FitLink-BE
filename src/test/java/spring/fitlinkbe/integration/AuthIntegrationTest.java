@@ -18,6 +18,7 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.member.WorkoutScheduleRepository;
+import spring.fitlinkbe.domain.notification.FcmService;
 import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
@@ -51,6 +52,9 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     TrainerRepository trainerRepository;
+
+    @Autowired
+    FcmService fcmService;
 
     @Autowired
     WorkoutScheduleRepository workoutScheduleRepository;

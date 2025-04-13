@@ -3,6 +3,7 @@ package spring.fitlinkbe.domain.auth;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.EmailTokenRepository;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.TokenRepository;
@@ -10,9 +11,12 @@ import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.Token;
+import spring.fitlinkbe.support.security.SecurityUser;
 
 import java.security.SecureRandom;
 import java.util.Base64;
+
+import static spring.fitlinkbe.domain.common.exception.ErrorCode.PERSONAL_DETAIL_NOT_FOUND;
 
 @Service
 @Transactional
@@ -55,5 +59,16 @@ public class AuthService {
 
     public void savePersonalDetail(PersonalDetail personalDetail) {
         personalDetailRepository.savePersonalDetail(personalDetail);
+    }
+
+    public void saveFcmToken(AuthCommand.FcmTokenRequest command, SecurityUser user) {
+
+        PersonalDetail memberDetail = personalDetailRepository.getMemberDetail(user.getMemberId())
+                .orElseThrow(() -> new CustomException(PERSONAL_DETAIL_NOT_FOUND));
+
+        Token token = tokenRepository.getByPersonalDetailId(memberDetail.getPersonalDetailId());
+
+        token.updateFcmToken(command.fcmToken());
+        tokenRepository.saveOrUpdate(token);
     }
 }

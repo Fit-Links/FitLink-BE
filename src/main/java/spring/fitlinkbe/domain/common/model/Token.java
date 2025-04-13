@@ -22,4 +22,8 @@ public class Token {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    public void updateFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
 }

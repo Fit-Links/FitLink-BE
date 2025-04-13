@@ -99,4 +99,9 @@ public class AuthCommand {
                     .build();
         }
     }
+
+    @Builder
+    public record FcmTokenRequest(String fcmToken) {
+    }
+
 }

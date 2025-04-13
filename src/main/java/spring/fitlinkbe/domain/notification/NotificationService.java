@@ -14,6 +14,7 @@ import spring.fitlinkbe.support.security.SecurityUser;
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationStrategyHandler strategyHandler;
+    private final FcmService fcmService;
 
 
     public Page<Notification> getNotifications(NotificationCommand.GetNotifications command, SecurityUser user) {
@@ -29,9 +30,10 @@ public class NotificationService {
 
     @Transactional
     public <T extends NotificationRequest> void sendNotification(T request) {
+        // 1. DB 저장
         Notification notification = strategyHandler.handle(request);
         notificationRepository.save(notification);
+        // 2. FCM 전송
+        fcmService.sendNotification("token", notification.getName(), notification.getContent());
     }
-
-
 }

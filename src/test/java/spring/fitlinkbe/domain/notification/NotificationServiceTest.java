@@ -32,6 +32,9 @@ public class NotificationServiceTest {
     @Mock
     private NotificationStrategyHandler strategyHandler;
 
+    @Mock
+    private FcmService fcmService;
+
     @InjectMocks
     private NotificationService notificationService;
 
