@@ -38,6 +38,7 @@ public class SecurityConfig {
             "/v1/auth/trainers/register",
             "/v1/auth/email-verification-token",
             "/v1/auth/status",
+            "/v1/attachments/pre-signed-url",
             "/oauth2/authorization/**",
             "/v1/sns"
     ));

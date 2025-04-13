@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class AwsProperties {
     private Credentials credentials;
     private Region region;
+    private S3 s3;
 
     public String getAccessKey() {
         return credentials != null ? credentials.getAccessKey() : null;
@@ -24,11 +25,21 @@ public class AwsProperties {
         return region != null ? region.getStaticValue() : null;
     }
 
+    public String getBucketName() {
+        return s3 != null ? s3.getBucketName() : null;
+    }
+
     @Getter
     @Setter
     public static class Credentials {
         private String accessKey;
         private String secretKey;
+    }
+
+    @Getter
+    @Setter
+    public static class S3 {
+        private String bucketName;
     }
 
     @Getter
