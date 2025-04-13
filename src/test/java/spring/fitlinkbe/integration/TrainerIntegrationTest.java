@@ -1076,15 +1076,14 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 수업 가능 시간 조회가 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<AvailableTimesDto.CurrentAvailableTimesResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
 
                 softly.assertThat(response).isNotNull();
 
-                AvailableTimesDto.Response availableTimes = readValue(result.body().jsonPath().prettify(), AvailableTimesDto.Response.class);
+                AvailableTimesDto.CurrentAvailableTimesResponse availableTimes = response.data();
 
                 softly.assertThat(availableTimes.currentSchedules()).isNotNull();
-                softly.assertThat(availableTimes.scheduledChanges()).isNull();
                 softly.assertThat(availableTimes.currentSchedules().schedules().size()).isEqualTo(4);
                 softly.assertThat(availableTimes.currentSchedules().applyAt()).isEqualTo(now);
             });

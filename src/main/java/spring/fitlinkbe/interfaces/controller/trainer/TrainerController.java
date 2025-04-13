@@ -60,13 +60,14 @@ public class TrainerController {
 
     @GetMapping("/{trainerId}/available-times")
     @RoleCheck(allowedRoles = {UserRole.MEMBER})
-    public AvailableTimesDto.CurrentAvailableTimesResponse getCurrentAvailableTimes(
+    public ApiResultResponse<AvailableTimesDto.CurrentAvailableTimesResponse> getCurrentAvailableTimes(
             @Login SecurityUser user,
             @PathVariable Long trainerId
     ) {
         AvailableTimesResult.CurrentAvailableTimesResponse response = trainerFacade.getCurrentAvailableTimes(user.getMemberId(), trainerId);
 
-        return AvailableTimesDto.CurrentAvailableTimesResponse.from(response);
+        return ApiResultResponse.of(HttpStatus.OK, true,
+                AvailableTimesDto.CurrentAvailableTimesResponse.from(response));
     }
 
     @PostMapping("/me/available-times")
