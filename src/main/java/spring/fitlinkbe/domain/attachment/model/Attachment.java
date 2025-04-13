@@ -17,4 +17,8 @@ public class Attachment {
     private String fileExtension;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public void updatePersonalDetailId(Long personalDetailId) {
+        this.personalDetailId = personalDetailId;
+    }
 }

@@ -30,6 +30,8 @@ public class AttachmentDto {
     }
 
     public record UserAttachmentAddDto(
+
+            @NotNull
             Long attachmentId
     ) {
     }

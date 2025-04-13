@@ -56,4 +56,8 @@ public class AuthService {
     public void savePersonalDetail(PersonalDetail personalDetail) {
         personalDetailRepository.savePersonalDetail(personalDetail);
     }
+
+    public PersonalDetail getPersonalDetailById(Long personalDetailId) {
+        return personalDetailRepository.getById(personalDetailId);
+    }
 }
