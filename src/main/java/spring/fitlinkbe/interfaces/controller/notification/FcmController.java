@@ -33,8 +33,8 @@ public class FcmController {
      */
     @PostMapping("/token")
     public ApiResultResponse<FcmResponseDto.FcmTokenResponse> saveFcmToken(@RequestBody @Valid FcmRequestDto.FcmTokenRequest
-                                                                                request,
-                                                                        @Login SecurityUser user) {
+                                                                                   request,
+                                                                           @Login SecurityUser user) {
         notificationFacade.saveFcmToken(request.toCriteria(), user);
         return ApiResultResponse.ok(FcmResponseDto.FcmTokenResponse.of("FCM 토큰 등록에 성공하였습니다."));
     }
