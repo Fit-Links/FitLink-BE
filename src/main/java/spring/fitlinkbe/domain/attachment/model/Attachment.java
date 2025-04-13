@@ -3,6 +3,8 @@ package spring.fitlinkbe.domain.attachment.model;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Builder
 @Getter
 public class Attachment {
@@ -13,4 +15,6 @@ public class Attachment {
     private String uploadFilePath;
     private long fileSize;
     private String fileExtension;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import spring.fitlinkbe.domain.attachment.model.Attachment;
+import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
 import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailEntity;
 
 @Entity
@@ -14,7 +15,7 @@ import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailEntity;
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "attachment")
-public class AttachmentEntity {
+public class AttachmentEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long attachmentId;
@@ -54,6 +55,8 @@ public class AttachmentEntity {
                 .uploadFilePath(uploadFilePath)
                 .fileSize(fileSize)
                 .fileExtension(fileExtension)
+                .createdAt(getCreatedAt())
+                .updatedAt(getUpdatedAt())
                 .build();
     }
 }
