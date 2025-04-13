@@ -36,7 +36,6 @@ public class AttachmentFacade {
                 .build();
     }
 
-
     private String extractFileExtension(String fileName) {
         return fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
     }

@@ -60,10 +60,6 @@ public class FileUploadService {
     }
 
     public String getUploadUrl(String uploadFileName) {
-//        return String.format("https://%s.s3.%s.amazonaws.com/%s",
-//                awsProperties.getBucketName(),
-//                awsProperties.getRegion(),
-//                uploadFileName);
         return s3Client.utilities().getUrl(b -> b.bucket(awsProperties.getBucketName())
                 .key(uploadFileName)).toString();
     }
