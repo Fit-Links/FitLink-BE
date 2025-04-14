@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import spring.fitlinkbe.domain.attachment.model.Attachment;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
 import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailEntity;
@@ -30,6 +31,9 @@ public class AttachmentEntity extends BaseTimeEntity {
     private long fileSize;
     private String fileExtension;
 
+    @Builder.Default
+    private Boolean isUploaded = false;
+
     @Column(name = "personal_detail_id", insertable = false, updatable = false)
     private Long personalDetailId;
 
@@ -43,6 +47,7 @@ public class AttachmentEntity extends BaseTimeEntity {
                 .uploadFilePath(attachment.getUploadFilePath())
                 .fileSize(attachment.getFileSize())
                 .fileExtension(attachment.getFileExtension())
+                .isUploaded(attachment.getIsUploaded())
                 .build();
     }
 
@@ -55,6 +60,7 @@ public class AttachmentEntity extends BaseTimeEntity {
                 .uploadFilePath(uploadFilePath)
                 .fileSize(fileSize)
                 .fileExtension(fileExtension)
+                .isUploaded(isUploaded)
                 .createdAt(getCreatedAt())
                 .updatedAt(getUpdatedAt())
                 .build();

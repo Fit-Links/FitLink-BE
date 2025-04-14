@@ -15,10 +15,14 @@ public class Attachment {
     private String uploadFilePath;
     private long fileSize;
     private String fileExtension;
+
+    @Builder.Default
+    private Boolean isUploaded = false;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public void updatePersonalDetailId(Long personalDetailId) {
         this.personalDetailId = personalDetailId;
+        this.isUploaded = true;
     }
 }
