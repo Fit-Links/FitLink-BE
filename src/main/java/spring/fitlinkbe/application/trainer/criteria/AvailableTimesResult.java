@@ -25,6 +25,17 @@ public class AvailableTimesResult {
     }
 
     @Builder
+    public record CurrentAvailableTimesResponse(
+            ScheduledChangeResponse currentSchedules
+    ) {
+        public static CurrentAvailableTimesResponse of(List<AvailableTime> currentSchedules) {
+            return CurrentAvailableTimesResponse.builder()
+                    .currentSchedules(ScheduledChangeResponse.from(currentSchedules))
+                    .build();
+        }
+    }
+
+    @Builder
     public record AvailableTimeResponse(
             Long availableTimeId,
 

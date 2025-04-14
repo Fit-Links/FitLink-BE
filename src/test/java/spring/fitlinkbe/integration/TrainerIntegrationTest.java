@@ -353,13 +353,6 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             });
         }
 
-        private void createAvailableTimes(Trainer trainer, LocalDate date) {
-            // 수업 가능 시간 생성
-            testDataHandler.createAvailableTime(trainer, DayOfWeek.MONDAY, date);
-            testDataHandler.createAvailableTime(trainer, DayOfWeek.TUESDAY, date);
-            testDataHandler.createAvailableTime(trainer, DayOfWeek.WEDNESDAY, date);
-            testDataHandler.createAvailableTime(trainer, DayOfWeek.THURSDAY, date);
-        }
     }
 
     @Nested
@@ -1051,5 +1044,92 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.data()).isEmpty();
             });
         }
+    }
+
+    @Nested
+    @DisplayName("특정 트레이너 수업 가능 시간 조회 테스트")
+    class GetTrainerAvailableTimesByIdTest {
+        private static final String URL = "/v1/trainers/{trainerId}/available-times";
+
+        @Test
+        @DisplayName("특정 트레이너 수업 가능 시간 조회 성공 - 회원과 트레이너 정상적으로 연동된 경우")
+        void getTrainerAvailableTimesSuccess() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            Member member = testDataHandler.createMember();
+            testDataHandler.connectMemberAndTrainer(member, trainer);
+
+            String token = testDataHandler.createTokenFromMember(member);
+
+            // 수업 가능 시간 생성
+            LocalDate now = LocalDate.now();
+            createAvailableTimes(trainer, now);
+
+            // when
+            // 트레이너가 수업 가능 시간 조회 요청을 한다면
+            String url = URL.replace("{trainerId}", trainer.getTrainerId().toString());
+            ExtractableResponse<Response> result = get(url, token);
+
+            // then
+            // 수업 가능 시간 조회가 성공한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AvailableTimesDto.CurrentAvailableTimesResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+
+                AvailableTimesDto.CurrentAvailableTimesResponse availableTimes = response.data();
+
+                softly.assertThat(availableTimes.currentSchedules()).isNotNull();
+                softly.assertThat(availableTimes.currentSchedules().schedules().size()).isEqualTo(4);
+                softly.assertThat(availableTimes.currentSchedules().applyAt()).isEqualTo(now);
+            });
+        }
+
+        @Test
+        @DisplayName("특정 트레이너 수업 가능 시간 조회 실패 - 회원과 트레이너 연동되지 않은 경우")
+        void getTrainerAvailableTimesFailWithNotConnected() throws Exception {
+            // given
+            // 트레이너 정보가 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            Member member = testDataHandler.createMember();
+            String token = testDataHandler.createTokenFromMember(member);
+
+            // 수업 가능 시간 생성
+            LocalDate now = LocalDate.now();
+            createAvailableTimes(trainer, now);
+
+            // when
+            // 트레이너가 수업 가능 시간 조회 요청을 한다면
+            String url = URL.replace("{trainerId}", trainer.getTrainerId().toString());
+            ExtractableResponse<Response> result = get(url, token);
+
+            // then
+            // 수업 가능 시간 조회가 실패한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.data()).isNull();
+                softly.assertThat(response.msg()).isEqualTo("트레이너가 멤버와 연결되어 있지 않습니다.");
+            });
+        }
+
+    }
+
+    private void createAvailableTimes(Trainer trainer, LocalDate date) {
+        // 수업 가능 시간 생성
+        testDataHandler.createAvailableTime(trainer, DayOfWeek.MONDAY, date);
+        testDataHandler.createAvailableTime(trainer, DayOfWeek.TUESDAY, date);
+        testDataHandler.createAvailableTime(trainer, DayOfWeek.WEDNESDAY, date);
+        testDataHandler.createAvailableTime(trainer, DayOfWeek.THURSDAY, date);
     }
 }
