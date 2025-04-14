@@ -47,7 +47,7 @@ public class AuthDto {
             @NotNull String name,
             @NotNull LocalDate birthDate,
             @NotNull Gender gender,
-            String profileUrl,
+            Long attachmentId,
             @Valid List<AvailableTimeRequest> availableTimes
     ) {
         public AuthCommand.TrainerRegisterRequest toCommand() {
@@ -55,7 +55,7 @@ public class AuthDto {
                     .name(name)
                     .birthDate(birthDate)
                     .gender(gender)
-                    .profileUrl(profileUrl)
+                    .attachmentId(attachmentId)
                     .availableTimes(availableTimes.stream().map(AvailableTimeRequest::toCommand).toList())
                     .build();
         }

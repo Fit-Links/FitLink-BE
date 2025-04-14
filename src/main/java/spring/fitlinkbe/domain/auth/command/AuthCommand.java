@@ -32,7 +32,7 @@ public class AuthCommand {
             String name,
             LocalDate birthDate,
             PersonalDetail.Gender gender,
-            String profileUrl,
+            Long attachmentId,
             List<AuthCommand.AvailableTimeRequest> availableTimes
     ) {
         public List<AvailableTime> toAvailableTimes(Trainer savedTrainer) {

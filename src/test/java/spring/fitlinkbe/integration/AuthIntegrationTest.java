@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import spring.fitlinkbe.domain.attachment.AttachmentRepository;
+import spring.fitlinkbe.domain.attachment.model.Attachment;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.TokenRepository;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
@@ -45,6 +47,9 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     PersonalDetailRepository personalDetailRepository;
+
+    @Autowired
+    AttachmentRepository attachmentRepository;
 
     @Autowired
     MemberRepository memberRepository;
@@ -339,9 +344,11 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId()
                     , personalDetail.getUserRole());
 
+            Attachment attachment = testDataHandler.createAttachment();
+
             // when
             // 트레이너 등록 요청을 보낸다면
-            AuthDto.TrainerRegisterRequest request = getTrainerRequest();
+            AuthDto.TrainerRegisterRequest request = getTrainerRequest(attachment.getAttachmentId());
             String requestBody = writeValueAsString(request);
             ExtractableResponse<Response> result = post(TRAINER_REGISTER_API, requestBody, accessToken);
 
@@ -359,7 +366,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(updatedPersonalDetail.getStatus()).isEqualTo(PersonalDetail.Status.NORMAL);
                 softly.assertThat(updatedPersonalDetail.getName()).isEqualTo(request.name());
                 softly.assertThat(updatedPersonalDetail.getBirthDate()).isEqualTo(request.birthDate());
-                softly.assertThat(updatedPersonalDetail.getProfilePictureUrl()).isEqualTo(request.profileUrl());
+                softly.assertThat(updatedPersonalDetail.getProfilePictureUrl()).isEqualTo(attachment.getUploadFilePath());
                 softly.assertThat(updatedPersonalDetail.getGender()).isEqualTo(request.gender());
 
                 Trainer trainer = trainerRepository.getTrainerInfo(updatedPersonalDetail.getTrainerId()).orElseThrow();
@@ -372,6 +379,9 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
 
                 Token token = tokenRepository.getByPersonalDetailId(personalDetail.getPersonalDetailId());
                 softly.assertThat(response.data().refreshToken()).isEqualTo(token.getRefreshToken());
+
+                Attachment updatedAttachment = attachmentRepository.findById(attachment.getAttachmentId()).orElseThrow();
+                softly.assertThat(updatedAttachment.getPersonalDetailId()).isEqualTo(personalDetail.getPersonalDetailId());
             });
 
         }
@@ -417,7 +427,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
 
             // when
             // 트레이너 등록 요청을 보낸다면
-            AuthDto.TrainerRegisterRequest request = getTrainerRequest();
+            AuthDto.TrainerRegisterRequest request = getTrainerRequest(null);
             String requestBody = writeValueAsString(request);
             ExtractableResponse<Response> result = post(TRAINER_REGISTER_API, requestBody, accessToken);
 
@@ -502,7 +512,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     "홍길동",
                     LocalDate.of(1990, 1, 1),
                     PersonalDetail.Gender.MALE,
-                    "http://test.com",
+                    null,
                     availableTimes
             );
         }
@@ -521,7 +531,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     "홍길동",
                     LocalDate.of(1990, 1, 1),
                     PersonalDetail.Gender.MALE,
-                    "http://test.com",
+                    null,
                     availableTimes
             );
         }
@@ -546,7 +556,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     "홍길동",
                     LocalDate.of(1990, 1, 1),
                     PersonalDetail.Gender.MALE,
-                    "http://test.com",
+                    null,
                     availableTimes
             );
         }
@@ -614,49 +624,49 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                             null,
                             LocalDate.of(1990, 1, 1),
                             PersonalDetail.Gender.MALE,
-                            "http://test.com",
+                            null,
                             null
                     ),
                     new AuthDto.TrainerRegisterRequest(
                             "홍길동",
                             null,
                             PersonalDetail.Gender.MALE,
-                            "http://test.com",
+                            null,
                             null
                     ),
                     new AuthDto.TrainerRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
                             PersonalDetail.Gender.MALE,
-                            "http://test.com",
+                            null,
                             null
                     ),
                     new AuthDto.TrainerRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
                             null,
-                            "http://test.com",
+                            null,
                             null
                     ),
                     new AuthDto.TrainerRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
                             PersonalDetail.Gender.MALE,
-                            "http://test.com",
+                            null,
                             availableTimeRequest1
                     ),
                     new AuthDto.TrainerRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
                             PersonalDetail.Gender.MALE,
-                            "http://test.com",
+                            null,
                             availableTimeRequest2
                     )
             );
         }
 
 
-        private AuthDto.TrainerRegisterRequest getTrainerRequest() {
+        private AuthDto.TrainerRegisterRequest getTrainerRequest(Long attachmentId) {
             List<AuthDto.AvailableTimeRequest> availableTimes = List.of(
                     new AuthDto.AvailableTimeRequest(
                             DayOfWeek.MONDAY,
@@ -676,7 +686,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     "홍길동",
                     LocalDate.of(1990, 1, 1),
                     PersonalDetail.Gender.MALE,
-                    "http://test.com",
+                    attachmentId,
                     availableTimes
             );
         }

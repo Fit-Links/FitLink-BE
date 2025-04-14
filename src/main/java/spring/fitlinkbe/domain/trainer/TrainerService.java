@@ -35,14 +35,6 @@ public class TrainerService {
                         "트레이너 정보가 존재하지 않습니다. [trainerID: %d]".formatted(trainerId)));
     }
 
-    public PersonalDetail registerTrainer(Long personalDetailId, AuthCommand.TrainerRegisterRequest command, Trainer savedTrainer) {
-        PersonalDetail personalDetail = personalDetailRepository.getById(personalDetailId);
-        personalDetail.registerTrainer(command.name(), command.birthDate(), command.profileUrl(), command.gender(), savedTrainer);
-        personalDetailRepository.savePersonalDetail(personalDetail);
-
-        return personalDetail;
-    }
-
     public Trainer saveTrainer(Trainer trainer) {
         return trainerRepository.saveTrainer(trainer).orElseThrow();
     }
