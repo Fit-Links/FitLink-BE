@@ -124,7 +124,7 @@ public class AuthDto {
             @NotNull String name,
             @NotNull LocalDate birthDate,
             @NotNull Gender gender,
-            String profileUrl,
+            Long attachmentId,
             @Valid List<WorkoutScheduleRequest> workoutSchedule
     ) {
 
@@ -133,7 +133,7 @@ public class AuthDto {
                     .name(name)
                     .birthDate(birthDate)
                     .gender(gender)
-                    .profileUrl(profileUrl)
+                    .attachmentId(attachmentId)
                     .workoutSchedule(workoutSchedule.stream().map(WorkoutScheduleRequest::toCommand).toList())
                     .build();
         }

@@ -47,17 +47,6 @@ public class AuthFacade {
         return createAndReturnToken(personalDetail);
     }
 
-    private Attachment findAttachment(Long attachmentId, Long personalDetailId) {
-        if (attachmentId == null) {
-            return null;
-        }
-        Attachment attachment = attachmentService.getAttachmentById(attachmentId);
-        attachment.updatePersonalDetailId(personalDetailId);
-
-        attachmentService.saveAttachment(attachment);
-        return attachment;
-    }
-
     private AuthCommand.Response createAndReturnToken(PersonalDetail personalDetail) {
         String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
                 personalDetail.getUserRole());
@@ -74,27 +63,30 @@ public class AuthFacade {
 
     @Transactional
     public AuthCommand.Response registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command) {
-        PersonalDetail personalDetail = memberService.getPersonalDetail(personalDetailId);
-        Member member = memberService.saveMember(command.toMember(personalDetail.getPhoneNumber()));
-        personalDetail.registerMember(command.name(), command.birthDate(), command.profileUrl(), command.gender(), member);
+        PersonalDetail personalDetail = authService.getPersonalDetailById(personalDetailId);
 
+        Attachment attachment = findAttachment(command.attachmentId(), personalDetailId);
+        String profileUrl = attachment != null ? attachment.getUploadFilePath() : null;
+
+        Member member = memberService.saveMember(command.toMember(personalDetail.getPhoneNumber(), profileUrl));
+        personalDetail.registerMember(command.name(), command.birthDate(), profileUrl, command.gender(), member);
         memberService.savePersonalDetail(personalDetail);
-
-        // 토큰 생성 또는 업데이트
-        String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId,
-                personalDetail.getUserRole());
-        String refreshToken = authTokenProvider.createRefreshToken(personalDetailId, personalDetail.getUserRole());
 
         // workoutSchedule 업데이트
         memberService.saveWorkoutSchedules(command.toWorkoutSchedules(member));
 
-        Token token = Token.builder()
-                .personalDetailId(personalDetailId)
-                .refreshToken(refreshToken)
-                .build();
-        authService.saveOrUpdateToken(token);
+        return createAndReturnToken(personalDetail);
+    }
 
-        return AuthCommand.Response.of(accessToken, refreshToken);
+    private Attachment findAttachment(Long attachmentId, Long personalDetailId) {
+        if (attachmentId == null) {
+            return null;
+        }
+        Attachment attachment = attachmentService.getAttachmentById(attachmentId);
+        attachment.updatePersonalDetailId(personalDetailId);
+
+        attachmentService.saveAttachment(attachment);
+        return attachment;
     }
 
     public String getEmailVerificationToken(Long personalDetailId) {

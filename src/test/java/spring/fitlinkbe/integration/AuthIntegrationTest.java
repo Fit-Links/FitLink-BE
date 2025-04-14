@@ -78,11 +78,11 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.REQUIRED_REGISTER);
             String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
                     personalDetail.getUserRole());
+            Attachment attachment = testDataHandler.createAttachment();
 
             // when
             // 멤버 등록 요청을 보낸다면
-
-            AuthDto.MemberRegisterRequest request = getRequest();
+            AuthDto.MemberRegisterRequest request = getRequest(attachment.getAttachmentId());
             String requestBody = writeValueAsString(request);
             ExtractableResponse<Response> result = post(MEMBER_REGISTER_API, requestBody, accessToken);
 
@@ -99,14 +99,14 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(updatedPersonalDetail.getStatus()).isEqualTo(PersonalDetail.Status.NORMAL);
                 softly.assertThat(updatedPersonalDetail.getName()).isEqualTo(request.name());
                 softly.assertThat(updatedPersonalDetail.getBirthDate()).isEqualTo(request.birthDate());
-                softly.assertThat(updatedPersonalDetail.getProfilePictureUrl()).isEqualTo(request.profileUrl());
+                softly.assertThat(updatedPersonalDetail.getProfilePictureUrl()).isEqualTo(attachment.getUploadFilePath());
                 softly.assertThat(updatedPersonalDetail.getGender()).isEqualTo(request.gender());
 
                 Member member = memberRepository.getMember(updatedPersonalDetail.getMemberId()).orElseThrow();
                 softly.assertThat(member).isNotNull();
                 softly.assertThat(member.getName()).isEqualTo(request.name());
                 softly.assertThat(member.getBirthDate()).isEqualTo(request.birthDate());
-                softly.assertThat(member.getProfilePictureUrl()).isEqualTo(request.profileUrl());
+                softly.assertThat(member.getProfilePictureUrl()).isEqualTo(attachment.getUploadFilePath());
 
                 List<WorkoutSchedule> workoutSchedules = new ArrayList<>(workoutScheduleRepository.findAllByMemberId(member.getMemberId()));
                 workoutSchedules.sort(Comparator.comparing(WorkoutSchedule::getDayOfWeek));
@@ -130,6 +130,9 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
 
                 Token token = tokenRepository.getByPersonalDetailId(personalDetail.getPersonalDetailId());
                 softly.assertThat(response.data().refreshToken()).isEqualTo(token.getRefreshToken());
+
+                Attachment updatedAttachment = attachmentRepository.findById(attachment.getAttachmentId()).orElseThrow();
+                softly.assertThat(updatedAttachment.getPersonalDetailId()).isEqualTo(personalDetail.getPersonalDetailId());
             });
         }
 
@@ -173,7 +176,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
 
             // when
             // 멤버 등록 요청을 보낸다면
-            AuthDto.MemberRegisterRequest request = getRequest();
+            AuthDto.MemberRegisterRequest request = getRequest(null);
             String requestBody = writeValueAsString(request);
             ExtractableResponse<Response> result = post(MEMBER_REGISTER_API, requestBody, accessToken);
 
@@ -235,7 +238,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     "홍길동",
                     LocalDate.of(1990, 1, 1),
                     PersonalDetail.Gender.MALE,
-                    "http://test.com",
+                    null,
                     workoutScheduleRequests
             );
         }
@@ -256,48 +259,48 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                             null,
                             LocalDate.of(1990, 1, 1),
                             PersonalDetail.Gender.MALE,
-                            "http://test.com",
+                            null,
                             null
                     ),
                     new AuthDto.MemberRegisterRequest(
                             "홍길동",
                             null,
                             PersonalDetail.Gender.MALE,
-                            "http://test.com",
+                            null,
                             null
                     ),
                     new AuthDto.MemberRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
                             PersonalDetail.Gender.MALE,
-                            "http://test.com",
+                            null,
                             null
                     ),
                     new AuthDto.MemberRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
                             null,
-                            "http://test.com",
+                            null,
                             null
                     ),
                     new AuthDto.MemberRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
                             PersonalDetail.Gender.MALE,
-                            "http://test.com",
+                            null,
                             List.of(workoutScheduleRequest1)
                     ),
                     new AuthDto.MemberRegisterRequest(
                             "홍길동",
                             LocalDate.of(1990, 1, 1),
                             PersonalDetail.Gender.MALE,
-                            "http://test.com",
+                            null,
                             List.of(workoutScheduleRequest2)
                     )
             );
         }
 
-        private AuthDto.MemberRegisterRequest getRequest() {
+        private AuthDto.MemberRegisterRequest getRequest(Long attachmentId) {
             List<AuthDto.WorkoutScheduleRequest> workoutSchedules = List.of(
                     new AuthDto.WorkoutScheduleRequest(
                             DayOfWeek.MONDAY,
@@ -322,7 +325,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     "홍길동",
                     LocalDate.of(1990, 1, 1),
                     PersonalDetail.Gender.MALE,
-                    "http://test.com",
+                    attachmentId,
                     workoutSchedules
             );
         }
