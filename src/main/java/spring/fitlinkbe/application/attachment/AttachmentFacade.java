@@ -16,6 +16,8 @@ import spring.fitlinkbe.domain.member.MemberService;
 
 import java.util.UUID;
 
+import static org.springframework.web.util.UriUtils.extractFileExtension;
+
 @Configuration
 @RequiredArgsConstructor
 public class AttachmentFacade {
@@ -45,9 +47,7 @@ public class AttachmentFacade {
                 .build();
     }
 
-    private String extractFileExtension(String fileName) {
-        return fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
-    }
+
 
     @Transactional
     public void updateProfile(Long personalDetailId, Long attachmentId) {

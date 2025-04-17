@@ -1,17 +1,19 @@
 package spring.fitlinkbe.support.config;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-@Configuration
-@ConfigurationProperties(prefix = "spring.cloud.aws")
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
+
 @Getter
-@Setter
+@ConfigurationProperties(prefix = "spring.cloud.aws")
+@RequiredArgsConstructor(onConstructor_ = @ConstructorBinding)
 public class AwsProperties {
-    private Credentials credentials;
-    private Region region;
-    private S3 s3;
+
+    private final Credentials credentials;
+    private final Region region;
+    private final S3 s3;
+
 
     public String getAccessKey() {
         return credentials != null ? credentials.getAccessKey() : null;
@@ -22,7 +24,7 @@ public class AwsProperties {
     }
 
     public String getRegion() {
-        return region != null ? region.getStaticValue() : null;
+        return region != null ? region.getName() : null;
     }
 
     public String getBucketName() {
@@ -30,25 +32,21 @@ public class AwsProperties {
     }
 
     @Getter
-    @Setter
+    @RequiredArgsConstructor(onConstructor_ = @ConstructorBinding)
     public static class Credentials {
-        private String accessKey;
-        private String secretKey;
+        private final String accessKey;
+        private final String secretKey;
     }
 
     @Getter
-    @Setter
-    public static class S3 {
-        private String bucketName;
-    }
-
-    @Getter
-    @Setter
+    @RequiredArgsConstructor(onConstructor_ = @ConstructorBinding)
     public static class Region {
-        private String staticValue;
+        private final String name;
+    }
 
-        public void setStatic(String staticValue) {
-            this.staticValue = staticValue;
-        }
+    @Getter
+    @RequiredArgsConstructor(onConstructor_ = @ConstructorBinding)
+    public static class S3 {
+        private final String bucketName;
     }
 }

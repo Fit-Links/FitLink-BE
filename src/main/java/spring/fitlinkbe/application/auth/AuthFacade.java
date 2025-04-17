@@ -36,7 +36,7 @@ public class AuthFacade {
         Trainer savedTrainer = trainerService.saveTrainer(new Trainer(generateRandomString(Trainer.CODE_SIZE), command.name()));
 
         PersonalDetail personalDetail = authService.getPersonalDetailById(personalDetailId);
-        Attachment attachment = findAttachment(command.attachmentId(), personalDetailId);
+        Attachment attachment = attachmentService.findAttachment(command.attachmentId(), personalDetailId);
 
         String profileUrl = attachment != null ? attachment.getUploadFilePath() : null;
         personalDetail.registerTrainer(command.name(), command.birthDate(), profileUrl, command.gender(), savedTrainer);
@@ -65,7 +65,7 @@ public class AuthFacade {
     public AuthCommand.Response registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command) {
         PersonalDetail personalDetail = authService.getPersonalDetailById(personalDetailId);
 
-        Attachment attachment = findAttachment(command.attachmentId(), personalDetailId);
+        Attachment attachment = attachmentService.findAttachment(command.attachmentId(), personalDetailId);
         String profileUrl = attachment != null ? attachment.getUploadFilePath() : null;
 
         Member member = memberService.saveMember(command.toMember(personalDetail.getPhoneNumber(), profileUrl));
@@ -76,17 +76,6 @@ public class AuthFacade {
         memberService.saveWorkoutSchedules(command.toWorkoutSchedules(member));
 
         return createAndReturnToken(personalDetail);
-    }
-
-    private Attachment findAttachment(Long attachmentId, Long personalDetailId) {
-        if (attachmentId == null) {
-            return null;
-        }
-        Attachment attachment = attachmentService.getAttachmentById(attachmentId);
-        attachment.updatePersonalDetailId(personalDetailId);
-
-        attachmentService.saveAttachment(attachment);
-        return attachment;
     }
 
     public String getEmailVerificationToken(Long personalDetailId) {
