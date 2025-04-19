@@ -197,3 +197,19 @@ CREATE TABLE notification
     send_date          DATETIME(6),
     PRIMARY KEY (notification_id)
 );
+
+-- 첨부파일 정보 테이블
+CREATE TABLE attachment
+(
+    attachment_id      BIGINT NOT NULL AUTO_INCREMENT,
+    personal_detail_id BIGINT,
+    orig_file_name     VARCHAR(255),
+    uuid               VARCHAR(255),
+    upload_file_path   VARCHAR(255),
+    file_size          BIGINT,
+    file_extension     VARCHAR(50),
+    is_uploaded        BOOLEAN DEFAULT FALSE,
+    created_at         DATETIME(6),
+    updated_at         DATETIME(6),
+    PRIMARY KEY (attachment_id)
+);
