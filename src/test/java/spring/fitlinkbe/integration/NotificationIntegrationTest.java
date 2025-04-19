@@ -8,9 +8,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
+import spring.fitlinkbe.domain.common.TokenRepository;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.notification.Notification;
@@ -19,6 +21,7 @@ import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
 import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
+import spring.fitlinkbe.interfaces.controller.notification.dto.NotificationRequestDto;
 import spring.fitlinkbe.interfaces.controller.notification.dto.NotificationResponseDto;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationRequestDto;
 import spring.fitlinkbe.interfaces.controller.reservation.dto.ReservationResponseDto;
@@ -54,12 +57,16 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
     NotificationRepository notificationRepository;
 
     @Autowired
+    TokenRepository tokenRepository;
+
+    @Autowired
     TestDataHandler testDataHandler;
 
     @BeforeEach
     void setUp() {
         testDataHandler.settingUserInfo();
         testDataHandler.settingSessionInfo();
+        testDataHandler.createTokenInfo();
     }
 
     @Nested
@@ -413,6 +420,73 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
             });
         }
     }
+
+
+    @Nested
+    @DisplayName("푸쉬 토큰 등록 Integration TEST")
+    class RegisterPushTokenIntegrationTest {
+        @Test
+        @DisplayName("푸쉬 토큰 등록 - 성공")
+        void registerPushToken() {
+            // given
+            PersonalDetail memberDetail = personalDetailRepository.getMemberDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    memberDetail.getPersonalDetailId(), memberDetail.getUserRole());
+
+            String pushToken = "push-token";
+            NotificationRequestDto.PushTokenRequest request = NotificationRequestDto.PushTokenRequest.builder()
+                    .pushToken(pushToken)
+                    .build();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/push-token/register", request
+                    , accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                NotificationResponseDto.PushToken content = result.body().jsonPath()
+                        .getObject("data", NotificationResponseDto.PushToken.class);
+
+                softly.assertThat(content.message()).isEqualTo("푸쉬 토큰 등록에 성공하였습니다.");
+
+                // pushToken이 잘 저장되었는지 확인
+                Token token = tokenRepository.getByPersonalDetailId(memberDetail.getPersonalDetailId()).orElseThrow();
+
+                softly.assertThat(token.getPushToken()).isEqualTo(pushToken);
+            });
+        }
+
+        @Test
+        @DisplayName("푸쉬 토큰 등록 - 실패: 토큰 없음")
+        void registerPushTokenWithNoToken() {
+            // given
+            PersonalDetail memberDetail = personalDetailRepository.getMemberDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    memberDetail.getPersonalDetailId(), memberDetail.getUserRole());
+
+            NotificationRequestDto.PushTokenRequest request = NotificationRequestDto.PushTokenRequest.builder()
+                    .build();
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/push-token/register", request
+                    , accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
+                softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("푸쉬 토큰은 필수값 입니다.");
+                softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
+            });
+        }
+    }
+
 
     private void createNotifications(PersonalDetail personalDetail, Long partnerId, UserRole userRole) {
         for (int i = 0; i < 20; i++) {

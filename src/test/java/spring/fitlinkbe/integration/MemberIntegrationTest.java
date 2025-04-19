@@ -61,6 +61,8 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             Trainer trainer = testDataHandler.createTrainer(trainerCode);
             PersonalDetail trainerPersonalDetail = testDataHandler.getTrainerPersonalDetail(trainer.getTrainerId());
             String token = testDataHandler.createTokenFromMember(member);
+            testDataHandler.createTokenInfo(member);
+            testDataHandler.createTokenInfo(trainer);
 
             // when
             // 멤버가 트레이너와 연결 요청을 보낼 때
@@ -162,6 +164,8 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             Member member = testDataHandler.createMember();
             Trainer trainer = testDataHandler.createTrainer("AB1423");
             testDataHandler.connectMemberAndTrainer(member, trainer);
+            testDataHandler.createTokenInfo(member);
+            testDataHandler.createTokenInfo(trainer);
             String token = testDataHandler.createTokenFromMember(member);
 
             // when
@@ -199,6 +203,9 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             Member member = testDataHandler.createMember();
             Trainer trainer = testDataHandler.createTrainer("AB1423");
             testDataHandler.requestConnectTrainer(member, trainer);
+            testDataHandler.createTokenInfo(member);
+            testDataHandler.createTokenInfo(trainer);
+
             String token = testDataHandler.createTokenFromMember(member);
 
             // when
@@ -1055,6 +1062,10 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             Trainer trainer = testDataHandler.createTrainer("AB1423");
             testDataHandler.connectMemberAndTrainer(member, trainer);
             String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            testDataHandler.createTokenInfo(member);
+            testDataHandler.createTokenInfo(trainer);
+
             SessionInfo sessionInfo = testDataHandler.createSessionInfo(member, trainer);
 
             // when

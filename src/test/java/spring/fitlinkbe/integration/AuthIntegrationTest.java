@@ -18,7 +18,6 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.member.WorkoutScheduleRepository;
-import spring.fitlinkbe.domain.notification.FcmService;
 import spring.fitlinkbe.domain.trainer.AvailableTime;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerRepository;
@@ -52,9 +51,6 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     TrainerRepository trainerRepository;
-
-    @Autowired
-    FcmService fcmService;
 
     @Autowired
     WorkoutScheduleRepository workoutScheduleRepository;
@@ -127,7 +123,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     }
                 }
 
-                Token token = tokenRepository.getByPersonalDetailId(personalDetail.getPersonalDetailId());
+                Token token = tokenRepository.getByPersonalDetailId(personalDetail.getPersonalDetailId())
+                        .orElseThrow();
                 softly.assertThat(response.data().refreshToken()).isEqualTo(token.getRefreshToken());
             });
         }
@@ -374,7 +371,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 List<AvailableTime> availableTimes = trainerRepository.getTrainerAvailableTimes(trainer.getTrainerId());
                 softly.assertThat(availableTimes).hasSize(request.availableTimes().size());
 
-                Token token = tokenRepository.getByPersonalDetailId(personalDetail.getPersonalDetailId());
+                Token token = tokenRepository.getByPersonalDetailId(personalDetail.getPersonalDetailId())
+                        .orElseThrow();
                 softly.assertThat(response.data().refreshToken()).isEqualTo(token.getRefreshToken());
             });
 

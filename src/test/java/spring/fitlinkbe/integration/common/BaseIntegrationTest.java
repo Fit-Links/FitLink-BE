@@ -12,6 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import spring.fitlinkbe.infra.notification.PushManager;
 
 import java.util.Map;
 
@@ -24,6 +26,9 @@ public class BaseIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private PushManager pushManager;
 
     @LocalServerPort
     protected int port;

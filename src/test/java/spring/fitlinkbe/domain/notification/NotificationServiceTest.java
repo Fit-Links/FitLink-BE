@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.notification.client.PushNotificationClient;
 import spring.fitlinkbe.domain.notification.command.NotificationCommand;
 import spring.fitlinkbe.support.security.SecurityUser;
 
@@ -33,10 +34,11 @@ public class NotificationServiceTest {
     private NotificationStrategyHandler strategyHandler;
 
     @Mock
-    private FcmService fcmService;
+    private PushNotificationClient pushNotificationClient;
 
     @InjectMocks
     private NotificationService notificationService;
+
 
     @BeforeEach
     void setUp() {
@@ -54,7 +56,7 @@ public class NotificationServiceTest {
             String memberName = "멤버1";
             PersonalDetail personalDetail = PersonalDetail.builder().build();
             NotificationCommand.Connect connectDto = NotificationCommand.Connect.of(personalDetail,
-                    1L, memberName, 1L);
+                    1L, memberName, 1L, "pushToken");
 
             Notification notification = Notification.builder()
                     .notificationId(1L)
@@ -71,6 +73,8 @@ public class NotificationServiceTest {
 
             when(strategyHandler.handle(connectDto)).thenReturn(notification);
             when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
+            doNothing().when(pushNotificationClient)
+                    .pushNotification("test-token", "테스트알림", "내용입니다");
 
             //when
             notificationService.sendNotification(connectDto);

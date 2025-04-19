@@ -5,10 +5,8 @@ import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.SessionInfoRepository;
-import spring.fitlinkbe.domain.common.model.ConnectingInfo;
-import spring.fitlinkbe.domain.common.model.PersonalDetail;
-import spring.fitlinkbe.domain.common.model.PhoneNumber;
-import spring.fitlinkbe.domain.common.model.SessionInfo;
+import spring.fitlinkbe.domain.common.TokenRepository;
+import spring.fitlinkbe.domain.common.model.*;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
@@ -50,12 +48,15 @@ public class TestDataHandler {
 
     private final ReservationRepository reservationRepository;
 
+    private final TokenRepository tokenRepository;
+
     public TestDataHandler(
             PersonalDetailRepository personalDetailRepository,
             MemberRepository memberRepository, TrainerRepository trainerRepository,
             SessionInfoRepository sessionInfoRepository, AuthTokenProvider authTokenProvider,
             ConnectingInfoRepository connectingInfoRepository, WorkoutScheduleRepository workoutScheduleRepository,
-            ReservationRepository reservationRepository) {
+            ReservationRepository reservationRepository,
+            TokenRepository tokenRepository) {
         this.personalDetailRepository = personalDetailRepository;
         this.memberRepository = memberRepository;
         this.trainerRepository = trainerRepository;
@@ -64,6 +65,7 @@ public class TestDataHandler {
         this.connectingInfoRepository = connectingInfoRepository;
         this.workoutScheduleRepository = workoutScheduleRepository;
         this.reservationRepository = reservationRepository;
+        this.tokenRepository = tokenRepository;
     }
 
     public Member createMember() {
@@ -220,6 +222,38 @@ public class TestDataHandler {
         sessionInfoRepository.saveSessionInfo(sessionInfo);
     }
 
+    public void createTokenInfo(Member member) {
+        PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(member.getMemberId()).orElseThrow();
+        Token token = Token.builder()
+                .personalDetailId(personalDetail.getPersonalDetailId())
+                .build();
+
+        tokenRepository.saveToken(token);
+    }
+
+    public void createTokenInfo(Trainer trainer) {
+        PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(trainer.getTrainerId()).orElseThrow();
+        Token token = Token.builder()
+                .personalDetailId(personalDetail.getPersonalDetailId())
+                .build();
+
+        tokenRepository.saveToken(token);
+    }
+
+    public void createTokenInfo() {
+        Token token = Token.builder()
+                .personalDetailId(1L)
+                .build();
+
+        tokenRepository.saveToken(token);
+
+        Token token2 = Token.builder()
+                .personalDetailId(2L)
+                .build();
+
+        tokenRepository.saveToken(token2);
+    }
+
     public String createTokenFromMember(Member member) {
         PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(member.getMemberId()).orElseThrow();
         return authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
@@ -342,22 +376,6 @@ public class TestDataHandler {
                 .build();
 
         return trainerRepository.saveDayOff(dayOff).get();
-    }
-
-    public void createReservation(Member member, Trainer trainer, LocalDate reservationDate) {
-        Reservation reservation = Reservation.builder()
-                .trainer(trainer)
-                .member(member)
-                .status(Reservation.Status.RESERVATION_APPROVED)
-                .reservationDates(
-                        List.of(
-                                LocalDateTime.of(reservationDate, LocalTime.of(10, 0)),
-                                LocalDateTime.of(reservationDate.plusDays(1), LocalTime.of(10, 13))
-                        )
-                )
-                .build();
-
-        reservationRepository.saveReservation(reservation);
     }
 
     public void createConfirmReservation(Member member, Trainer trainer, LocalDateTime confirmDate) {

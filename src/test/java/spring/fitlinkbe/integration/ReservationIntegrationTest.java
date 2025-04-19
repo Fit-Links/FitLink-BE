@@ -81,6 +81,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
     void setUp() {
         testDataHandler.settingUserInfo();
         testDataHandler.settingSessionInfo();
+        testDataHandler.createTokenInfo();
     }
 
     @Nested
@@ -1893,6 +1894,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             // 다른 멤버의 예약 생성
             Member member = testDataHandler.createMember();
+            testDataHandler.createTokenInfo(member);
 
             Reservation reservation2 = Reservation.builder()
                     .reservationDates(List.of(reservationDate))
@@ -3132,6 +3134,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             Reservation reservation1 = reservationRepository.saveReservation(reservation).orElseThrow();
 
             Member member2 = testDataHandler.createMember("하하");
+            testDataHandler.createTokenInfo(member2);
 
             // 다른 예약 대기 상태 예약 생성
             Reservation reservation2 = Reservation.builder()
