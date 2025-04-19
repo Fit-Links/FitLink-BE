@@ -32,7 +32,7 @@ public class AuthCommand {
             String name,
             LocalDate birthDate,
             PersonalDetail.Gender gender,
-            String profileUrl,
+            Long attachmentId,
             List<AuthCommand.AvailableTimeRequest> availableTimes
     ) {
         public List<AvailableTime> toAvailableTimes(Trainer savedTrainer) {
@@ -63,7 +63,7 @@ public class AuthCommand {
     @Builder
     public record MemberRegisterRequest(String name, LocalDate birthDate,
                                         PersonalDetail.Gender gender,
-                                        String profileUrl, List<WorkoutScheduleRequest> workoutSchedule) {
+                                        Long attachmentId, List<WorkoutScheduleRequest> workoutSchedule) {
 
         /**
          * member 등록 요청을 Member 로 변환 </br>
@@ -71,7 +71,7 @@ public class AuthCommand {
          *
          * @return Member
          */
-        public Member toMember(String phoneNumber) {
+        public Member toMember(String phoneNumber, String profileUrl) {
             return Member.builder()
                     .name(name)
                     .birthDate(birthDate)

@@ -54,4 +54,8 @@ public class Member {
             this.phoneNumber = new PhoneNumber(phoneNumber);
         }
     }
+
+    public void updateProfile(String uploadFilePath) {
+        this.profilePictureUrl = uploadFilePath;
+    }
 }

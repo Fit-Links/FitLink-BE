@@ -30,6 +30,8 @@ public class Trainer {
 
     private LocalDateTime updatedAt;
 
+    public static int CODE_SIZE = 6;
+
     public Trainer(String trainerCode, String name) {
         this.trainerCode = trainerCode;
         this.name = name;

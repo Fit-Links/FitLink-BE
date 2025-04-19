@@ -81,6 +81,13 @@ public enum ErrorCode {
     INVALID_PARAMETER("유효하지 않은 파라미터입니다.", 400),
     PHONE_NUMBER_NOT_FOUND("전화번호를 찾을 수 없습니다.", 400),
 
+    INVALID_CONTENT_TYPE("유효하지 않은 Content-Type 입니다.", 400),
+    INVALID_CONTENT_LENGTH("유효하지 않은 Content-Length 입니다.", 400),
+
+
+    // Attachment 관련 ErrorCode
+    ATTACHMENT_NOT_FOUND("첨부파일을 찾을 수 없습니다.", 404),
+
     ;
 
     private final String msg;
