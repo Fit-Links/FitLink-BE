@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import spring.fitlinkbe.domain.attachment.model.Attachment;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
@@ -100,6 +101,10 @@ public class PersonalDetail {
         }
         this.phoneNumber = phoneNumber;
         this.status = Status.REQUIRED_REGISTER;
+    }
+
+    public void updateProfile(String uploadFilePath) {
+        this.profilePictureUrl = uploadFilePath;
     }
 
     public enum Gender {

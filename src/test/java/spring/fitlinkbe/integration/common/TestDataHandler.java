@@ -2,6 +2,8 @@ package spring.fitlinkbe.integration.common;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import spring.fitlinkbe.domain.attachment.AttachmentRepository;
+import spring.fitlinkbe.domain.attachment.model.Attachment;
 import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.SessionInfoRepository;
@@ -50,13 +52,18 @@ public class TestDataHandler {
 
     private final TokenRepository tokenRepository;
 
+    private final AttachmentRepository attachmentRepository;
+
+
     public TestDataHandler(
             PersonalDetailRepository personalDetailRepository,
             MemberRepository memberRepository, TrainerRepository trainerRepository,
             SessionInfoRepository sessionInfoRepository, AuthTokenProvider authTokenProvider,
             ConnectingInfoRepository connectingInfoRepository, WorkoutScheduleRepository workoutScheduleRepository,
             ReservationRepository reservationRepository,
-            TokenRepository tokenRepository) {
+            TokenRepository tokenRepository,
+            AttachmentRepository attachmentRepository) {
+
         this.personalDetailRepository = personalDetailRepository;
         this.memberRepository = memberRepository;
         this.trainerRepository = trainerRepository;
@@ -66,6 +73,7 @@ public class TestDataHandler {
         this.workoutScheduleRepository = workoutScheduleRepository;
         this.reservationRepository = reservationRepository;
         this.tokenRepository = tokenRepository;
+        this.attachmentRepository = attachmentRepository;
     }
 
     public Member createMember() {
@@ -387,5 +395,17 @@ public class TestDataHandler {
                 .build();
 
         reservationRepository.saveReservation(reservation);
+    }
+
+    public Attachment createAttachment() {
+        Attachment attachment = Attachment.builder()
+                .origFileName("test.jpg")
+                .uuid(UUID.randomUUID().toString())
+                .uploadFilePath("test/upload/path")
+                .fileSize(1024)
+                .fileExtension("jpg")
+                .build();
+
+        return attachmentRepository.save(attachment);
     }
 }

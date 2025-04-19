@@ -78,6 +78,13 @@ public class TrainerFacade {
         return AvailableTimesResult.Response.of(currentSchedules, scheduledSchedules);
     }
 
+    public AvailableTimesResult.CurrentAvailableTimesResponse getCurrentAvailableTimes(Long memberId, Long trainerId) {
+        memberService.checkConnected(trainerId, memberId);
+
+        List<AvailableTime> currentSchedules = trainerService.getCurrentAvailableTimes(trainerId);
+        return AvailableTimesResult.CurrentAvailableTimesResponse.of(currentSchedules);
+    }
+
     @Transactional
     public void saveAvailableTimes(Long trainerId, AvailableTimeCriteria.AddRequest criteria) {
         Trainer trainer = trainerService.getTrainerInfo(trainerId);

@@ -31,6 +31,10 @@ public class AuthService {
         return tokenRepository.getByPersonalDetailId(personalDetailId)
                 .orElseThrow(() -> new CustomException(ErrorCode.TOKEN_NOT_FOUND));
     }
+  
+    public PersonalDetail getPersonalDetailById(Long personalDetailId) {
+        return personalDetailRepository.getById(personalDetailId);
+    }
 
     public PersonalDetail getPersonalDetailByToken(String token) {
         Long personalDetailId = emailTokenRepository.findPersonalDetailIdByToken(token);
@@ -88,3 +92,4 @@ public class AuthService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
 }
+

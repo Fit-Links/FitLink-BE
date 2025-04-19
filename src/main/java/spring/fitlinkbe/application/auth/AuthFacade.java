@@ -3,6 +3,8 @@ package spring.fitlinkbe.application.auth;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import spring.fitlinkbe.domain.attachment.AttachmentService;
+import spring.fitlinkbe.domain.attachment.model.Attachment;
 import spring.fitlinkbe.domain.auth.AuthService;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.enums.UserRole;
@@ -27,24 +29,31 @@ public class AuthFacade {
     private final TrainerService trainerService;
     private final AuthService authService;
     private final AuthTokenProvider authTokenProvider;
+    private final AttachmentService attachmentService;
 
     @Transactional
     public AuthCommand.Response registerTrainer(Long personalDetailId, AuthCommand.TrainerRegisterRequest command) {
-        // trainer 저장
-        Trainer savedTrainer = trainerService.saveTrainer(new Trainer(generateRandomString(6), command.name()));
+        Trainer savedTrainer = trainerService.saveTrainer(new Trainer(generateRandomString(Trainer.CODE_SIZE), command.name()));
 
-        // personalDetail 업데이트
-        PersonalDetail personalDetail = trainerService.registerTrainer(personalDetailId, command, savedTrainer);
+        PersonalDetail personalDetail = authService.getPersonalDetailById(personalDetailId);
+        Attachment attachment = attachmentService.findAttachment(command.attachmentId(), personalDetailId);
 
-        // 토큰 생성 또는 업데이트
-        String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId,
-                personalDetail.getUserRole());
-        String refreshToken = authTokenProvider.createRefreshToken(personalDetailId, personalDetail.getUserRole());
+        String profileUrl = attachment != null ? attachment.getUploadFilePath() : null;
+        personalDetail.registerTrainer(command.name(), command.birthDate(), profileUrl, command.gender(), savedTrainer);
 
+        authService.savePersonalDetail(personalDetail);
         trainerService.saveAvailableTimes(command.toAvailableTimes(savedTrainer));
 
+        return createAndReturnToken(personalDetail);
+    }
+
+    private AuthCommand.Response createAndReturnToken(PersonalDetail personalDetail) {
+        String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                personalDetail.getUserRole());
+        String refreshToken = authTokenProvider.createRefreshToken(personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
         Token token = Token.builder()
-                .personalDetailId(personalDetailId)
+                .personalDetailId(personalDetail.getPersonalDetailId())
                 .refreshToken(refreshToken)
                 .build();
         authService.saveOrUpdateToken(token);
@@ -54,27 +63,19 @@ public class AuthFacade {
 
     @Transactional
     public AuthCommand.Response registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command) {
-        PersonalDetail personalDetail = memberService.getPersonalDetail(personalDetailId);
-        Member member = memberService.saveMember(command.toMember(personalDetail.getPhoneNumber()));
-        personalDetail.registerMember(command.name(), command.birthDate(), command.profileUrl(), command.gender(), member);
+        PersonalDetail personalDetail = authService.getPersonalDetailById(personalDetailId);
 
+        Attachment attachment = attachmentService.findAttachment(command.attachmentId(), personalDetailId);
+        String profileUrl = attachment != null ? attachment.getUploadFilePath() : null;
+
+        Member member = memberService.saveMember(command.toMember(personalDetail.getPhoneNumber(), profileUrl));
+        personalDetail.registerMember(command.name(), command.birthDate(), profileUrl, command.gender(), member);
         memberService.savePersonalDetail(personalDetail);
-
-        // 토큰 생성 또는 업데이트
-        String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId,
-                personalDetail.getUserRole());
-        String refreshToken = authTokenProvider.createRefreshToken(personalDetailId, personalDetail.getUserRole());
 
         // workoutSchedule 업데이트
         memberService.saveWorkoutSchedules(command.toWorkoutSchedules(member));
 
-        Token token = Token.builder()
-                .personalDetailId(personalDetailId)
-                .refreshToken(refreshToken)
-                .build();
-        authService.saveOrUpdateToken(token);
-
-        return AuthCommand.Response.of(accessToken, refreshToken);
+        return createAndReturnToken(personalDetail);
     }
 
     public String getEmailVerificationToken(Long personalDetailId) {
