@@ -2,6 +2,8 @@ package spring.fitlinkbe.domain.common;
 
 import spring.fitlinkbe.domain.common.model.Token;
 
+import java.util.Optional;
+
 public interface TokenRepository {
 
     /**
@@ -14,5 +16,7 @@ public interface TokenRepository {
      */
     Token saveOrUpdate(Token token);
 
-    Token getByPersonalDetailId(Long personalDetailId);
+    Optional<Token> getByPersonalDetailId(Long personalDetailId);
+
+    void saveToken(Token token);
 }

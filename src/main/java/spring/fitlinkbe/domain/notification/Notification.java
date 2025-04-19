@@ -5,7 +5,8 @@ import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+
+import static spring.fitlinkbe.support.utils.DateUtils.formatDateTime;
 
 @Builder(toBuilder = true)
 @Getter
@@ -60,8 +61,8 @@ public class Notification {
                 .build();
     }
 
-    public static Notification Cancel(PersonalDetail memberDetail, Long reservationId, Long trainerId,
-                                      Reason reason) {
+    public static Notification cancelReservation(PersonalDetail memberDetail, Long reservationId, Long trainerId,
+                                                 Reason reason) {
 
         String content = "트레이너님의 %s로 인해 %s 회원님의 예약이 취소되었습니다.".formatted(
                 reason.name,
@@ -83,8 +84,8 @@ public class Notification {
     public static Notification cancelRequestReservation(PersonalDetail trainerDetail, Long reservationId,
                                                         Long memberId, String name, LocalDateTime cancelDate,
                                                         String cancelReason, Reason reason) {
-        String content = ("%s 회원님의 %s를 요청하였습니다.\n 날짜:%s\n취소 사유: %s")
-                .formatted(name, reason.name, cancelDate.truncatedTo(ChronoUnit.HOURS), cancelReason);
+        String content = ("%s 회원님이 %s를 요청하였습니다.\n 날짜: %s\n취소 사유: %s")
+                .formatted(name, reason.name, formatDateTime(cancelDate), cancelReason);
 
         return Notification.builder()
                 .refId(reservationId)
@@ -103,8 +104,8 @@ public class Notification {
     public static Notification approveReservation(PersonalDetail memberDetail, Long reservationId,
                                                   LocalDateTime reservationDate, Long trainerId, boolean isApprove) {
 
-        String content = "%s 회원님의 예약이 %s되었습니다.\n 날짜:%s".formatted(memberDetail.getName(), isApprove ? "확정" : "거절",
-                reservationDate.truncatedTo(ChronoUnit.HOURS));
+        String content = "%s 회원님의 예약이 %s되었습니다.\n 날짜: %s".formatted(memberDetail.getName(), isApprove ? "확정" : "거절",
+                formatDateTime(reservationDate));
         return Notification.builder()
                 .refId(reservationId)
                 .refType(ReferenceType.RESERVATION_REQUEST)
@@ -142,7 +143,7 @@ public class Notification {
     public static Notification requestReservation(PersonalDetail trainerDetail, Long reservationId,
                                                   LocalDateTime reservationDate, Long memberId, String name) {
 
-        String content = " %s 회원님이 PT 예약을 요청하였습니다.\n날짜:%s".formatted(name, reservationDate);
+        String content = " %s 회원님이 PT 예약을 요청하였습니다.\n날짜: %s".formatted(name, formatDateTime(reservationDate));
 
         return Notification.builder()
                 .refId(reservationId)
@@ -198,8 +199,8 @@ public class Notification {
                                                         LocalDateTime changeDate) {
 
         String content = ("%s 회원님의 PT 예약 변경이 요청되었습니다. \n " +
-                "날짜:%s -> %s").formatted(name, reservationDate.truncatedTo(ChronoUnit.HOURS),
-                changeDate.truncatedTo(ChronoUnit.HOURS));
+                "날짜: %s -> %s").formatted(name, formatDateTime(reservationDate),
+                formatDateTime(changeDate));
 
         return Notification.builder()
                 .refId(reservationId)
@@ -231,6 +232,64 @@ public class Notification {
                 .partnerId(trainerId)
                 .name(isApprove ? NotificationType.RESERVATION_CHANGE_REQUEST.name :
                         NotificationType.RESERVATION_CANCEL_REQUEST_REFUSED.name)
+                .content(content)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
+    public static Notification sessionTodayReminder(PersonalDetail memberDetail, Long sessionId,
+                                                    Long trainerId, LocalDateTime confirmDate) {
+
+        String content = "오늘 %s에 PT가 진행됩니다.".formatted(formatDateTime(confirmDate));
+
+
+        return Notification.builder()
+                .refId(sessionId)
+                .refType(ReferenceType.SESSION)
+                .target(UserRole.MEMBER)
+                .notificationType(NotificationType.SESSION_REMINDER)
+                .personalDetail(memberDetail)
+                .partnerId(trainerId)
+                .name(NotificationType.SESSION_REMINDER.name)
+                .content(content)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
+    public static Notification sessionChargeReminder(PersonalDetail memberDetail, Long sessionInfoId,
+                                                     Long trainerId) {
+
+        String content = "PT 횟수가 얼마 남지 않았습니다. \n 남은 잔여 횟수: 5회";
+
+
+        return Notification.builder()
+                .refId(sessionInfoId)
+                .refType(ReferenceType.SESSION)
+                .target(UserRole.MEMBER)
+                .notificationType(NotificationType.SESSION_REMAIN_5)
+                .personalDetail(memberDetail)
+                .partnerId(trainerId)
+                .name(NotificationType.SESSION_REMAIN_5.name)
+                .content(content)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
+    public static Notification editSession(PersonalDetail memberDetail, Long sessionInfoId, Long trainerId,
+                                           int beforeTotalCnt, int afterTotalCnt, int beforeRemainingCnt,
+                                           int afterRemainingCnt) {
+
+        String content = "트레이너가 회원님의 세션 정보를 수정하였습니다.\n 총 세션: %s -> %s \n 남은 세션 %s -> %s".formatted(
+                beforeTotalCnt, afterTotalCnt, beforeRemainingCnt, afterRemainingCnt);
+
+        return Notification.builder()
+                .refId(sessionInfoId)
+                .refType(ReferenceType.SESSION)
+                .target(UserRole.MEMBER)
+                .notificationType(NotificationType.SESSION_EDITED)
+                .personalDetail(memberDetail)
+                .partnerId(trainerId)
+                .name(NotificationType.SESSION_EDITED.name)
                 .content(content)
                 .sendDate(LocalDateTime.now())
                 .build();

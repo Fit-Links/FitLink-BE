@@ -15,11 +15,15 @@ public class Token {
 
     private Long personalDetailId;
 
-    private String fcmToken;
+    private String pushToken;
 
     private String refreshToken;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    public void updatePushToken(String pushToken) {
+        this.pushToken = pushToken;
+    }
 }

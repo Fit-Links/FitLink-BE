@@ -9,7 +9,7 @@ import spring.fitlinkbe.application.reservation.ReservationFacade;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class FixedReservationScheduler { //
+public class ReservationScheduler { //
 
     private final ReservationFacade reservationFacade;
 
@@ -19,6 +19,14 @@ public class FixedReservationScheduler { //
     @Scheduled(cron = "0 0 0 * * *") // 매일 00:00:00에 실행
     public void createFixedReservations() {
         reservationFacade.checkCreateFixedReservation();
+    }
+
+    /**
+     * 매일 정각마다, 오늘 수입인 사람을 찾아서 알림을 보낸다.
+     */
+    @Scheduled(cron = "0 0 0 * * *") // 매일 00:00:00에 실행
+    public void sessionReminder() {
+        reservationFacade.checkTodaySessionReminder();
     }
 
 }

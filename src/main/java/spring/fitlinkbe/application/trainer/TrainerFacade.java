@@ -7,11 +7,13 @@ import spring.fitlinkbe.application.trainer.criteria.AvailableTimeCriteria;
 import spring.fitlinkbe.application.trainer.criteria.AvailableTimesResult;
 import spring.fitlinkbe.application.trainer.criteria.DayOffResult;
 import spring.fitlinkbe.application.trainer.criteria.TrainerInfoResult;
+import spring.fitlinkbe.domain.auth.AuthService;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.notification.NotificationService;
 import spring.fitlinkbe.domain.notification.command.NotificationCommand;
@@ -31,6 +33,7 @@ public class TrainerFacade {
     private final ReservationService reservationService;
     private final MemberService memberService;
     private final NotificationService notificationService;
+    private final AuthService authService;
 
 
     public TrainerInfoResult.Response getTrainerInfo(Long trainerId) {
@@ -166,7 +169,9 @@ public class TrainerFacade {
 
         trainerService.saveConnectingInfo(connectingInfo);
         // -> 멤버에게 알림 보내기
+        Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
         notificationService.sendNotification(NotificationCommand.Disconnect.of(memberDetail,
-                connectingInfo.getTrainer().getTrainerId(), connectingInfo.getTrainer().getName(), UserRole.MEMBER));
+                connectingInfo.getTrainer().getTrainerId(), connectingInfo.getTrainer().getName(), UserRole.MEMBER,
+                token.getPushToken()));
     }
 }

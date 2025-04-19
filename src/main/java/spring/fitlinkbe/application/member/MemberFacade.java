@@ -6,12 +6,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.application.member.criteria.*;
+import spring.fitlinkbe.domain.auth.AuthService;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
+import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
@@ -37,6 +39,7 @@ public class MemberFacade {
     private final TrainerService trainerService;
     private final NotificationService notificationService;
     private final ReservationService reservationService;
+    private final AuthService authService;
 
     @Transactional
     public void connectTrainer(Long memberId, String trainerCode) {
@@ -47,9 +50,10 @@ public class MemberFacade {
 
         ConnectingInfo connectingInfo = memberService.requestConnectTrainer(trainer, member);
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(trainer.getTrainerId());
+        Token token = authService.getTokenByPersonalDetailId(trainerDetail.getPersonalDetailId());
 
         notificationService.sendNotification(NotificationCommand.Connect.of(trainerDetail, member.getMemberId(),
-                member.getName(), connectingInfo.getConnectingInfoId()));
+                member.getName(), connectingInfo.getConnectingInfoId(), token.getPushToken()));
     }
 
     @Transactional
@@ -58,9 +62,10 @@ public class MemberFacade {
 
         Member member = memberService.getMember(memberId);
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(connectingInfo.getTrainer().getTrainerId());
+        Token token = authService.getTokenByPersonalDetailId(trainerDetail.getPersonalDetailId());
         // -> 트레이너에게 알림 보내기
         notificationService.sendNotification(NotificationCommand.Disconnect.of(trainerDetail, member.getMemberId(),
-                member.getName(), UserRole.TRAINER));
+                member.getName(), UserRole.TRAINER, token.getPushToken()));
 
         connectingInfo.disconnect();
         memberService.saveConnectingInfo(connectingInfo);
@@ -179,8 +184,19 @@ public class MemberFacade {
         memberService.checkConnected(trainerId, memberId);
         SessionInfo sessionInfo = memberService.getSessionInfo(sessionInfoId);
 
+        int beforeTotalCnt = sessionInfo.getTotalCount();
+        int beforeRemainingCnt = sessionInfo.getRemainingCount();
+        int afterTotalCnt = request.totalCount() == null ? sessionInfo.getTotalCount() : request.totalCount();
+        int afterRemainingCnt = request.remainingCount() == null ? sessionInfo.getRemainingCount() : request.remainingCount();
+
         request.patch(sessionInfo);
         memberService.saveSessionInfo(sessionInfo);
+
+        PersonalDetail memberDetail = memberService.getMemberDetail(memberId);
+        Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
+        // 트레이너 -> 멤버에게 세션 직접 수정했다는 알림 전송
+        notificationService.sendNotification(NotificationCommand.EditSession.of(memberDetail, sessionInfoId, trainerId,
+                beforeTotalCnt, afterTotalCnt, beforeRemainingCnt, afterRemainingCnt, token.getPushToken()));
 
         return SessionInfoCriteria.Response.from(sessionInfo);
     }

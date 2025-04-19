@@ -11,6 +11,8 @@ import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.domain.notification.NotificationRepository;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class NotificationRepositoryImpl implements NotificationRepository {
@@ -40,18 +42,19 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     @Override
-    public Notification getNotification(Long refId, Notification.ReferenceType refType) {
+    public List<Notification> getNotification(Long refId, Notification.ReferenceType refType) {
 
         return notificationJpaRepository.findByRefIdAndRefType(refId, refType)
-                .map(NotificationEntity::toDomain)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
+                .stream().map(NotificationEntity::toDomain)
+                .toList();
+
     }
 
     @Override
-    public Notification getNotification(Long refId, UserRole target, Notification.ReferenceType refType) {
+    public List<Notification> getNotification(Long refId, UserRole target, Notification.ReferenceType refType) {
         return notificationJpaRepository.findByRefIdAndRefTypeAndTarget(refId, refType, target)
-                .map(NotificationEntity::toDomain)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
+                .stream().map(NotificationEntity::toDomain)
+                .toList();
     }
 
     @Override

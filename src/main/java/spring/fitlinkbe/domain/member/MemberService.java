@@ -169,8 +169,10 @@ public class MemberService {
         return connectingInfoRepository.getConnectedInfo(memberId).orElse(null);
     }
 
-    public void saveSessionInfo(SessionInfo sessionInfo) {
-        sessionInfoRepository.saveSessionInfo(sessionInfo);
+    public SessionInfo saveSessionInfo(SessionInfo sessionInfo) {
+        return sessionInfoRepository.saveSessionInfo(sessionInfo).orElseThrow(
+                () -> new CustomException(ErrorCode.SESSION_CREATE_FAILED, "세션 정보 수정에 실패하였습니다.")
+        );
     }
 
     /**
@@ -187,10 +189,10 @@ public class MemberService {
     /**
      * 세션 차감
      */
-    public void deductSession(Long trainerId, Long memberId) {
+    public SessionInfo deductSession(Long trainerId, Long memberId) {
         SessionInfo getSessionInfo = this.getSessionInfo(trainerId, memberId);
         getSessionInfo.deductSession();
-        this.saveSessionInfo(getSessionInfo);
+        return this.saveSessionInfo(getSessionInfo);
     }
 
     /**

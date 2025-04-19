@@ -4,4 +4,6 @@ import spring.fitlinkbe.domain.notification.Notification;
 
 public interface NotificationRequest {
     Notification.NotificationType getType();
+
+    String getPushToken();
 }

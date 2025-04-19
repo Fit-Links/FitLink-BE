@@ -65,4 +65,13 @@ public class NotificationResponseDto {
         }
     }
 
+    @Builder(toBuilder = true)
+    public record PushToken(String message) {
+        public static PushToken of(String message) {
+            return PushToken.builder()
+                    .message(message)
+                    .build();
+        }
+    }
+
 }

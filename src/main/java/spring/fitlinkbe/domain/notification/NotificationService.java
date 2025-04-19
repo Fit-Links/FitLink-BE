@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import spring.fitlinkbe.domain.notification.client.PushNotificationClient;
 import spring.fitlinkbe.domain.notification.command.NotificationCommand;
 import spring.fitlinkbe.domain.notification.command.NotificationRequest;
 import spring.fitlinkbe.support.security.SecurityUser;
@@ -14,13 +15,12 @@ import spring.fitlinkbe.support.security.SecurityUser;
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationStrategyHandler strategyHandler;
-
+    private final PushNotificationClient pushNotificationClient;
 
     public Page<Notification> getNotifications(NotificationCommand.GetNotifications command, SecurityUser user) {
 
         return notificationRepository.getNotifications(command.type(), command.pageRequest(),
                 user.getUserRole(), user.getPersonalDetailId(), command.keyword());
-
     }
 
     public Notification getNotificationDetail(Long notificationId, SecurityUser user) {
@@ -29,9 +29,11 @@ public class NotificationService {
 
     @Transactional
     public <T extends NotificationRequest> void sendNotification(T request) {
+        // 1. DB 저장
         Notification notification = strategyHandler.handle(request);
         notificationRepository.save(notification);
+        // 2. push 알림 전송
+        pushNotificationClient.pushNotification(request.getPushToken(), notification.getName(),
+                notification.getContent());
     }
-
-
 }

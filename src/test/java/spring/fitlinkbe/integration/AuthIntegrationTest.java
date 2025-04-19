@@ -128,7 +128,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                     }
                 }
 
-                Token token = tokenRepository.getByPersonalDetailId(personalDetail.getPersonalDetailId());
+                Token token = tokenRepository.getByPersonalDetailId(personalDetail.getPersonalDetailId())
+                        .orElseThrow();
                 softly.assertThat(response.data().refreshToken()).isEqualTo(token.getRefreshToken());
 
                 Attachment updatedAttachment = attachmentRepository.findById(attachment.getAttachmentId()).orElseThrow();
@@ -380,7 +381,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 List<AvailableTime> availableTimes = trainerRepository.getTrainerAvailableTimes(trainer.getTrainerId());
                 softly.assertThat(availableTimes).hasSize(request.availableTimes().size());
 
-                Token token = tokenRepository.getByPersonalDetailId(personalDetail.getPersonalDetailId());
+                Token token = tokenRepository.getByPersonalDetailId(personalDetail.getPersonalDetailId())
+                        .orElseThrow();
                 softly.assertThat(response.data().refreshToken()).isEqualTo(token.getRefreshToken());
 
                 Attachment updatedAttachment = attachmentRepository.findById(attachment.getAttachmentId()).orElseThrow();

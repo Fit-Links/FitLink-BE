@@ -700,6 +700,8 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             Trainer trainer = testDataHandler.createTrainer(trainerCode);
             String token = testDataHandler.createTokenFromTrainer(trainer);
             Member member = testDataHandler.createMember();
+            testDataHandler.createTokenInfo(trainer);
+            testDataHandler.createTokenInfo(member);
             PersonalDetail personalDetail = testDataHandler.getMemberPersonalDetail(member.getMemberId());
             testDataHandler.connectMemberAndTrainer(member, trainer);
 
