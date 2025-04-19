@@ -1,4 +1,13 @@
 spring:
+  cloud:
+    aws:
+      credentials:
+        access-key: access
+        secret-key: secret
+      region:
+        name: region
+      s3:
+        bucket-name: bucket
   profiles:
     active: test
     include: secret
