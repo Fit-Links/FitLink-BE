@@ -101,7 +101,7 @@ public class AuthCommand {
     }
 
     @Builder
-    public record FcmTokenRequest(String fcmToken) {
+    public record PushTokenRequest(String pushToken) {
     }
 
 }

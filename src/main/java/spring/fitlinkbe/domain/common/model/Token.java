@@ -15,7 +15,7 @@ public class Token {
 
     private Long personalDetailId;
 
-    private String fcmToken;
+    private String pushToken;
 
     private String refreshToken;
 
@@ -23,7 +23,7 @@ public class Token {
 
     private LocalDateTime updatedAt;
 
-    public void updateFcmToken(String fcmToken) {
-        this.fcmToken = fcmToken;
+    public void updatePushToken(String pushToken) {
+        this.pushToken = pushToken;
     }
 }

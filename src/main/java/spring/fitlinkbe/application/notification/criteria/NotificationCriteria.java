@@ -6,11 +6,11 @@ import spring.fitlinkbe.domain.auth.command.AuthCommand;
 public class NotificationCriteria {
 
     @Builder(toBuilder = true)
-    public record FcmTokenRequest(String fcmToken) {
+    public record PushTokenRequest(String pushToken) {
 
-        public AuthCommand.FcmTokenRequest toCommand() {
-            return AuthCommand.FcmTokenRequest.builder()
-                    .fcmToken(fcmToken)
+        public AuthCommand.PushTokenRequest toCommand() {
+            return AuthCommand.PushTokenRequest.builder()
+                    .pushToken(pushToken)
                     .build();
         }
     }

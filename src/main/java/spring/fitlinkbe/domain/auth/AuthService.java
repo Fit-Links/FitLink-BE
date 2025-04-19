@@ -19,7 +19,7 @@ import java.util.Base64;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.PERSONAL_DETAIL_NOT_FOUND;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class AuthService {
 
@@ -27,15 +27,9 @@ public class AuthService {
     private final EmailTokenRepository emailTokenRepository;
     private final PersonalDetailRepository personalDetailRepository;
 
-    public void saveOrUpdateToken(Token token) {
-        tokenRepository.saveOrUpdate(token);
-    }
-
-    public String createEmailVerificationToken(Long personalDetailId) {
-        String emailVerificationToken = generateToken();
-        emailTokenRepository.saveToken(personalDetailId, emailVerificationToken);
-
-        return emailVerificationToken;
+    public Token getTokenByPersonalDetailId(Long personalDetailId) {
+        return tokenRepository.getByPersonalDetailId(personalDetailId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TOKEN_NOT_FOUND));
     }
 
     public PersonalDetail getPersonalDetailByToken(String token) {
@@ -47,6 +41,43 @@ public class AuthService {
         return personalDetailRepository.getById(personalDetailId);
     }
 
+    @Transactional
+    public void saveOrUpdateToken(Token token) {
+        tokenRepository.saveOrUpdate(token);
+    }
+
+    @Transactional
+    public String createEmailVerificationToken(Long personalDetailId) {
+        String emailVerificationToken = generateToken();
+        emailTokenRepository.saveToken(personalDetailId, emailVerificationToken);
+
+        return emailVerificationToken;
+    }
+
+    @Transactional
+    public void savePersonalDetail(PersonalDetail personalDetail) {
+        personalDetailRepository.savePersonalDetail(personalDetail);
+    }
+
+    @Transactional
+    public void registerPushToken(AuthCommand.PushTokenRequest command, SecurityUser user) {
+        Long personalDetailId = switch (user.getUserRole()) {
+            case TRAINER -> personalDetailRepository.getTrainerDetail(user.getTrainerId())
+                    .orElseThrow(() -> new CustomException(PERSONAL_DETAIL_NOT_FOUND))
+                    .getPersonalDetailId();
+
+            case MEMBER -> personalDetailRepository.getMemberDetail(user.getMemberId())
+                    .orElseThrow(() -> new CustomException(PERSONAL_DETAIL_NOT_FOUND))
+                    .getPersonalDetailId();
+        };
+
+        Token token = tokenRepository.getByPersonalDetailId(personalDetailId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TOKEN_NOT_FOUND));
+
+        token.updatePushToken(command.pushToken());
+        tokenRepository.saveToken(token);
+    }
+
     private String generateToken() {
         // 128비트(16바이트) 난수 생성
         SecureRandom secureRandom = new SecureRandom();
@@ -55,20 +86,5 @@ public class AuthService {
 
         // URL-safe Base64 인코딩, 패딩 없이
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
-    }
-
-    public void savePersonalDetail(PersonalDetail personalDetail) {
-        personalDetailRepository.savePersonalDetail(personalDetail);
-    }
-
-    public void saveFcmToken(AuthCommand.FcmTokenRequest command, SecurityUser user) {
-
-        PersonalDetail memberDetail = personalDetailRepository.getMemberDetail(user.getMemberId())
-                .orElseThrow(() -> new CustomException(PERSONAL_DETAIL_NOT_FOUND));
-
-        Token token = tokenRepository.getByPersonalDetailId(memberDetail.getPersonalDetailId());
-
-        token.updateFcmToken(command.fcmToken());
-        tokenRepository.saveOrUpdate(token);
     }
 }

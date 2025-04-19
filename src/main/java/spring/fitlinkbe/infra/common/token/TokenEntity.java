@@ -23,7 +23,16 @@ public class TokenEntity extends BaseTimeEntity {
 
     private String refreshToken;
 
-    private String fcmToken;
+    private String pushToken;
+
+    public static TokenEntity from(Token token, EntityManager em) {
+        return TokenEntity.builder()
+                .tokenId(token.getTokenId())
+                .personalDetail(em.getReference(PersonalDetailEntity.class, token.getPersonalDetailId()))
+                .refreshToken(token.getRefreshToken())
+                .pushToken(token.getPushToken())
+                .build();
+    }
 
 
     public Token toDomain() {
@@ -31,7 +40,7 @@ public class TokenEntity extends BaseTimeEntity {
                 .tokenId(tokenId)
                 .personalDetailId(personalDetail.getPersonalDetailId())
                 .refreshToken(refreshToken)
-                .fcmToken(fcmToken)
+                .pushToken(pushToken)
                 .createdAt(getCreatedAt())
                 .updatedAt(getUpdatedAt())
                 .build();

@@ -21,4 +21,5 @@ public interface NotificationRepository {
 
     Page<Notification> getNotifications(Notification.ReferenceType type, Pageable pageRequest, UserRole userRole,
                                         Long personalDetailId, String keyword);
+
 }

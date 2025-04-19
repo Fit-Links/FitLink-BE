@@ -34,8 +34,8 @@ public class NotificationFacade {
         return notificationService.getNotificationDetail(notificationId, user);
     }
 
-    public void saveFcmToken(NotificationCriteria.FcmTokenRequest criteria, SecurityUser user) {
+    public void registerPushToken(NotificationCriteria.PushTokenRequest criteria, SecurityUser user) {
 
-        authService.saveFcmToken(criteria.toCommand(), user);
+        authService.registerPushToken(criteria.toCommand(), user);
     }
 }

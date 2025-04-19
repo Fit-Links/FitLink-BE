@@ -1,5 +1,6 @@
 package spring.fitlinkbe.interfaces.controller.notification;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,7 @@ import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.interfaces.controller.common.dto.CustomPageResponse;
+import spring.fitlinkbe.interfaces.controller.notification.dto.NotificationRequestDto;
 import spring.fitlinkbe.interfaces.controller.notification.dto.NotificationResponseDto;
 import spring.fitlinkbe.support.aop.RoleCheck;
 import spring.fitlinkbe.support.argumentresolver.Login;
@@ -63,5 +65,22 @@ public class NotificationController {
 
         return ApiResultResponse.ok(NotificationResponseDto.Detail.of(result));
 
+    }
+
+    /**
+     * push token 등록
+     *
+     * @param request push-token 정보
+     * @return ApiResultResponse 토큰이 성공적으로 저장됐다는 메시지를 리턴한다.
+     */
+    @PostMapping("/push-token/register")
+    public ApiResultResponse<NotificationResponseDto.PushToken> registerPushToken(@RequestBody @Valid
+                                                                                  NotificationRequestDto.PushTokenRequest
+                                                                                          request,
+                                                                                  @Login SecurityUser user) {
+
+        notificationFacade.registerPushToken(request.toCriteria(), user);
+
+        return ApiResultResponse.ok(NotificationResponseDto.PushToken.of("푸쉬 토큰 등록에 성공하였습니다."));
     }
 }
