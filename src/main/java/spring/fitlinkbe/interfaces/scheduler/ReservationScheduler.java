@@ -22,7 +22,7 @@ public class ReservationScheduler { //
     }
 
     /**
-     * 매일 정각마다, 오늘 수입인 사람을 찾아서 알림을 보낸다.
+     * 매일 정각마다, 오늘 수업인 사람을 찾아서 알림을 보낸다.
      */
     @Scheduled(cron = "0 0 0 * * *") // 매일 00:00:00에 실행
     public void sessionReminder() {
