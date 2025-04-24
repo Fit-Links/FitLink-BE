@@ -26,16 +26,14 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             "LEFT JOIN FETCH r.member " +
             "LEFT JOIN FETCH r.trainer " +
             "LEFT JOIN FETCH r.sessionInfo " +
-            "WHERE r.member.memberId = :memberId " +
-            "AND r.createdAt > CURRENT_TIMESTAMP")
+            "WHERE r.member.memberId = :memberId")
     List<ReservationEntity> findByMember_MemberId(Long memberId);
 
     @Query("SELECT r FROM ReservationEntity r " +
             "LEFT JOIN FETCH r.member " +
             "LEFT JOIN FETCH r.trainer " +
             "LEFT JOIN FETCH r.sessionInfo " +
-            "WHERE r.trainer.trainerId = :trainerId " +
-            "AND r.createdAt > CURRENT_TIMESTAMP")
+            "WHERE r.trainer.trainerId = :trainerId")
     List<ReservationEntity> findByTrainer_TrainerId(Long trainerId);
 
     @Query("SELECT r FROM ReservationEntity r " +
@@ -43,23 +41,20 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             "LEFT JOIN FETCH r.trainer " +
             "LEFT JOIN FETCH r.sessionInfo " +
             "WHERE r.trainer.trainerId = :trainerId " +
-            "AND r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_WAITING " +
-            "AND r.createdAt > CURRENT_TIMESTAMP")
+            "AND r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_WAITING")
     List<ReservationEntity> findWaitingStatus(Long trainerId);
 
     @Query("SELECT r FROM ReservationEntity r " +
             "LEFT JOIN FETCH r.member " +
             "LEFT JOIN FETCH r.trainer " +
-            "LEFT JOIN FETCH r.sessionInfo " +
-            "WHERE r.createdAt > CURRENT_TIMESTAMP")
+            "LEFT JOIN FETCH r.sessionInfo")
     List<ReservationEntity> findAllAfterToday();
 
     @Query("SELECT r FROM ReservationEntity r " +
             "LEFT JOIN FETCH r.member " +
             "LEFT JOIN FETCH r.trainer " +
             "LEFT JOIN FETCH r.sessionInfo " +
-            "WHERE r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.FIXED_RESERVATION " +
-            "AND r.createdAt > CURRENT_TIMESTAMP")
+            "WHERE r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.FIXED_RESERVATION")
     List<ReservationEntity> findFixedStatus();
 
     @Query("SELECT COUNT(r) > 0 FROM ReservationEntity r " +

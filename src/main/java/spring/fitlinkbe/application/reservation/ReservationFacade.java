@@ -106,7 +106,7 @@ public class ReservationFacade {
         // 고정 예약 진행
         List<Reservation> reservationDomains = criteria.toDomain(memberService.getSessionInfo(user.getTrainerId(),
                 criteria.memberId()), user);
-        List<Reservation> fixedReservations = reservationService.createFixedReservation(reservationDomains);
+        List<Reservation> fixedReservations = reservationService.createFixedReservations(reservationDomains);
         // 트레이너 -> 멤버에게 예약 됐다는 알림 전송
         fixedReservations.forEach(r -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
@@ -121,29 +121,30 @@ public class ReservationFacade {
     @Transactional
     public void checkCreateFixedReservation() {
         // 고정 예약 상태의 예약 조회
-        List<Reservation> nextFixedReservations = reservationService.getNextFixedReservations();
-        // 일주일 뒤에 시간에 예약이 있다면 예약 거절 진행
-        nextFixedReservations.forEach((nextfixedReservation) -> {
-            // 세션이 충분한지 확인
-            memberService.isSessionCountEnough(nextfixedReservation.getTrainer().getTrainerId(),
-                    nextfixedReservation.getMember().getMemberId());
-            // 기존에 확정된 예약이 있는지 확인
-            reservationService.checkConfirmedReservationsExistOrThrow(nextfixedReservation.getTrainer().getTrainerId(),
-                    nextfixedReservation.getReservationDates());
-            // 예약 대기중인 예약 확인
-            List<Reservation> refusedReservations =
-                    reservationService.refuseWaitingReservations(nextfixedReservation.getReservationDates());
-            // 예약 거절된 예약은 -> 멤버에게 예약 거절됐다는 메세지 전송
-            refusedReservations.forEach((r) -> {
-                PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-                Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
-                notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail, r.getReservationId(),
-                        r.getReservationDate(), r.getTrainer().getTrainerId(), false, token.getPushToken()));
-            });
+        reservationService.publishFixedReservations();
+    }
+
+    @Transactional
+    public void executeCreateFixedReservation(ReservationCriteria.EventCreateFixed criteria) {
+        Reservation nextFixedReservation = criteria.toDomain();
+        // 세션이 충분한지 확인
+        memberService.isSessionCountEnough(nextFixedReservation.getTrainer().getTrainerId(),
+                nextFixedReservation.getMember().getMemberId());
+        // 기존에 확정된 예약이 있는지 확인
+        reservationService.checkConfirmedReservationsExistOrThrow(nextFixedReservation.getTrainer().getTrainerId(),
+                nextFixedReservation.getReservationDates());
+        // 예약 대기중인 예약 확인
+        List<Reservation> refusedReservations =
+                reservationService.refuseWaitingReservations(nextFixedReservation.getReservationDates());
+        // 예약 거절된 예약은 -> 멤버에게 예약 거절됐다는 메세지 전송
+        refusedReservations.forEach((r) -> {
+            PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
+            Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
+            notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail, r.getReservationId(),
+                    r.getReservationDate(), r.getTrainer().getTrainerId(), false, token.getPushToken()));
         });
         // 고정 예약 진행
-        reservationService.createFixedReservation(nextFixedReservations);
-
+        reservationService.createFixedReservations(List.of(nextFixedReservation));
     }
 
     @Transactional

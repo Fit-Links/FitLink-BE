@@ -84,9 +84,16 @@ public enum ErrorCode {
     INVALID_CONTENT_TYPE("유효하지 않은 Content-Type 입니다.", 400),
     INVALID_CONTENT_LENGTH("유효하지 않은 Content-Length 입니다.", 400),
 
-
     // Attachment 관련 ErrorCode
     ATTACHMENT_NOT_FOUND("첨부파일을 찾을 수 없습니다.", 404),
+
+    // Outbox 관련
+    OUTBOX_IS_FAILED("outbox 데이터 생성에 실패하였습니다.", 400),
+    OUTBOX_IS_NOT_FOUND("outbox 데이터가 존재하지 않습니다.", 404),
+    OUTBOX_IS_ALREADY_DONE("이미 완료된 outbox 데이터 입니다.", 400),
+    OUTBOX_IS_ALREADY_FAIL("이미 실패한 outbox 데이터 입니다.", 400),
+    OUTBOX_IS_NOT_INIT_STATUS("outbox 데이터가 초기 상태가 아닙니다.", 400),
+    OUTBOX_PAYLOAD_INVALID("outbox 데이터가 정상 상태가 아닙니다.", 400),
 
     ;
 

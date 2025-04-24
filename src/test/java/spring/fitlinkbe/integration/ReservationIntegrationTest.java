@@ -1400,6 +1400,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .reservationDates(List.of(requestDate))
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
+                    .sessionInfo(SessionInfo.builder().SessionInfoId(1L).build())
                     .status(FIXED_RESERVATION)
                     .createdAt(LocalDateTime.now().plusSeconds(2))
                     .build();
@@ -1413,11 +1414,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             assertSoftly(softly -> {
                 // 예약이 잘 됐는지 확인
                 List<Reservation> reservations = reservationRepository.getReservations();
-                softly.assertThat(reservations).hasSize(2);
+                softly.assertThat(reservations).hasSize(1);
                 softly.assertThat(reservations.get(0).getReservationId()).isEqualTo(1L);
                 softly.assertThat(reservations.get(0).getStatus()).isEqualTo(FIXED_RESERVATION);
-                softly.assertThat(reservations.get(1).getReservationId()).isEqualTo(2L);
-                softly.assertThat(reservations.get(1).getStatus()).isEqualTo(FIXED_RESERVATION);
             });
         }
 

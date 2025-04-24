@@ -13,7 +13,7 @@ public class AwsProperties {
     private final Credentials credentials;
     private final Region region;
     private final S3 s3;
-
+    private final Sqs sqs;
 
     public String getAccessKey() {
         return credentials != null ? credentials.getAccessKey() : null;
@@ -48,5 +48,11 @@ public class AwsProperties {
     @RequiredArgsConstructor(onConstructor_ = @ConstructorBinding)
     public static class S3 {
         private final String bucketName;
+    }
+
+    @Getter
+    @RequiredArgsConstructor(onConstructor_ = @ConstructorBinding)
+    public static class Sqs {
+        private final String queueName;
     }
 }
