@@ -16,6 +16,8 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.domain.notification.NotificationRepository;
+import spring.fitlinkbe.domain.outbox.Outbox;
+import spring.fitlinkbe.domain.outbox.OutboxRepository;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationRepository;
 import spring.fitlinkbe.domain.reservation.Session;
@@ -69,6 +71,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     MemberRepository memberRepository;
+
+    @Autowired
+    OutboxRepository outboxRepository;
 
     @Autowired
     TestDataHandler testDataHandler;
@@ -1417,6 +1422,15 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(reservations).hasSize(1);
                 softly.assertThat(reservations.get(0).getReservationId()).isEqualTo(1L);
                 softly.assertThat(reservations.get(0).getStatus()).isEqualTo(FIXED_RESERVATION);
+
+                // outbox 데이터 잘 쌓였나 확인
+                List<Outbox> outboxes = outboxRepository.getOutboxes();
+                softly.assertThat(outboxes).hasSize(1);
+                softly.assertThat(outboxes.get(0).getOutboxId()).isEqualTo(1L);
+                softly.assertThat(outboxes.get(0).getAggregateType()).isEqualTo(Outbox.AggregateType.RESERVATION);
+                softly.assertThat(outboxes.get(0).getEventType()).isEqualTo(Outbox.EventType.CREATE_FIXED_RESERVATION);
+                softly.assertThat(outboxes.get(0).getEventStatus()).isEqualTo(Outbox.EventStatus.SEND_SUCCESS);
+                softly.assertThat(outboxes.get(0).getRetryCount()).isEqualTo(0);
             });
         }
 

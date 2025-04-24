@@ -31,7 +31,7 @@ public class AuthService {
         return tokenRepository.getByPersonalDetailId(personalDetailId)
                 .orElseThrow(() -> new CustomException(ErrorCode.TOKEN_NOT_FOUND));
     }
-  
+
     public PersonalDetail getPersonalDetailById(Long personalDetailId) {
         return personalDetailRepository.getById(personalDetailId);
     }

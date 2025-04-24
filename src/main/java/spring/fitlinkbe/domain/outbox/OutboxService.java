@@ -23,13 +23,13 @@ public class OutboxService {
     private final OutboxRepository outboxRepository;
     private final EventProducer eventProducer;
 
-    public Outbox save(OutboxCommand.Create command) {
+    public Outbox createOutbox(OutboxCommand.Create command) {
 
         return outboxRepository.saveOutbox(command.toDomain()).orElseThrow(() ->
                 new CustomException(OUTBOX_IS_FAILED, OUTBOX_IS_FAILED.getMsg()));
     }
 
-    public Outbox publish(String messageId) {
+    public Outbox publishOutbox(String messageId) {
         Outbox outbox = outboxRepository.getOutbox(messageId).orElseThrow(() ->
                 new CustomException(OUTBOX_IS_NOT_FOUND, OUTBOX_IS_NOT_FOUND.getMsg()));
         // outbox 메시지 발행 완료

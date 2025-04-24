@@ -1,9 +1,12 @@
 package spring.fitlinkbe.domain.outbox.command;
 
+import lombok.Builder;
 import spring.fitlinkbe.domain.outbox.Outbox;
 
 
 public class OutboxCommand {
+
+    @Builder(toBuilder = true)
     public record Create(
             Outbox.AggregateType aggregateType,
             Long aggregateId,

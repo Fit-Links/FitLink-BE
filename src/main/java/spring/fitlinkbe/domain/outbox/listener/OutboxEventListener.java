@@ -20,14 +20,14 @@ public class OutboxEventListener {
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void saveOutbox(OutboxEvent event) {
         // Outbox data 생성
-        outboxService.save(event.toOutboxCommand());
+        outboxService.createOutbox(event.toOutboxCommand());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void publishOutbox(OutboxEvent event) {
         // outbox 메시지 발행 완료 채크
-        outboxService.publish(event.getMessageId());
+        outboxService.publishOutbox(event.getMessageId());
         // 이벤트 메시지 발행
         eventProducer.publish(event.getTopic(), event.getKey(), event.toPayload());
     }
