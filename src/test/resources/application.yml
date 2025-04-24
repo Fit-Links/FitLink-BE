@@ -8,6 +8,8 @@ spring:
         name: region
       s3:
         bucket-name: bucket
+      sqs:
+        endpoint:
   profiles:
     active: test
     include: secret
