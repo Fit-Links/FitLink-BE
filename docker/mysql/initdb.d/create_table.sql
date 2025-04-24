@@ -118,6 +118,8 @@ CREATE TABLE session_info
     member_id       BIGINT,
     total_count     INT,
     remaining_count INT,
+    created_at        DATETIME(6),
+    updated_at        DATETIME(6),
     PRIMARY KEY (session_info_id)
 );
 
@@ -148,6 +150,7 @@ CREATE TABLE reservation
     status            ENUM ('FIXED_RESERVATION','DISABLED_TIME_RESERVATION', 'RESERVATION_WAITING','RESERVATION_APPROVED',
         'RESERVATION_CANCELLED', 'RESERVATION_REFUSED', 'RESERVATION_CHANGE_REQUEST', 'RESERVATION_COMPLETED'),
     cancel_reason     VARCHAR(255),
+    day_of_week         ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'),
     is_day_off        BOOLEAN,
     created_at        DATETIME(6),
     updated_at        DATETIME(6),
@@ -212,4 +215,21 @@ CREATE TABLE attachment
     created_at         DATETIME(6),
     updated_at         DATETIME(6),
     PRIMARY KEY (attachment_id)
+);
+
+-- outbox 정보 테이블
+CREATE TABLE IF NOT EXISTS outbox
+(
+    outbox_id BIGINT NOT NULL AUTO_INCREMENT,
+    aggregate_type ENUM('RESERVATION'),
+    aggregate_id BIGINT,
+    message_id VARCHAR(255),
+    event_status ENUM('INIT', 'SEND_SUCCESS', 'SEND_FAIL'),
+    event_type ENUM('CREATE_FIXED_RESERVATION'),
+    payload TEXT,
+    retry_count INT NOT NULL DEFAULT 0,
+    sent_at DATETIME(6),
+    created_at DATETIME(6),
+    updated_at DATETIME(6),
+    PRIMARY KEY (outbox_id)
 );
