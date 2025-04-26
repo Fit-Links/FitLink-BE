@@ -27,14 +27,14 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             "LEFT JOIN FETCH r.trainer " +
             "LEFT JOIN FETCH r.sessionInfo " +
             "WHERE r.member.memberId = :memberId")
-    List<ReservationEntity> findByMember_MemberId(Long memberId);
+    List<ReservationEntity> findByMemberId(Long memberId);
 
     @Query("SELECT r FROM ReservationEntity r " +
             "LEFT JOIN FETCH r.member " +
             "LEFT JOIN FETCH r.trainer " +
             "LEFT JOIN FETCH r.sessionInfo " +
             "WHERE r.trainer.trainerId = :trainerId")
-    List<ReservationEntity> findByTrainer_TrainerId(Long trainerId);
+    List<ReservationEntity> findByTrainerId(Long trainerId);
 
     @Query("SELECT r FROM ReservationEntity r " +
             "LEFT JOIN FETCH r.member " +
@@ -48,7 +48,7 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             "LEFT JOIN FETCH r.member " +
             "LEFT JOIN FETCH r.trainer " +
             "LEFT JOIN FETCH r.sessionInfo")
-    List<ReservationEntity> findAllAfterToday();
+    List<ReservationEntity> findAllJoinFetch();
 
     @Query("SELECT r FROM ReservationEntity r " +
             "LEFT JOIN FETCH r.member " +

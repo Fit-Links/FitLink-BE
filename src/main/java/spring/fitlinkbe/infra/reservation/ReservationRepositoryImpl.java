@@ -26,7 +26,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public List<Reservation> getReservations() {
 
-        return reservationJpaRepository.findAllAfterToday()
+        return reservationJpaRepository.findAllJoinFetch()
                 .stream()
                 .map(ReservationEntity::toDomain)
                 .toList();
@@ -54,13 +54,13 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     public List<Reservation> getReservations(UserRole role, Long userId) {
 
         if (role == MEMBER) { //멤버의 경우
-            return reservationJpaRepository.findByMember_MemberId(userId)
+            return reservationJpaRepository.findByMemberId(userId)
                     .stream()
                     .map(ReservationEntity::toDomain)
                     .toList();
         }
 
-        return reservationJpaRepository.findByTrainer_TrainerId(userId)
+        return reservationJpaRepository.findByTrainerId(userId)
                 .stream()
                 .map(ReservationEntity::toDomain)
                 .toList();
