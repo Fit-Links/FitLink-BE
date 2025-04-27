@@ -393,4 +393,8 @@ public class ReservationService {
             throw new CustomException(ErrorCode.CONFIRMED_RESERVATION_EXISTS);
         }
     }
+
+    public List<Reservation> getFixedReservations(Long memberId) {
+        return reservationRepository.getFixedReservations(memberId);
+    }
 }

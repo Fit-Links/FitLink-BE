@@ -57,6 +57,14 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             "WHERE r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.FIXED_RESERVATION")
     List<ReservationEntity> findFixedStatus();
 
+    @Query("SELECT r FROM ReservationEntity r " +
+            "LEFT JOIN FETCH r.member " +
+            "LEFT JOIN FETCH r.trainer " +
+            "LEFT JOIN FETCH r.sessionInfo " +
+            "WHERE r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.FIXED_RESERVATION " +
+            "AND r.member.memberId = :memberId")
+    List<ReservationEntity> findFixedStatus(Long memberId);
+
     @Query("SELECT COUNT(r) > 0 FROM ReservationEntity r " +
             "WHERE r.trainer.trainerId = :trainerId " +
             "AND r.confirmDate = :checkDateTime " +

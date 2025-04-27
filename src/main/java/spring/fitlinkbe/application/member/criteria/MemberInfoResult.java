@@ -5,9 +5,11 @@ import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
+import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class MemberInfoResult {
@@ -20,10 +22,12 @@ public class MemberInfoResult {
             String trainerName,
             ConnectingInfo.ConnectingStatus connectingStatus,
             String profilePictureUrl,
+            List<ReservationResponse> fixedReservations,
             SessionInfoResponse sessionInfo,
             List<WorkoutScheduleResult.Response> workoutSchedules
     ) {
-        public static Response of(Member me, ConnectingInfo connectingInfo, SessionInfo sessionInfo, List<WorkoutSchedule> workoutSchedules) {
+        public static Response of(Member me, ConnectingInfo connectingInfo,
+                                  SessionInfo sessionInfo, List<WorkoutSchedule> workoutSchedules, List<Reservation> fixedReservations) {
             Trainer trainer = connectingInfo != null ? connectingInfo.getTrainer() : null;
 
             return Response.builder()
@@ -34,7 +38,21 @@ public class MemberInfoResult {
                     .connectingStatus(connectingInfo != null ? connectingInfo.getStatus() : null)
                     .profilePictureUrl(me.getProfilePictureUrl())
                     .sessionInfo(sessionInfo != null ? SessionInfoResponse.from(sessionInfo) : null)
+                    .fixedReservations(fixedReservations.stream().map(ReservationResponse::from).toList())
                     .workoutSchedules(workoutSchedules.stream().map(WorkoutScheduleResult.Response::from).toList())
+                    .build();
+        }
+    }
+
+    @Builder
+    public record ReservationResponse(
+            Long reservationId,
+            LocalDateTime reservationDateTime
+    ) {
+        public static ReservationResponse from(Reservation reservation) {
+            return ReservationResponse.builder()
+                    .reservationId(reservation.getReservationId())
+                    .reservationDateTime(reservation.getConfirmDate())
                     .build();
         }
     }

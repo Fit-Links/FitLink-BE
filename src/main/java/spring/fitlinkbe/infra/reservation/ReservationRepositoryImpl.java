@@ -42,6 +42,14 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
+    public List<Reservation> getFixedReservations(Long memberId) {
+        return reservationJpaRepository.findFixedStatus(memberId)
+                .stream()
+                .map(ReservationEntity::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<Reservation> getReservationsWithWaitingStatus(Long trainerId) {
 
         return reservationJpaRepository.findWaitingStatus(trainerId)

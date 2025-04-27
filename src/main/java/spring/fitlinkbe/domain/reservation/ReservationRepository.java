@@ -13,6 +13,8 @@ public interface ReservationRepository {
 
     List<Reservation> getFixedReservations();
 
+    List<Reservation> getFixedReservations(Long memberId);
+
     List<Reservation> getReservationsWithWaitingStatus(Long trainerId);
 
     List<Reservation> getReservations(UserRole role, Long userId);
