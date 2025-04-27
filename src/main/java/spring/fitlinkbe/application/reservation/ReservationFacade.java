@@ -22,6 +22,7 @@ import spring.fitlinkbe.support.security.SecurityUser;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
@@ -212,7 +213,7 @@ public class ReservationFacade {
         if (user.getUserRole() == TRAINER) {
             // 세션을 하나 복구한다.
             memberService.restoreSession(reservation.getTrainer().getTrainerId(),
-                    reservation.getMember().getMemberId());
+                    reservation.getMember().getMemberId(), 1);
             // 트레이너 -> 멤버 예약이 취소됐다는 알림 전송
             PersonalDetail memberDetail = memberService.getMemberDetail(reservation.getMember().getMemberId());
             Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
@@ -241,7 +242,7 @@ public class ReservationFacade {
 
         //만약 예약 취소 승인이 됐다면 세션 1회 복구
         if (criteria.isApprove()) {
-            memberService.restoreSession(user.getTrainerId(), criteria.memberId());
+            memberService.restoreSession(user.getTrainerId(), criteria.memberId(), 1);
         }
 
         // 트레이너 -> 멤버에게 예약 취소 여부 결과 알림 발송
@@ -255,31 +256,45 @@ public class ReservationFacade {
 
 
     @Transactional
-    public Reservation changeReservation(ReservationCriteria.ChangeReqeust criteria, SecurityUser user) {
-        // 트레이너의 경우 고정 예약 변경, 멤버일 경우 예약 변경 요청
-        Reservation requestedReservation = reservationService.changeReservation(criteria.toCommand(), user);
+    public Reservation changeFixedReservation(ReservationCriteria.ChangeReqeust criteria, SecurityUser user) {
+
+        List<Reservation> cancelBeforeFixedReservations = reservationService.changeFixedReservation(
+                criteria.toCommand(), user);
+        Reservation reservationInfo = cancelBeforeFixedReservations.get(0);
+
+        if (!Objects.equals(cancelBeforeFixedReservations.get(0).getReservationId(), criteria.reservationId())) {
+            int cancelCount = cancelBeforeFixedReservations.size();
+            //취소한 만큼 회원의 세션 복구
+            memberService.restoreSession(reservationInfo.getTrainer().getTrainerId(),
+                    reservationInfo.getMember().getMemberId(), cancelCount);
+        }
+
+        PersonalDetail memberDetail = memberService.getMemberDetail(reservationInfo.getMember().getMemberId());
+        Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
 
         // 알림 전송 트레이너 -> 멤버에게 예약 확정 됐다는 알림 발송
-        if (user.getUserRole() == TRAINER) {
-            PersonalDetail memberDetail = memberService.getMemberDetail(requestedReservation.getMember().getMemberId());
-            Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
-            notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail,
-                    requestedReservation.getReservationId(), requestedReservation.getConfirmDate(),
-                    user.getTrainerId(), true, token.getPushToken()));
-        }
+        notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail,
+                reservationInfo.getReservationId(), criteria.changeRequestDate(),
+                user.getTrainerId(), true, token.getPushToken()));
+
+        return reservationService.getReservation(criteria.reservationId());
+    }
+
+    @Transactional
+    public Reservation changeRequestReservation(ReservationCriteria.ChangeReqeust criteria) {
 
         // 알림 전송 멤버 -> 트레이너에게 예약 변경 요청했다는 알림 발송
-        if (user.getUserRole() == MEMBER) {
-            PersonalDetail trainerDetail = trainerService.getTrainerDetail(requestedReservation.getTrainer().getTrainerId());
-            Token token = authService.getTokenByPersonalDetailId(trainerDetail.getPersonalDetailId());
-            notificationService.sendNotification(NotificationCommand.ChangeRequestReservation.of(trainerDetail,
-                    requestedReservation.getReservationId(), requestedReservation.getMember().getMemberId(),
-                    requestedReservation.getName(), criteria.reservationDate(), criteria.changeRequestDate(),
-                    token.getPushToken()));
-        }
+        Reservation reservation = reservationService.changeRequestReservation(criteria.toCommand());
+        PersonalDetail trainerDetail = trainerService.getTrainerDetail(reservation.getTrainer().getTrainerId());
+        Token token = authService.getTokenByPersonalDetailId(trainerDetail.getPersonalDetailId());
+
+        notificationService.sendNotification(NotificationCommand.ChangeRequestReservation.of(trainerDetail,
+                reservation.getReservationId(), reservation.getMember().getMemberId(),
+                reservation.getName(), criteria.reservationDate(), criteria.changeRequestDate(),
+                token.getPushToken()));
 
 
-        return requestedReservation;
+        return reservation;
     }
 
     @Transactional
@@ -317,7 +332,7 @@ public class ReservationFacade {
         Session completedSession = reservationService.completeSession(criteria.toCompleteCommand(),
                 user);
         // 세션 하나 차감
-        SessionInfo sessionInfo = memberService.deductSession(user.getTrainerId(), criteria.memberId());
+        SessionInfo sessionInfo = memberService.deductSession(user.getTrainerId(), criteria.memberId(), 1);
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(user.getTrainerId());
         PersonalDetail memberDetail = memberService.getMemberDetail(criteria.memberId());
         Token trainerToken = authService.getTokenByPersonalDetailId(trainerDetail.getPersonalDetailId());

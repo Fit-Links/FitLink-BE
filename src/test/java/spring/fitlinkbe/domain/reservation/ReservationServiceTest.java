@@ -469,15 +469,6 @@ class ReservationServiceTest {
                     .status(RESERVATION_CHANGE_REQUEST)
                     .build();
 
-            PersonalDetail personalDetail = PersonalDetail.builder()
-                    .personalDetailId(1L)
-                    .name("멤버1")
-                    .memberId(1L)
-                    .trainerId(null)
-                    .build();
-
-            SecurityUser user = new SecurityUser(personalDetail);
-
             when(reservationRepository.getReservation(command.reservationId()))
                     .thenReturn(Optional.ofNullable(reservation));
 
@@ -485,7 +476,7 @@ class ReservationServiceTest {
                     .thenReturn(Optional.ofNullable(compltedReservation));
 
             //when
-            Reservation result = reservationService.changeReservation(command, user);
+            Reservation result = reservationService.changeRequestReservation(command);
 
             //then
             assertThat(result).isNotNull();
@@ -527,7 +518,7 @@ class ReservationServiceTest {
                     .thenReturn(Optional.ofNullable(reservation));
 
             //when & then
-            assertThatThrownBy(() -> reservationService.changeReservation(command, user))
+            assertThatThrownBy(() -> reservationService.changeFixedReservation(command, user))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED);
@@ -554,20 +545,11 @@ class ReservationServiceTest {
                     .status(RESERVATION_APPROVED)
                     .build();
 
-            PersonalDetail personalDetail = PersonalDetail.builder()
-                    .personalDetailId(1L)
-                    .name("멤버1")
-                    .memberId(1L)
-                    .trainerId(null)
-                    .build();
-
-            SecurityUser user = new SecurityUser(personalDetail);
-
             when(reservationRepository.getReservation(command.reservationId()))
                     .thenReturn(Optional.ofNullable(reservation));
 
             //when & then
-            assertThatThrownBy(() -> reservationService.changeReservation(command, user))
+            assertThatThrownBy(() -> reservationService.changeRequestReservation(command))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(RESERVATION_DATE_NOT_FOUND);

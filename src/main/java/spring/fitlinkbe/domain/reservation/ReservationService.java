@@ -260,26 +260,43 @@ public class ReservationService {
     }
 
     @Transactional
-    public Reservation changeReservation(ReservationCommand.ChangeReqeust command,
-                                         SecurityUser user) {
+    public List<Reservation> changeFixedReservation(ReservationCommand.ChangeReqeust command, SecurityUser user) {
         Reservation reservation = this.getReservation(command.reservationId());
         // 변경하고자 하는 날짜에 확정된 예약이 있는지 확인
-        this.checkConfirmedReservationExistOrThrow(reservation.getTrainer().getTrainerId(),
-                command.changeRequestDate());
+        this.checkConfirmedReservationExistOrThrow(reservation.getTrainer().getTrainerId(), command.changeRequestDate());
         // 트레이너의 경우 고정 예약 변경
-        if (user.getUserRole() == TRAINER) {
-            reservation.changeFixedDate(command.reservationDate(), command.changeRequestDate());
+        // 이전에 예약한 모든 고정예약 취소
+        List<Reservation> cancelBeforeFixedReservations = cancelAllBeforeFixedReservation(user.getTrainerId(),
+                reservation.getMember().getMemberId(), command.reservationId(), command.reservationDate());
+        reservation.changeFixedDate(command.reservationDate(), command.changeRequestDate());
 
-            return reservationRepository.saveReservation(reservation)
-                    .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED,
-                            "예약 요청 변경에 실패하였습니다."));
-        }
+        Reservation savedReservation = reservationRepository.saveReservation(reservation)
+                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED, "고정 예약 변경에 실패하였습니다."));
+
+        return cancelBeforeFixedReservations.isEmpty() ? List.of(savedReservation) : cancelBeforeFixedReservations;
+    }
+
+    @Transactional
+    public Reservation changeRequestReservation(ReservationCommand.ChangeReqeust command) {
+        Reservation reservation = this.getReservation(command.reservationId());
+        // 변경하고자 하는 날짜에 확정된 예약이 있는지 확인
+        this.checkConfirmedReservationExistOrThrow(reservation.getTrainer().getTrainerId(), command.changeRequestDate());
+
         // 멤버의 경우 예약 변경 요청
         reservation.changeRequestDate(command.reservationDate(), command.changeRequestDate());
 
         return reservationRepository.saveReservation(reservation)
-                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED,
-                        "예약 요청 변경에 실패하였습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED, "예약 요청 변경에 실패하였습니다."));
+    }
+
+    @Transactional
+    public List<Reservation> cancelAllBeforeFixedReservation(Long trainerId, Long memberId,
+                                                             Long reservationId, LocalDateTime fixedReservationDate) {
+        List<Reservation> fixedReservations = reservationRepository.getFixedReservations(trainerId, fixedReservationDate)
+                .stream().filter(r -> r.isSameReservationAndMember(reservationId, memberId)).toList();
+
+        fixedReservations.forEach(fixedReservation -> fixedReservation.cancel("고정 예약 변경으로 취소되었습니다."));
+        return reservationRepository.saveReservations(fixedReservations);
     }
 
     @Transactional

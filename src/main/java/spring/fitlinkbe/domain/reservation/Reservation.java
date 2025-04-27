@@ -59,11 +59,11 @@ public class Reservation {
         private final String name;
     }
 
-    public void changeFixedDate(LocalDateTime reservationDate, LocalDateTime changeDate) {
+    public void changeFixedDate(LocalDateTime beforeDate, LocalDateTime changeDate) {
         if (this.status != FIXED_RESERVATION) {
             throw new CustomException(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED, "고정 예약 상태가 아닙니다.");
         }
-        LocalDateTime targetDate = reservationDate.truncatedTo(ChronoUnit.HOURS);
+        LocalDateTime targetDate = beforeDate.truncatedTo(ChronoUnit.HOURS);
 
         boolean dateExists = this.reservationDates.stream()
                 .map(date -> date.truncatedTo(ChronoUnit.HOURS))
@@ -246,5 +246,9 @@ public class Reservation {
     public boolean isReservationNotAllowed() {
 
         return (this.isDayOff || (this.status == DISABLED_TIME_RESERVATION));
+    }
+
+    public boolean isSameReservationAndMember(Long reservationId, Long memberId) {
+        return !Objects.equals(this.reservationId, reservationId) && Objects.equals(this.member.getMemberId(), memberId);
     }
 }

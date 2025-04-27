@@ -42,6 +42,15 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
+    public List<Reservation> getFixedReservations(Long trainerId, LocalDateTime fixedReservationDate) {
+
+        return reservationJpaRepository.findAllFixedReservation(trainerId, fixedReservationDate)
+                .stream()
+                .map(ReservationEntity::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<Reservation> getReservationsWithWaitingStatus(Long trainerId) {
 
         return reservationJpaRepository.findWaitingStatus(trainerId)

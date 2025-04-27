@@ -52,16 +52,16 @@ public class SessionInfo {
         return member.getMemberId();
     }
 
-    public void restoreSession() {
-        remainingCount++;
+    public void restoreSession(int count) {
+        remainingCount += count;
     }
 
-    public void deductSession() {
-        if (remainingCount <= 0) {
+    public void deductSession(int count) {
+        if (remainingCount - count < 0) {
             throw new CustomException(ErrorCode.SESSION_REMAINING_COUNT_NOT_VALID,
                     "남은 PT 횟수가 0보다 작습니다. [count: %d]".formatted(remainingCount));
         }
-        remainingCount--;
+        remainingCount -= count;
     }
 
     public void checkEnoughSession() {

@@ -210,21 +210,40 @@ public class ReservationController {
     }
 
     /**
-     * 예약 변경
-     * 트레이너 - 고정 예약 변경, 멤버 - 예약 변경 요청
+     * 고정 예약 변경
      *
      * @param request reservationDate, changeDate 정보
      * @return ApiResultResponse 변경 요청이 된 reservationId 결과를 반환한다.
      */
-    @PostMapping("{reservationId}/change")
-    public ApiResultResponse<ReservationResponseDto.Success> changeReservation(@PathVariable("reservationId")
-                                                                               @NotNull(message = "예약 ID는 필수값입니다.")
-                                                                               Long reservationId,
-                                                                               @RequestBody @Valid
-                                                                               ReservationRequestDto.ChangeReqeust
-                                                                                       request,
-                                                                               @Login SecurityUser user) {
-        Reservation result = reservationFacade.changeReservation(request.toCriteria(reservationId), user);
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
+    @PostMapping("{reservationId}/fixed-change-request")
+    public ApiResultResponse<ReservationResponseDto.Success> changeFixedReservation(@PathVariable("reservationId")
+                                                                                    @NotNull(message = "예약 ID는 필수값입니다.")
+                                                                                    Long reservationId,
+                                                                                    @RequestBody @Valid
+                                                                                    ReservationRequestDto.ChangeReqeust
+                                                                                            request,
+                                                                                    @Login SecurityUser user) {
+        Reservation result = reservationFacade.changeFixedReservation(request.toCriteria(reservationId), user);
+
+        return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
+    }
+
+    /**
+     * 예약 변경 요청
+     *
+     * @param request reservationDate, changeDate 정보
+     * @return ApiResultResponse 변경 요청이 된 reservationId 결과를 반환한다.
+     */
+    @RoleCheck(allowedRoles = {UserRole.MEMBER})
+    @PostMapping("{reservationId}/change-request")
+    public ApiResultResponse<ReservationResponseDto.Success> changeRequestReservation(@PathVariable("reservationId")
+                                                                                      @NotNull(message = "예약 ID는 필수값입니다.")
+                                                                                      Long reservationId,
+                                                                                      @RequestBody @Valid
+                                                                                      ReservationRequestDto.ChangeReqeust
+                                                                                              request) {
+        Reservation result = reservationFacade.changeRequestReservation(request.toCriteria(reservationId));
 
         return ApiResultResponse.ok(ReservationResponseDto.Success.of(result));
     }

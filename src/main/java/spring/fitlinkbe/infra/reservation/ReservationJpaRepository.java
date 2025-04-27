@@ -60,6 +60,13 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
     @Query("SELECT COUNT(r) > 0 FROM ReservationEntity r " +
             "WHERE r.trainer.trainerId = :trainerId " +
             "AND r.confirmDate = :checkDateTime " +
-            "AND r.status = 'RESERVATION_APPROVED'")
+            "AND (r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.FIXED_RESERVATION " +
+            "OR r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_APPROVED)")
     boolean existsByTrainerIdAndConfirmDateTime(Long trainerId, LocalDateTime checkDateTime);
+
+    @Query("SELECT r FROM ReservationEntity r " +
+            "WHERE r.trainer.trainerId = :trainerId " +
+            "AND r.confirmDate = :checkDateTime " +
+            "AND r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.FIXED_RESERVATION")
+    List<ReservationEntity> findAllFixedReservation(Long trainerId, LocalDateTime checkDateTime);
 }
