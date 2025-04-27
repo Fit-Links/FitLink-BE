@@ -3621,6 +3621,73 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(result.body().jsonPath().getObject("data", ReservationResponseDto.Success.class)).isNull();
             });
         }
+    }
 
+    @Nested
+    @DisplayName("고정 예약 해지 Integration TEST")
+    class ReleaseFixedReservationIntegrationTest {
+        @Test
+        @DisplayName("고정 예약 해지 - 성공: 이전 고정 예약 모두 취소")
+        void releaseFixedReservation() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1).orElseThrow();
+            int originCount = sessionInfo.getRemainingCount();
+
+            int day = 1;
+            LocalDateTime baseDate = LocalDateTime.now().plusDays(day);
+            for (int i = 1; i <= 4; i++) {
+                // 예약 생성
+                LocalDateTime reservationDate = baseDate.plusDays(day * i * 7);
+                Reservation reservationEntity = Reservation.builder()
+                        .trainer(Trainer.builder().trainerId(1L).build())
+                        .member(Member.builder().memberId(1L).build())
+                        .reservationDates(List.of(reservationDate))
+                        .confirmDate(reservationDate)
+                        .status(FIXED_RESERVATION)
+                        .createdAt(LocalDateTime.now().plusSeconds(3))
+                        .build();
+                Reservation savedReservation = reservationRepository.saveReservation(reservationEntity).orElseThrow();
+
+                // 세션 생성
+                Session session = Session.builder()
+                        .reservation(savedReservation)
+                        .status(SESSION_WAITING)
+                        .build();
+
+                reservationRepository.saveSession(session);
+            }
+
+            // when
+            ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/fixed-reservations/%s/release"
+                    .formatted(1), accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+
+                List<ReservationResponseDto.Success> content = result.body().jsonPath()
+                        .getList("data", ReservationResponseDto.Success.class);
+
+                content.forEach(r -> {
+                    softly.assertThat(r.status()).isEqualTo(RESERVATION_CANCELLED.getName());
+
+                    //세션이 취소되었는지 확인
+                    Session session = reservationRepository.getSession(r.reservationId()).orElseThrow();
+                    softly.assertThat(session.getStatus()).isEqualTo(SESSION_CANCELLED);
+                });
+
+                softly.assertThat(content.size()).isEqualTo(4);
+
+                // 다시 세션 수 복구되었는지 확인
+                SessionInfo afterSessionInfo = sessionInfoRepository.getSessionInfo(1).orElseThrow();
+                softly.assertThat(originCount + 4).isEqualTo(afterSessionInfo.getRemainingCount());
+            });
+        }
     }
 }
