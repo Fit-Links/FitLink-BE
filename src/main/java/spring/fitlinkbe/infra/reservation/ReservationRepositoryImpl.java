@@ -67,8 +67,8 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     }
 
     @Override
-    public List<Reservation> saveReservations(List<Reservation> canceledReservations) {
-        List<ReservationEntity> entities = canceledReservations.stream()
+    public List<Reservation> saveReservations(List<Reservation> reservations) {
+        List<ReservationEntity> entities = reservations.stream()
                 .map(r -> ReservationEntity.from(r, em))
                 .toList();
 

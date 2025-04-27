@@ -3,7 +3,6 @@ package spring.fitlinkbe.domain.trainer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.exception.CustomException;

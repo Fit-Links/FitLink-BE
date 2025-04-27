@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
 import spring.fitlinkbe.domain.attachment.model.Attachment;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
 import spring.fitlinkbe.infra.common.personaldetail.PersonalDetailEntity;

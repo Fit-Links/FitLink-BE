@@ -1,6 +1,5 @@
 package spring.fitlinkbe.application.attachment;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,8 +45,6 @@ public class AttachmentFacade {
                 .attachmentId(attachment.getAttachmentId())
                 .build();
     }
-
-
 
     @Transactional
     public void updateProfile(Long personalDetailId, Long attachmentId) {

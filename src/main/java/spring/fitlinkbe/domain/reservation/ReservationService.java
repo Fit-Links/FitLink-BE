@@ -3,19 +3,23 @@ package spring.fitlinkbe.domain.reservation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
+import spring.fitlinkbe.domain.reservation.event.GenerateFixedReservationEvent;
 import spring.fitlinkbe.domain.trainer.Trainer;
+import spring.fitlinkbe.infra.producer.EventTopic;
 import spring.fitlinkbe.support.security.SecurityUser;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_WAITING_MEMBERS_EMPTY;
@@ -34,6 +38,8 @@ public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final SessionRepository sessionRepository;
+    private final ApplicationEventPublisher publisher;
+    private final EventTopic eventTopic;
 
     /**
      * Related Reservation
@@ -98,7 +104,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public List<Reservation> createFixedReservation(List<Reservation> reservations) {
+    public List<Reservation> createFixedReservations(List<Reservation> reservations) {
         // 고정 예약 진행
         List<Reservation> savedReservations = reservationRepository.saveReservations(reservations);
         // 세션 생성
@@ -114,14 +120,25 @@ public class ReservationService {
         return savedReservations;
     }
 
-    @Transactional
-    public List<Reservation> getNextFixedReservations() {
+    public void publishFixedReservations() {
         // 고정 예약 상태의 예약 조회
         List<Reservation> fixedReservations = reservationRepository.getFixedReservations();
-        // 일주일 뒤에 시간으로 예약 도메인 생성
-        return fixedReservations.stream()
-                .map(Reservation::toFixedDomain)
+        // 오늘 날짜 고정 예약들 필터하기
+        List<Reservation> todayFixedReservations = fixedReservations.stream()
+                .filter(Reservation::isTodayReservation)
                 .toList();
+        // 고정 예약건 개별 이벤트 발행
+        todayFixedReservations.forEach(reservation ->
+                publisher.publishEvent(GenerateFixedReservationEvent.builder()
+                        .reservationId(reservation.getReservationId())
+                        .trainerId(reservation.getTrainer().getTrainerId())
+                        .memberId(reservation.getMember().getMemberId())
+                        .sessionInfoId(reservation.getSessionInfo().getSessionInfoId())
+                        .name(reservation.getName())
+                        .confirmDate(reservation.getConfirmDate())
+                        .topic(eventTopic.getReservationQueue())
+                        .messageId(UUID.randomUUID().toString())
+                        .build()));
     }
 
     @Transactional

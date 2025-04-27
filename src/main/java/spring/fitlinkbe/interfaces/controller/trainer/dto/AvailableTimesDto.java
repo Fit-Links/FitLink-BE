@@ -31,7 +31,7 @@ public class AvailableTimesDto {
     @Builder
     public record CurrentAvailableTimesResponse(
             ScheduledChangeResponse currentSchedules
-    ){
+    ) {
         public static CurrentAvailableTimesResponse from(AvailableTimesResult.CurrentAvailableTimesResponse response) {
             return CurrentAvailableTimesResponse.builder()
                     .currentSchedules(ScheduledChangeResponse.from(response.currentSchedules()))
@@ -140,4 +140,3 @@ public class AvailableTimesDto {
         }
     }
 }
-

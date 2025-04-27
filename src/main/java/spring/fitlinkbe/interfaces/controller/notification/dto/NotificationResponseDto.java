@@ -51,6 +51,7 @@ public class NotificationResponseDto {
 
             return Detail.builder()
                     .notificationId(notification.getNotificationId())
+                    .refId(notification.getRefId())
                     .type(notification.getRefType().getName())
                     .content(notification.getContent())
                     .sendDate(notification.getSendDate())

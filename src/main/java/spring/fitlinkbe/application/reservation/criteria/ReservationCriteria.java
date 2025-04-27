@@ -66,6 +66,28 @@ public class ReservationCriteria {
     }
 
     @Builder(toBuilder = true)
+    public record EventCreateFixed(Long trainerId,
+                                   Long memberId,
+                                   Long sessionInfoId,
+                                   String name,
+                                   LocalDateTime confirmDate) {
+        public Reservation toDomain() {
+            LocalDateTime nextFixedDate = confirmDate.plusDays(7);
+
+            return Reservation.builder()
+                    .member(Member.builder().memberId(memberId).build())
+                    .trainer(Trainer.builder().trainerId(trainerId).build())
+                    .sessionInfo(SessionInfo.builder().SessionInfoId(sessionInfoId).build())
+                    .name(name)
+                    .reservationDates(List.of(nextFixedDate))
+                    .confirmDate(nextFixedDate)
+                    .dayOfWeek(nextFixedDate.getDayOfWeek())
+                    .status(FIXED_RESERVATION)
+                    .build();
+        }
+    }
+
+    @Builder(toBuilder = true)
     public record Cancel(Long reservationId, LocalDateTime cancelDate, String cancelReason) {
         public ReservationCommand.Cancel toCommand() {
             return ReservationCommand.Cancel.builder()

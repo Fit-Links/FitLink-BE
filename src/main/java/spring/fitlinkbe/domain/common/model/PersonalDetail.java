@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import spring.fitlinkbe.domain.attachment.model.Attachment;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
@@ -123,5 +122,4 @@ public class PersonalDetail {
         SUSPEND, // 중지된 상태
         DELETE // 삭제된 상태
     }
-
 }

@@ -10,6 +10,7 @@ import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.support.utils.DateUtils;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -56,26 +57,6 @@ public class Reservation {
         RESERVATION_COMPLETED("예약 종료"); // 세션까지 완전 완료 되었을 때
 
         private final String name;
-    }
-
-    public Reservation toFixedDomain() {
-
-        return Reservation.builder()
-                .member(member)
-                .trainer(trainer)
-                .sessionInfo(sessionInfo)
-                .name(name)
-                .reservationDates(getAfterSevenDay())
-                .confirmDate(confirmDate)
-                .dayOfWeek(dayOfWeek)
-                .status(FIXED_RESERVATION)
-                .isDayOff(isDayOff)
-                .createdAt(createdAt)
-                .build();
-    }
-
-    public List<LocalDateTime> getAfterSevenDay() {
-        return this.reservationDates.stream().map(date -> date.plusDays(7)).toList();
     }
 
     public void changeFixedDate(LocalDateTime reservationDate, LocalDateTime changeDate) {
@@ -169,6 +150,15 @@ public class Reservation {
                 });
     }
 
+    public boolean isTodayReservation() {
+        LocalDate today = LocalDate.now();
+
+        return reservationDates
+                .stream()
+                .map(LocalDateTime::toLocalDate)
+                .anyMatch(today::isEqual);
+    }
+
     public boolean isReservationInRange(LocalDateTime startDate, LocalDateTime endDate) {
         LocalDateTime reservationDate = getReservationDate();
 
@@ -257,5 +247,4 @@ public class Reservation {
 
         return (this.isDayOff || (this.status == DISABLED_TIME_RESERVATION));
     }
-
 }
