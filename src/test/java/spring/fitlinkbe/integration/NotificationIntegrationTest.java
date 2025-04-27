@@ -332,7 +332,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
             // 알림 20개 저장
             createNotifications(personalDetail, trainer.getTrainerId(), userRole);
 
-            Notification.NotificationType refType = Notification.NotificationType.RESERVATION_CANCEL;
+            Notification.NotificationType refType = Notification.NotificationType.SESSION_REMINDER;
 
             Map<String, String> params = new HashMap<>();
             params.put("page", "0");
@@ -346,7 +346,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
             assertSoftly(softly -> {
                 softly.assertThat(result.body().jsonPath().getObject("status", Integer.class)).isEqualTo(400);
                 softly.assertThat(result.body().jsonPath().getObject("success", Boolean.class)).isEqualTo(false);
-                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("요청 파라미터 'type'의 값 'RESERVATION_CANCEL'은(는) 유효하지 않습니다.");
+                softly.assertThat(result.body().jsonPath().getObject("msg", String.class)).contains("요청 파라미터 'type'의 값 'SESSION_REMINDER'은(는) 유효하지 않습니다.");
                 softly.assertThat(result.body().jsonPath().getObject("data", NotificationResponseDto.class)).isNull();
             });
         }
