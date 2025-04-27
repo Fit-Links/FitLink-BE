@@ -13,6 +13,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,6 +41,40 @@ public class Reservation {
     private boolean isDayOff;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public static List<Reservation> createFixedReservations(List<Reservation> baseReservations, int remainingCount) {
+        List<Reservation> generatedReservations = new ArrayList<>();
+
+        List<Reservation> currentReservations = new ArrayList<>(baseReservations);
+
+        while (generatedReservations.size() < remainingCount) {
+            int remainingToCreate = remainingCount - generatedReservations.size();
+
+            List<Reservation> nextReservations = currentReservations.stream()
+                    .map(reservation -> reservation.copyWithNewDate(reservation.getReservationDate().plusDays(7)))
+                    .limit(remainingToCreate)
+                    .toList();
+
+            generatedReservations.addAll(nextReservations);
+            currentReservations = nextReservations;
+        }
+
+        return generatedReservations;
+    }
+
+    public Reservation copyWithNewDate(LocalDateTime newDate) {
+
+        return Reservation.builder()
+                .member(member)
+                .trainer(trainer)
+                .sessionInfo(sessionInfo)
+                .name(name)
+                .reservationDates(List.of(newDate))
+                .confirmDate(newDate)
+                .dayOfWeek(newDate.getDayOfWeek())
+                .status(status)
+                .build();
+    }
 
     @RequiredArgsConstructor
     @Getter

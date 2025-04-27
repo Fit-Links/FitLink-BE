@@ -77,39 +77,31 @@ public class ReservationFacade {
         // 대기중인 예약이 있으면 거절
         List<Reservation> refusedReservations = reservationService.refuseWaitingReservations(List.of(criteria.date()));
         // 거절을 했다면 -> 멤버에게 예약이 거절되었다는 알림 전송
-        refusedReservations.forEach((r) -> {
-            PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-            Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
-            notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail, r.getReservationId(),
-                    r.getReservationDate(), r.getTrainer().getTrainerId(), false, token.getPushToken()));
-        });
+        refuseReservations(refusedReservations);
 
         // 예약 불가 설정한 정보 리턴
         return reservationService.setDisabledReservation(criteria.toCommand(user.getTrainerId()));
     }
 
     @Transactional
-    public List<Reservation> createFixedReservation(ReservationCriteria.CreateFixed criteria,
-                                                    SecurityUser user) {
+    public List<Reservation> createFixedReservation(ReservationCriteria.CreateFixed criteria, SecurityUser user) {
         // 세션이 충분한지 확인
-        memberService.isSessionCountEnough(user.getTrainerId(), criteria.memberId());
+        SessionInfo sessionInfo = memberService.isSessionCountEnough(user.getTrainerId(), criteria.memberId());
         // 기존에 확정된 예약이 있는지 확인
         reservationService.checkConfirmedReservationsExistOrThrow(user.getTrainerId(), criteria.reservationDates());
         // 대기중인 예약이 있으면 거절
         List<Reservation> refusedReservations = reservationService.refuseWaitingReservations(criteria.reservationDates());
         // 거절을 했다면 -> 멤버에게 예약이 거절되었다는 알림 전송
-        refusedReservations.forEach((r) -> {
-            PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-            Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
-            notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail, r.getReservationId(),
-                    r.getReservationDate(), r.getTrainer().getTrainerId(), false, token.getPushToken()));
-        });
+        refuseReservations(refusedReservations);
         // 고정 예약 진행
         List<Reservation> reservationDomains = criteria.toDomain(memberService.getSessionInfo(user.getTrainerId(),
                 criteria.memberId()), user);
-        List<Reservation> fixedReservations = reservationService.createFixedReservations(reservationDomains);
+        // 세션 차감
+        memberService.deductSession(user.getTrainerId(), criteria.memberId(), sessionInfo.getRemainingCount());
+        List<Reservation> fixedReservations = reservationService.createFixedReservations(reservationDomains,
+                sessionInfo.getRemainingCount());
         // 트레이너 -> 멤버에게 예약 됐다는 알림 전송
-        fixedReservations.forEach(r -> {
+        reservationDomains.forEach(r -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
             Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
             notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail,
@@ -138,14 +130,9 @@ public class ReservationFacade {
         List<Reservation> refusedReservations =
                 reservationService.refuseWaitingReservations(nextFixedReservation.getReservationDates());
         // 예약 거절된 예약은 -> 멤버에게 예약 거절됐다는 메세지 전송
-        refusedReservations.forEach((r) -> {
-            PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-            Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
-            notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail, r.getReservationId(),
-                    r.getReservationDate(), r.getTrainer().getTrainerId(), false, token.getPushToken()));
-        });
+        refuseReservations(refusedReservations);
         // 고정 예약 진행
-        reservationService.createFixedReservations(List.of(nextFixedReservation));
+        reservationService.createFixedReservations(List.of(nextFixedReservation),1);
     }
 
     @Transactional
@@ -159,6 +146,8 @@ public class ReservationFacade {
         if (user.getUserRole() == TRAINER) {
             //만약 트레이너가 예약을 했다면, 바로 세션 생성
             reservationService.saveSession(savedReservation);
+            // 세션 1회 차감
+            memberService.deductSession(reservation.getTrainer().getTrainerId(), reservation.getMember().getMemberId(), 1);
             // 트레이너가 예약했다면 멤버에게 예약이 됐다는 알림 전송
             PersonalDetail memberDetail = memberService.getMemberDetail(reservation.getMember().getMemberId());
             Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
@@ -193,14 +182,7 @@ public class ReservationFacade {
                 criteria.toRefuseReservationsCommand(), user);
 
         //예약 거절 알림 발송 트레이너 -> 멤버에게 예약 거절되었다는 알림 발송
-        refuseReservations.forEach((refuseReservation) -> {
-            PersonalDetail refuseMemberDetail = memberService.getMemberDetail(refuseReservation.getMember().getMemberId());
-            Token refuseMemberToken = authService.getTokenByPersonalDetailId(refuseMemberDetail.getPersonalDetailId());
-            notificationService.sendNotification(NotificationCommand.ApproveReservation.of(refuseMemberDetail,
-                    refuseReservation.getReservationId(), refuseReservation.getReservationDate(),
-                    refuseReservation.getTrainer().getTrainerId(), false,
-                    refuseMemberToken.getPushToken()));
-        });
+        refuseReservations(refuseReservations);
 
         return approveReservation;
     }
@@ -305,13 +287,7 @@ public class ReservationFacade {
             List<Reservation> refusedReservations = reservationService.refuseWaitingReservations(
                     List.of(criteria.approveDate()));
             // 거절을 했다면 -> 멤버에게 예약이 거절되었다는 알림 전송
-            refusedReservations.forEach((r) -> {
-                PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
-                Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
-                notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail, r.getReservationId(),
-                        r.getReservationDate(), r.getTrainer().getTrainerId(), false,
-                        token.getPushToken()));
-            });
+            refuseReservations(refusedReservations);
         }
         // 예약 변경 요청 승인
         Reservation approvedReservation = reservationService.changeApproveReservation(criteria.toCommand());
@@ -331,8 +307,7 @@ public class ReservationFacade {
         // 세션 처리
         Session completedSession = reservationService.completeSession(criteria.toCompleteCommand(),
                 user);
-        // 세션 하나 차감
-        SessionInfo sessionInfo = memberService.deductSession(user.getTrainerId(), criteria.memberId(), 1);
+        SessionInfo sessionInfo = memberService.getSessionInfo(user.getTrainerId(), criteria.memberId());
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(user.getTrainerId());
         PersonalDetail memberDetail = memberService.getMemberDetail(criteria.memberId());
         Token trainerToken = authService.getTokenByPersonalDetailId(trainerDetail.getPersonalDetailId());
@@ -364,6 +339,15 @@ public class ReservationFacade {
             notificationService.sendNotification(NotificationCommand.SessionTodayReminder.of(memberDetail,
                     session.getSessionId(), r.getTrainer().getTrainerId(), r.getConfirmDate(),
                     token.getPushToken()));
+        });
+    }
+
+    public void refuseReservations(List<Reservation> refusedReservations) {
+        refusedReservations.forEach((r) -> {
+            PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
+            Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
+            notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail, r.getReservationId(),
+                    r.getReservationDate(), r.getTrainer().getTrainerId(), false, token.getPushToken()));
         });
     }
 }

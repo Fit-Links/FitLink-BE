@@ -17,6 +17,7 @@ import spring.fitlinkbe.support.security.SecurityUser;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -104,9 +105,13 @@ public class ReservationService {
     }
 
     @Transactional
-    public List<Reservation> createFixedReservations(List<Reservation> reservations) {
-        // 고정 예약 진행
-        List<Reservation> savedReservations = reservationRepository.saveReservations(reservations);
+    public List<Reservation> createFixedReservations(List<Reservation> baseReservations, int remainingCount) {
+
+
+        List<Reservation> newFixedReservations = Reservation.createFixedReservations(baseReservations, remainingCount);
+
+        List<Reservation> savedReservations = reservationRepository.saveReservations(newFixedReservations);
+
         // 세션 생성
         List<Session> sessions = savedReservations.stream()
                 .map(reservation -> Session.builder()
@@ -114,7 +119,7 @@ public class ReservationService {
                         .status(SESSION_WAITING)
                         .build())
                 .toList();
-        // 세션 저장
+
         reservationRepository.saveSessions(sessions);
 
         return savedReservations;

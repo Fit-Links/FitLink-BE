@@ -1138,9 +1138,12 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
     @DisplayName("고정 세션 예약 Integration TEST")
     class CreateFixedReservationIntegrationTest {
         @Test
-        @DisplayName("트레이너가 고정 세션 예약 성공 - 예약 1개")
+        @DisplayName("트레이너가 고정 세션 예약 성공 - 고정 예약 1개, 초기 남은 세션 6, 예약 6개 생성")
         void createFixedReservationWithTrainer() {
             // given
+            SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+            int originCount = sessionInfo.getRemainingCount();
+
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
@@ -1176,13 +1179,23 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(session).isNotNull();
                 softly.assertThat(session.getStatus()).isEqualTo(SESSION_WAITING);
 
+                //총 세션 수만큼 예약이 됐는지 확인
+                SessionInfo afterSessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+                softly.assertThat(afterSessionInfo.getRemainingCount()).isEqualTo(0);
+
+                List<Reservation> reservations = reservationRepository.getReservations();
+                softly.assertThat(reservations.size()).isEqualTo(originCount);
+
             });
         }
 
         @Test
-        @DisplayName("트레이너가 고정 세션 예약 성공 - 예약 2개")
+        @DisplayName("트레이너가 고정 세션 예약 성공 - 고정 예약 2개, 초기 남은 세션 6, 예약 6개 생성")
         void twoCreateFixedReservationWithTrainer() {
             // given
+            SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+            int originCount = sessionInfo.getRemainingCount();
+
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
 
@@ -1225,6 +1238,12 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(session2).isNotNull();
                 softly.assertThat(session2.getStatus()).isEqualTo(SESSION_WAITING);
 
+                //총 세션 수만큼 예약이 됐는지 확인
+                SessionInfo afterSessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
+                softly.assertThat(afterSessionInfo.getRemainingCount()).isEqualTo(0);
+
+                List<Reservation> reservations = reservationRepository.getReservations();
+                softly.assertThat(reservations.size()).isEqualTo(originCount);
             });
         }
 
@@ -2228,12 +2247,6 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                         SESSION_DEDUCTED);
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getNotificationType()).isEqualTo(SESSION_DEDUCTED);
-                // 세션이 얼마 남지 않았다는 알림 잘 생성되었는지 확인
-                Notification notification2 = notificationRepository.getNotification(memberDetail.getPersonalDetailId(),
-                        SESSION_REMAIN_5);
-                softly.assertThat(notification2).isNotNull();
-                softly.assertThat(notification2.getNotificationType()).isEqualTo(SESSION_REMAIN_5);
-                softly.assertThat(notification2.getContent()).contains("PT 횟수가 얼마 남지 않았습니다.");
 
             });
         }
