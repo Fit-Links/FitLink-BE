@@ -10,6 +10,7 @@ import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.support.utils.DateUtils;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -42,6 +43,24 @@ public class Reservation {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    @RequiredArgsConstructor
+    @Getter
+    public enum Status {
+        FIXED_RESERVATION("고정 예약"), // 고정 예약
+        DISABLED_TIME_RESERVATION("예약 불가 설정"), // 예약 불가 시간 설정
+        RESERVATION_WAITING("예약 대기"), // 예약 대기
+        RESERVATION_APPROVED("예약 확정"), // 예약 확정
+        RESERVATION_CANCELLED("예약 취소"), // 예약 취소
+        RESERVATION_CANCEL_REQUEST("예약 취소 요청"), // 예약 취소
+        RESERVATION_CANCEL_REQUEST_REFUSED("예약 취소 거절"), //예약 변경 거절
+        RESERVATION_REFUSED("예약 거절"),  // 예약 거부
+        RESERVATION_CHANGE_REQUEST("예약 변경 요청"), //예약 변경 요청
+        RESERVATION_CHANGE_REQUEST_REFUSED("예약 변경 거절"), //예약 변경 거절
+        RESERVATION_COMPLETED("예약 종료"); // 세션까지 완전 완료 되었을 때
+
+        private final String name;
+    }
+
     public static List<Reservation> createFixedReservations(List<Reservation> baseReservations, int remainingCount) {
         List<Reservation> generatedReservations = new ArrayList<>();
 
@@ -62,6 +81,19 @@ public class Reservation {
         return generatedReservations;
     }
 
+    public boolean isFixedWithBaseDate(LocalDateTime baseDate) {
+        if (confirmDate == null || baseDate == null) {
+            throw new CustomException(RESERVATION_RELEASE_NOT_ALLOWED);
+        }
+
+        LocalDateTime truncatedBaseDate = baseDate.truncatedTo(ChronoUnit.HOURS);
+        LocalDateTime truncatedReservationDate = confirmDate.truncatedTo(ChronoUnit.HOURS);
+
+        Duration duration = Duration.between(truncatedBaseDate, truncatedReservationDate);
+
+        return !duration.isNegative() && duration.toHours() % (7 * 24) == 0;
+    }
+
     public Reservation copyWithNewDate(LocalDateTime newDate) {
 
         return Reservation.builder()
@@ -76,23 +108,6 @@ public class Reservation {
                 .build();
     }
 
-    @RequiredArgsConstructor
-    @Getter
-    public enum Status {
-        FIXED_RESERVATION("고정 예약"), // 고정 예약
-        DISABLED_TIME_RESERVATION("예약 불가 설정"), // 예약 불가 시간 설정
-        RESERVATION_WAITING("예약 대기"), // 예약 대기
-        RESERVATION_APPROVED("예약 확정"), // 예약 확정
-        RESERVATION_CANCELLED("예약 취소"), // 예약 취소
-        RESERVATION_CANCEL_REQUEST("예약 취소 요청"), // 예약 취소
-        RESERVATION_CANCEL_REQUEST_REFUSED("예약 취소 거절"), //예약 변경 거절
-        RESERVATION_REFUSED("예약 거절"),  // 예약 거부
-        RESERVATION_CHANGE_REQUEST("예약 변경 요청"), //예약 변경 요청
-        RESERVATION_CHANGE_REQUEST_REFUSED("예약 변경 거절"), //예약 변경 거절
-        RESERVATION_COMPLETED("예약 종료"); // 세션까지 완전 완료 되었을 때
-
-        private final String name;
-    }
 
     public void changeFixedDate(LocalDateTime beforeDate, LocalDateTime changeDate) {
         if (this.status != FIXED_RESERVATION) {
@@ -220,7 +235,7 @@ public class Reservation {
         this.status = RESERVATION_REFUSED;
     }
 
-    public void complete(Long trainerId, Long memberId) {
+    public Reservation complete(Long trainerId, Long memberId) {
         if (!trainerId.equals(this.trainer.getTrainerId()) || !memberId.equals(this.member.getMemberId())) {
             throw new CustomException(RESERVATION_COMPLETE_NOT_ALLOWED);
         }
@@ -230,9 +245,11 @@ public class Reservation {
         }
 
         this.status = RESERVATION_COMPLETED;
+
+        return this;
     }
 
-    public void cancel(String message) {
+    public Reservation cancel(String message) {
         if (this.status == RESERVATION_CANCELLED) {
             throw new CustomException(RESERVATION_IS_ALREADY_CANCEL);
         }
@@ -242,9 +259,11 @@ public class Reservation {
         this.cancelReason = message;
         this.confirmDate = null;
         this.status = RESERVATION_CANCELLED;
+
+        return this;
     }
 
-    public void approve(LocalDateTime reservationDate) {
+    public Reservation approve(LocalDateTime reservationDate) {
         if (this.status == DISABLED_TIME_RESERVATION || this.status == RESERVATION_REFUSED) {
             throw new CustomException(RESERVATION_APPROVE_NOT_ALLOWED);
         }
@@ -257,8 +276,9 @@ public class Reservation {
         }
 
         this.confirmDate = reservationDate;
-
         this.status = RESERVATION_APPROVED;
+
+        return this;
     }
 
     public void cancelRequest(String message, LocalDateTime cancelDate, UserRole role) {

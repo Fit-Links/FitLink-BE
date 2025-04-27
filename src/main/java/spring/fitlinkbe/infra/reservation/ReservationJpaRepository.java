@@ -69,4 +69,9 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             "AND r.confirmDate = :checkDateTime " +
             "AND r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.FIXED_RESERVATION")
     List<ReservationEntity> findAllFixedReservation(Long trainerId, LocalDateTime checkDateTime);
+
+    @Query("SELECT r FROM ReservationEntity r " +
+            "WHERE r.member.memberId = :memberId " +
+            "AND r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.FIXED_RESERVATION")
+    List<ReservationEntity> findAllFixedReservation(Long memberId);
 }

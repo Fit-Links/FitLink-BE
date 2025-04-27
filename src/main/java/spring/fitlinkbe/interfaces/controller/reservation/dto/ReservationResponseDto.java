@@ -20,7 +20,8 @@ public class ReservationResponseDto {
             return Success.builder()
                     .reservationId(reservation.getReservationId())
                     .status(reservation.getStatus().getName())
-                    .reservationDate(reservation.getConfirmDate())
+                    .reservationDate(reservation.getConfirmDate() == null ? reservation.getReservationDate() :
+                            reservation.getConfirmDate())
                     .build();
         }
     }

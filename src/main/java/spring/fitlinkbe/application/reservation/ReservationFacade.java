@@ -132,7 +132,7 @@ public class ReservationFacade {
         // 예약 거절된 예약은 -> 멤버에게 예약 거절됐다는 메세지 전송
         refuseReservations(refusedReservations);
         // 고정 예약 진행
-        reservationService.createFixedReservations(List.of(nextFixedReservation),1);
+        reservationService.createFixedReservations(List.of(nextFixedReservation), 1);
     }
 
     @Transactional
@@ -328,6 +328,7 @@ public class ReservationFacade {
         return completedSession;
     }
 
+    @Transactional
     public void checkTodaySessionReminder() {
         List<Reservation> todayReservations = reservationService.getTodayReservations();
 
@@ -342,6 +343,7 @@ public class ReservationFacade {
         });
     }
 
+    @Transactional
     public void refuseReservations(List<Reservation> refusedReservations) {
         refusedReservations.forEach((r) -> {
             PersonalDetail memberDetail = memberService.getMemberDetail(r.getMember().getMemberId());
@@ -350,4 +352,18 @@ public class ReservationFacade {
                     r.getReservationDate(), r.getTrainer().getTrainerId(), false, token.getPushToken()));
         });
     }
+
+    @Transactional
+    public List<Reservation> releaseFixedReservation(Long reservationId) {
+        // 관련 고정 예약 모두 해지
+        List<Reservation> reservations = reservationService.releaseFixedReservation(reservationId);
+        Reservation reservation = reservations.get(0);
+        int restoreCount = reservations.size();
+        // 세션 복구
+        memberService.restoreSession(reservation.getTrainer().getTrainerId(), reservation.getMember().getMemberId(),
+                restoreCount);
+
+        return reservations;
+    }
+
 }

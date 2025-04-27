@@ -122,6 +122,25 @@ public class ReservationController {
     }
 
     /**
+     * 고정 예약 해지
+     *
+     * @param reservationId reservationId 정보
+     * @return ApiResultResponse 고정 예약이 해지 된 reservationId 목록 정보를 반환한다.
+     */
+    @RoleCheck(allowedRoles = {UserRole.TRAINER})
+    @PostMapping("/fixed-reservations/{reservationId}/release")
+    public ApiResultResponse<List<ReservationResponseDto.Success>> releaseFixedReservation(@PathVariable("reservationId")
+                                                                                           @NotNull(message = "예약 ID는 필수값입니다.")
+                                                                                           Long reservationId) {
+
+        List<Reservation> result = reservationFacade.releaseFixedReservation(reservationId);
+
+        return ApiResultResponse.ok(result.stream()
+                .map(ReservationResponseDto.Success::of)
+                .toList());
+    }
+
+    /**
      * 직접 예약
      *
      * @param request memberId, name, dates 정보
