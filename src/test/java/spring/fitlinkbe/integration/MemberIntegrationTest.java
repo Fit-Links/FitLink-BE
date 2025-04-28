@@ -277,6 +277,8 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             String token = testDataHandler.createTokenFromMember(member);
             testDataHandler.connectMemberAndTrainer(member, trainer);
             List<WorkoutSchedule> workoutSchedules = testDataHandler.createWorkoutSchedules(member);
+            testDataHandler.createFixedReservation(member, trainer);
+            testDataHandler.createFixedReservation(member, trainer);
 
             // when
             // 멤버가 자신의 정보를 조회한다면
@@ -301,6 +303,8 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(data.sessionInfo().sessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
                 softly.assertThat(data.sessionInfo().remainingCount()).isEqualTo(sessionInfo.getRemainingCount());
                 softly.assertThat(data.sessionInfo().totalCount()).isEqualTo(sessionInfo.getTotalCount());
+
+                softly.assertThat(data.fixedReservations().size()).isEqualTo(2);
 
                 softly.assertThat(data.workoutSchedules().size()).isEqualTo(workoutSchedules.size());
                 for (WorkoutScheduleDto.Response responseDto : data.workoutSchedules()) {

@@ -7,6 +7,7 @@ import spring.fitlinkbe.application.member.criteria.MemberInfoResult;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class MemberInfoDto {
@@ -40,6 +41,7 @@ public class MemberInfoDto {
             String trainerName,
             ConnectingInfo.ConnectingStatus connectingStatus,
             String profilePictureUrl,
+            List<ReservationResponse> fixedReservations,
             SessionInfoResponse sessionInfo,
             List<WorkoutScheduleDto.Response> workoutSchedules
     ) {
@@ -51,8 +53,22 @@ public class MemberInfoDto {
                     .trainerName(result.trainerName())
                     .connectingStatus(result.connectingStatus())
                     .profilePictureUrl(result.profilePictureUrl())
+                    .fixedReservations(result.fixedReservations().stream().map(ReservationResponse::from).toList())
                     .sessionInfo(result.sessionInfo() != null ? SessionInfoResponse.from(result.sessionInfo()) : null)
                     .workoutSchedules(result.workoutSchedules().stream().map(WorkoutScheduleDto.Response::from).toList())
+                    .build();
+        }
+    }
+
+    @Builder
+    public record ReservationResponse(
+            Long reservationId,
+            LocalDateTime reservationDateTime
+    ) {
+        public static ReservationResponse from(MemberInfoResult.ReservationResponse result) {
+            return ReservationResponse.builder()
+                    .reservationId(result.reservationId())
+                    .reservationDateTime(result.reservationDateTime())
                     .build();
         }
     }
