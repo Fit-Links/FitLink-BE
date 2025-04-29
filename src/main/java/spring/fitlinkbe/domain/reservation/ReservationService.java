@@ -17,6 +17,7 @@ import spring.fitlinkbe.support.security.SecurityUser;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -62,6 +63,10 @@ public class ReservationService {
                 .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND,
                         "예약 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(reservationId)));
     }
+  
+    public List<Reservation> getFixedReservations(Long memberId) {
+        return reservationRepository.getFixedReservations(memberId);
+    }
 
     public List<Reservation> getWaitingMembers(LocalDateTime reservationDate, SecurityUser user) {
         List<Reservation> waitingMembers = reservationRepository.getReservationsWithWaitingStatus(user.getTrainerId());
@@ -104,9 +109,13 @@ public class ReservationService {
     }
 
     @Transactional
-    public List<Reservation> createFixedReservations(List<Reservation> reservations) {
-        // 고정 예약 진행
-        List<Reservation> savedReservations = reservationRepository.saveReservations(reservations);
+    public List<Reservation> createFixedReservations(List<Reservation> baseReservations, int remainingCount) {
+
+
+        List<Reservation> newFixedReservations = Reservation.createFixedReservations(baseReservations, remainingCount);
+
+        List<Reservation> savedReservations = reservationRepository.saveReservations(newFixedReservations);
+
         // 세션 생성
         List<Session> sessions = savedReservations.stream()
                 .map(reservation -> Session.builder()
@@ -114,7 +123,7 @@ public class ReservationService {
                         .status(SESSION_WAITING)
                         .build())
                 .toList();
-        // 세션 저장
+
         reservationRepository.saveSessions(sessions);
 
         return savedReservations;
@@ -260,26 +269,53 @@ public class ReservationService {
     }
 
     @Transactional
-    public Reservation changeReservation(ReservationCommand.ChangeReqeust command,
-                                         SecurityUser user) {
+    public List<Reservation> changeFixedReservation(ReservationCommand.ChangeReqeust command, SecurityUser user) {
         Reservation reservation = this.getReservation(command.reservationId());
         // 변경하고자 하는 날짜에 확정된 예약이 있는지 확인
-        this.checkConfirmedReservationExistOrThrow(reservation.getTrainer().getTrainerId(),
-                command.changeRequestDate());
-        // 트레이너의 경우 고정 예약 변경
-        if (user.getUserRole() == TRAINER) {
-            reservation.changeFixedDate(command.reservationDate(), command.changeRequestDate());
+        this.checkConfirmedReservationExistOrThrow(reservation.getTrainer().getTrainerId(), command.changeRequestDate());
+        // 이전에 예약한 모든 고정예약 취소
+        List<Reservation> cancelBeforeFixedReservations = cancelAllBeforeFixedReservation(user.getTrainerId(),
+                reservation.getMember().getMemberId(), command.reservationId(), command.reservationDate());
+        reservation.changeFixedDate(command.reservationDate(), command.changeRequestDate());
 
-            return reservationRepository.saveReservation(reservation)
-                    .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED,
-                            "예약 요청 변경에 실패하였습니다."));
-        }
+        Reservation savedReservation = reservationRepository.saveReservation(reservation)
+                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED, "고정 예약 변경에 실패하였습니다."));
+
+        return cancelBeforeFixedReservations.isEmpty() ? List.of(savedReservation) : cancelBeforeFixedReservations;
+    }
+
+    @Transactional
+    public Reservation changeRequestReservation(ReservationCommand.ChangeReqeust command) {
+        Reservation reservation = this.getReservation(command.reservationId());
+        // 변경하고자 하는 날짜에 확정된 예약이 있는지 확인
+        this.checkConfirmedReservationExistOrThrow(reservation.getTrainer().getTrainerId(), command.changeRequestDate());
+
         // 멤버의 경우 예약 변경 요청
         reservation.changeRequestDate(command.reservationDate(), command.changeRequestDate());
 
         return reservationRepository.saveReservation(reservation)
-                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED,
-                        "예약 요청 변경에 실패하였습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED, "예약 요청 변경에 실패하였습니다."));
+    }
+
+    @Transactional
+    public List<Reservation> cancelAllBeforeFixedReservation(Long trainerId, Long memberId,
+                                                             Long reservationId, LocalDateTime fixedReservationDate) {
+        List<Reservation> fixedReservations = reservationRepository.getFixedReservations(trainerId, fixedReservationDate)
+                .stream().filter(r -> r.isSameReservationAndMember(reservationId, memberId)).toList();
+
+        // 세션이 있는 경우, 세션도 취소한다.
+        List<Session> sessions = new ArrayList<>();
+        fixedReservations.forEach(fixedReservation -> {
+            fixedReservation.cancel("고정 예약 변경으로 취소되었습니다.");
+            Session getSession = reservationRepository.getSession(fixedReservation.getReservationId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND,
+                            "세션 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(fixedReservation.getReservationId())));
+            getSession.cancel("트레이너의 요청으로 세션이 최소되었습니다");
+            sessions.add(getSession);
+        });
+        reservationRepository.saveSessions(sessions);
+
+        return reservationRepository.saveReservations(fixedReservations);
     }
 
     @Transactional
@@ -324,6 +360,31 @@ public class ReservationService {
         return reservationRepository.saveSession(session).orElseThrow(() ->
                 new CustomException(ErrorCode.SESSION_CREATE_FAILED));
 
+    }
+
+    @Transactional
+    public List<Reservation> releaseFixedReservation(Long reservationId) {
+        Reservation reservation = this.getReservation(reservationId);
+        List<Reservation> fixedReservations = reservationRepository.getFixedReservations(reservation.getMember().getMemberId());
+
+        List<Reservation> releaseFixedReservations = fixedReservations.stream()
+                .filter(r -> r.isFixedWithBaseDate(reservation.getConfirmDate()))
+                .map(r -> r.cancel("예약 해지로 취소되었습니다."))
+                .toList();
+
+        // 세션이 있는 경우, 세션도 취소한다.
+        List<Session> sessions = new ArrayList<>();
+        releaseFixedReservations.forEach(r -> {
+            Session session = reservationRepository.getSession(r.getReservationId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND,
+                            "세션 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(r.getReservationId())));
+            session.cancel("트레이너의 요청으로 세션이 최소되었습니다");
+
+            sessions.add(session);
+        });
+        reservationRepository.saveSessions(sessions);
+
+        return reservationRepository.saveReservations(releaseFixedReservations);
     }
 
     /**
@@ -392,9 +453,5 @@ public class ReservationService {
         if (reservationRepository.isConfirmedReservationExists(trainerId, checkDate)) {
             throw new CustomException(ErrorCode.CONFIRMED_RESERVATION_EXISTS);
         }
-    }
-
-    public List<Reservation> getFixedReservations(Long memberId) {
-        return reservationRepository.getFixedReservations(memberId);
     }
 }

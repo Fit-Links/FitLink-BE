@@ -44,6 +44,7 @@ public enum ErrorCode {
     RESERVATION_COMPLETE_NOT_ALLOWED("다른 사람의 예약을 완료시킬 수 없습니다.", 400),
     RESERVATION_IS_ALREADY_COMPLETED("이미 예약이 완료되었습니다.", 400),
     RESERVATION_CHANGE_REQUEST_NOT_ALLOWED("예약 변경을 요청할 수 없는 상태입니다.", 400),
+    RESERVATION_RELEASE_NOT_ALLOWED("예약 해지를 할 수 없는 상태입니다.", 400),
     RESERVATION_CANCEL_NOT_ALLOWED("예약 취소를 할 수 없는 상태입니다.", 400),
     RESERVATION_REFUSE_NOT_ALLOWED("예약 거절을 할 수 없는 상태입니다.", 400),
     RESERVATION_APPROVE_NOT_ALLOWED("예약 확정을 할 수 없는 상태입니다.", 400),

@@ -70,7 +70,7 @@ public class Notification {
 
         return Notification.builder()
                 .refId(reservationId)
-                .refType(ReferenceType.RESERVATION_CHANGE_CANCEL)
+                .refType(ReferenceType.RESERVATION_CANCEL)
                 .target(UserRole.MEMBER)
                 .notificationType(NotificationType.RESERVATION_CANCEL)
                 .personalDetail(memberDetail)
@@ -89,7 +89,7 @@ public class Notification {
 
         return Notification.builder()
                 .refId(reservationId)
-                .refType(ReferenceType.RESERVATION_CHANGE_CANCEL)
+                .refType(ReferenceType.RESERVATION_CANCEL)
                 .target(UserRole.TRAINER)
                 .notificationType(NotificationType.RESERVATION_CANCEL)
                 .personalDetail(trainerDetail)
@@ -127,7 +127,7 @@ public class Notification {
 
         return Notification.builder()
                 .refId(reservationId)
-                .refType(ReferenceType.RESERVATION_CHANGE_CANCEL)
+                .refType(ReferenceType.RESERVATION_CHANGE)
                 .target(UserRole.MEMBER)
                 .notificationType(isApprove ? NotificationType.RESERVATION_CHANGE_REQUEST_APPROVED :
                         NotificationType.RESERVATION_CHANGE_REQUEST_REFUSED)
@@ -204,7 +204,7 @@ public class Notification {
 
         return Notification.builder()
                 .refId(reservationId)
-                .refType(ReferenceType.RESERVATION_CHANGE_CANCEL)
+                .refType(ReferenceType.RESERVATION_CHANGE)
                 .target(UserRole.TRAINER)
                 .notificationType(NotificationType.RESERVATION_CHANGE_REQUEST)
                 .personalDetail(trainerDetail)
@@ -224,7 +224,7 @@ public class Notification {
 
         return Notification.builder()
                 .refId(reservationId)
-                .refType(ReferenceType.RESERVATION_CHANGE_CANCEL)
+                .refType(ReferenceType.RESERVATION_CANCEL)
                 .target(UserRole.MEMBER)
                 .notificationType(isApprove ? NotificationType.RESERVATION_CANCEL_REQUEST_APPROVED :
                         NotificationType.RESERVATION_CANCEL_REQUEST_REFUSED)
@@ -301,7 +301,8 @@ public class Notification {
         CONNECT("트레이너 연동"),
         DISCONNECT("트레이너 연동 해제"),
         RESERVATION_REQUEST("예약 요청"),
-        RESERVATION_CHANGE_CANCEL("예약 변경/취소"),
+        RESERVATION_CHANGE("예약 변경"),
+        RESERVATION_CANCEL("예약 취소"),
         SESSION("세션");
 
         private final String name;

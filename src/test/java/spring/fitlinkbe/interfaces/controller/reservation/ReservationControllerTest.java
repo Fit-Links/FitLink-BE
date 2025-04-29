@@ -496,6 +496,7 @@ class ReservationControllerTest {
             Reservation reservation = Reservation.builder()
                     .reservationId(1L)
                     .status(RESERVATION_APPROVED)
+                    .reservationDates(List.of(LocalDateTime.now()))
                     .build();
 
             when(reservationFacade.setDisabledReservation(any(ReservationCriteria.SetDisabledTime.class)
@@ -617,7 +618,9 @@ class ReservationControllerTest {
                     .build();
 
             Reservation reservation = Reservation.builder().reservationId(1L)
-                    .status(RESERVATION_APPROVED).build();
+                    .status(RESERVATION_APPROVED)
+                    .reservationDates(List.of(LocalDateTime.now()))
+                    .build();
 
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -661,7 +664,9 @@ class ReservationControllerTest {
                     .build();
 
             Reservation reservation = Reservation.builder().reservationId(1L)
-                    .status(RESERVATION_WAITING).build();
+                    .status(RESERVATION_WAITING)
+                    .reservationDates(List.of(LocalDateTime.now()))
+                    .build();
 
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -837,7 +842,9 @@ class ReservationControllerTest {
                     .dates(List.of(LocalDateTime.now().plusSeconds(2)))
                     .build();
 
-            Reservation reservation = Reservation.builder().reservationId(1L).status(RESERVATION_APPROVED).build();
+            Reservation reservation = Reservation.builder().reservationId(1L).status(RESERVATION_APPROVED)
+                    .reservationDates(List.of(LocalDateTime.now()))
+                    .build();
             List<Reservation> reservations = List.of(reservation);
 
             PersonalDetail personalDetail = PersonalDetail.builder()
@@ -1055,7 +1062,10 @@ class ReservationControllerTest {
 
             Long reservationId = 1L;
 
-            Reservation result = Reservation.builder().reservationId(reservationId).status(RESERVATION_CANCELLED).build();
+            Reservation result = Reservation.builder().reservationId(reservationId)
+                    .status(RESERVATION_CANCELLED)
+                    .reservationDates(List.of(LocalDateTime.now()))
+                    .build();
 
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -1101,7 +1111,9 @@ class ReservationControllerTest {
 
             Long reservationId = 1L;
 
-            Reservation result = Reservation.builder().reservationId(reservationId).status(RESERVATION_CANCEL_REQUEST).build();
+            Reservation result = Reservation.builder().reservationId(reservationId)
+                    .reservationDates(List.of(LocalDateTime.now()))
+                    .status(RESERVATION_CANCEL_REQUEST).build();
 
             PersonalDetail personalDetail = PersonalDetail.builder()
                     .personalDetailId(1L)
@@ -1196,6 +1208,7 @@ class ReservationControllerTest {
             Reservation result = Reservation.builder()
                     .reservationId(1L)
                     .status(RESERVATION_APPROVED)
+                    .reservationDates(List.of(LocalDateTime.now()))
                     .build();
 
             PersonalDetail personalDetail = PersonalDetail.builder()
@@ -1456,7 +1469,7 @@ class ReservationControllerTest {
     }
 
     @Nested
-    @DisplayName("예약 변경 요청 Controller TEST")
+    @DisplayName("멤버의 예약 변경 요청 Controller TEST")
     class ChangeReqeustReservationControllerTest {
         @Test
         @DisplayName("멤버의 예약 변경 요청 성공")
@@ -1473,6 +1486,7 @@ class ReservationControllerTest {
             Reservation result = Reservation.builder()
                     .reservationId(1L)
                     .status(RESERVATION_CHANGE_REQUEST)
+                    .reservationDates(List.of(LocalDateTime.now()))
                     .build();
 
             PersonalDetail personalDetail = PersonalDetail.builder()
@@ -1486,11 +1500,11 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeReservation(any(ReservationCriteria.ChangeReqeust.class),
-                    any(SecurityUser.class))).thenReturn(result);
+            when(reservationFacade.changeRequestReservation(any(ReservationCriteria.ChangeReqeust.class)))
+                    .thenReturn(result);
 
             //when & then
-            mockMvc.perform(post("/v1/reservations/%s/change".formatted(reservationId))
+            mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
                             .header("Authorization", "Bearer " + accessToken)
                             .with(oauth2Login().oauth2User(user))
                             .with(csrf())
@@ -1532,11 +1546,11 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeReservation(any(ReservationCriteria.ChangeReqeust.class),
-                    any(SecurityUser.class))).thenReturn(result);
+            when(reservationFacade.changeRequestReservation(any(ReservationCriteria.ChangeReqeust.class)))
+                    .thenReturn(result);
 
             //when & then
-            mockMvc.perform(post("/v1/reservations/%s/change".formatted(reservationId))
+            mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
                             .header("Authorization", "Bearer " + accessToken)
                             .with(oauth2Login().oauth2User(user))
                             .with(csrf())
@@ -1577,11 +1591,11 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeReservation(any(ReservationCriteria.ChangeReqeust.class),
-                    any(SecurityUser.class))).thenReturn(result);
+            when(reservationFacade.changeRequestReservation(any(ReservationCriteria.ChangeReqeust.class)))
+                    .thenReturn(result);
 
             //when & then
-            mockMvc.perform(post("/v1/reservations/%s/change".formatted(reservationId))
+            mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
                             .header("Authorization", "Bearer " + accessToken)
                             .with(oauth2Login().oauth2User(user))
                             .with(csrf())
@@ -1623,11 +1637,11 @@ class ReservationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(reservationFacade.changeReservation(any(ReservationCriteria.ChangeReqeust.class),
-                    any(SecurityUser.class))).thenReturn(result);
+            when(reservationFacade.changeRequestReservation(any(ReservationCriteria.ChangeReqeust.class)))
+                    .thenReturn(result);
 
             //when & then
-            mockMvc.perform(post("/v1/reservations/%s/change".formatted(reservationId))
+            mockMvc.perform(post("/v1/reservations/%s/change-request".formatted(reservationId))
                             .header("Authorization", "Bearer " + accessToken)
                             .with(oauth2Login().oauth2User(user))
                             .with(csrf())
@@ -1665,6 +1679,7 @@ class ReservationControllerTest {
             Reservation result = Reservation.builder()
                     .reservationId(1L)
                     .status(RESERVATION_APPROVED)
+                    .reservationDates(List.of(LocalDateTime.now()))
                     .build();
 
             PersonalDetail personalDetail = PersonalDetail.builder()
@@ -1810,6 +1825,7 @@ class ReservationControllerTest {
 
             Reservation result = Reservation.builder()
                     .reservationId(1L)
+                    .reservationDates(List.of(LocalDateTime.now()))
                     .status(RESERVATION_CANCELLED)
                     .build();
 

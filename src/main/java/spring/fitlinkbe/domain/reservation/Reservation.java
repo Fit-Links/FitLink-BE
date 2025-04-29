@@ -10,9 +10,11 @@ import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.support.utils.DateUtils;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,11 +61,59 @@ public class Reservation {
         private final String name;
     }
 
-    public void changeFixedDate(LocalDateTime reservationDate, LocalDateTime changeDate) {
+    public static List<Reservation> createFixedReservations(List<Reservation> baseReservations, int remainingCount) {
+        List<Reservation> generatedReservations = new ArrayList<>();
+
+        List<Reservation> currentReservations = new ArrayList<>(baseReservations);
+
+        while (generatedReservations.size() < remainingCount) {
+            int remainingToCreate = remainingCount - generatedReservations.size();
+
+            List<Reservation> nextReservations = currentReservations.stream()
+                    .map(reservation -> reservation.copyWithNewDate(reservation.getReservationDate().plusDays(7)))
+                    .limit(remainingToCreate)
+                    .toList();
+
+            generatedReservations.addAll(nextReservations);
+            currentReservations = nextReservations;
+        }
+
+        return generatedReservations;
+    }
+
+    public boolean isFixedWithBaseDate(LocalDateTime baseDate) {
+        if (confirmDate == null || baseDate == null) {
+            throw new CustomException(RESERVATION_RELEASE_NOT_ALLOWED);
+        }
+
+        LocalDateTime truncatedBaseDate = baseDate.truncatedTo(ChronoUnit.HOURS);
+        LocalDateTime truncatedReservationDate = confirmDate.truncatedTo(ChronoUnit.HOURS);
+
+        Duration duration = Duration.between(truncatedBaseDate, truncatedReservationDate);
+
+        return !duration.isNegative() && duration.toHours() % (7 * 24) == 0;
+    }
+
+    public Reservation copyWithNewDate(LocalDateTime newDate) {
+
+        return Reservation.builder()
+                .member(member)
+                .trainer(trainer)
+                .sessionInfo(sessionInfo)
+                .name(name)
+                .reservationDates(List.of(newDate))
+                .confirmDate(newDate)
+                .dayOfWeek(newDate.getDayOfWeek())
+                .status(status)
+                .build();
+    }
+
+
+    public void changeFixedDate(LocalDateTime beforeDate, LocalDateTime changeDate) {
         if (this.status != FIXED_RESERVATION) {
             throw new CustomException(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED, "고정 예약 상태가 아닙니다.");
         }
-        LocalDateTime targetDate = reservationDate.truncatedTo(ChronoUnit.HOURS);
+        LocalDateTime targetDate = beforeDate.truncatedTo(ChronoUnit.HOURS);
 
         boolean dateExists = this.reservationDates.stream()
                 .map(date -> date.truncatedTo(ChronoUnit.HOURS))
@@ -185,7 +235,7 @@ public class Reservation {
         this.status = RESERVATION_REFUSED;
     }
 
-    public void complete(Long trainerId, Long memberId) {
+    public Reservation complete(Long trainerId, Long memberId) {
         if (!trainerId.equals(this.trainer.getTrainerId()) || !memberId.equals(this.member.getMemberId())) {
             throw new CustomException(RESERVATION_COMPLETE_NOT_ALLOWED);
         }
@@ -195,9 +245,11 @@ public class Reservation {
         }
 
         this.status = RESERVATION_COMPLETED;
+
+        return this;
     }
 
-    public void cancel(String message) {
+    public Reservation cancel(String message) {
         if (this.status == RESERVATION_CANCELLED) {
             throw new CustomException(RESERVATION_IS_ALREADY_CANCEL);
         }
@@ -207,9 +259,11 @@ public class Reservation {
         this.cancelReason = message;
         this.confirmDate = null;
         this.status = RESERVATION_CANCELLED;
+
+        return this;
     }
 
-    public void approve(LocalDateTime reservationDate) {
+    public Reservation approve(LocalDateTime reservationDate) {
         if (this.status == DISABLED_TIME_RESERVATION || this.status == RESERVATION_REFUSED) {
             throw new CustomException(RESERVATION_APPROVE_NOT_ALLOWED);
         }
@@ -222,8 +276,9 @@ public class Reservation {
         }
 
         this.confirmDate = reservationDate;
-
         this.status = RESERVATION_APPROVED;
+
+        return this;
     }
 
     public void cancelRequest(String message, LocalDateTime cancelDate, UserRole role) {
@@ -246,5 +301,9 @@ public class Reservation {
     public boolean isReservationNotAllowed() {
 
         return (this.isDayOff || (this.status == DISABLED_TIME_RESERVATION));
+    }
+
+    public boolean isSameReservationAndMember(Long reservationId, Long memberId) {
+        return !Objects.equals(this.reservationId, reservationId) && Objects.equals(this.member.getMemberId(), memberId);
     }
 }

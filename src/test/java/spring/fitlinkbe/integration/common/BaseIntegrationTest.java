@@ -16,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import spring.fitlinkbe.config.TestSqsConfig;
 import spring.fitlinkbe.infra.notification.PushManager;
+import spring.fitlinkbe.interfaces.comsumer.ReservationConsumer;
 
 import java.util.Map;
 
@@ -32,6 +33,9 @@ public class BaseIntegrationTest {
 
     @MockitoBean
     private PushManager pushManager;
+
+    @MockitoBean
+    private ReservationConsumer reservationConsumer;
 
     @LocalServerPort
     protected int port;

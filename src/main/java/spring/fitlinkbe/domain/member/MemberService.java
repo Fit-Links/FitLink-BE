@@ -159,7 +159,6 @@ public class MemberService {
         sessionInfo.checkEnoughSession();
     }
 
-
     /**
      * 연결된 정보 조회
      *
@@ -189,18 +188,18 @@ public class MemberService {
     /**
      * 세션 차감
      */
-    public SessionInfo deductSession(Long trainerId, Long memberId) {
+    public SessionInfo deductSession(Long trainerId, Long memberId, int count) {
         SessionInfo getSessionInfo = this.getSessionInfo(trainerId, memberId);
-        getSessionInfo.deductSession();
+        getSessionInfo.deductSession(count);
         return this.saveSessionInfo(getSessionInfo);
     }
 
     /**
      * 세션 복구
      */
-    public void restoreSession(Long trainerId, Long memberId) {
+    public void restoreSession(Long trainerId, Long memberId, int count) {
         SessionInfo getSessionInfo = this.getSessionInfo(trainerId, memberId);
-        getSessionInfo.restoreSession();
+        getSessionInfo.restoreSession(count);
         this.saveSessionInfo(getSessionInfo);
     }
 
