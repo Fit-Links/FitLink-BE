@@ -86,7 +86,7 @@ public class ReservationFacade {
     @Transactional
     public List<Reservation> createFixedReservation(ReservationCriteria.CreateFixed criteria, SecurityUser user) {
         // 세션이 충분한지 확인
-        SessionInfo sessionInfo = memberService.isSessionCountEnough(user.getTrainerId(), criteria.memberId());
+        memberService.isSessionCountEnough(user.getTrainerId(), criteria.memberId());
         // 기존에 확정된 예약이 있는지 확인
         reservationService.checkConfirmedReservationsExistOrThrow(user.getTrainerId(), criteria.reservationDates());
         // 대기중인 예약이 있으면 거절
@@ -96,6 +96,7 @@ public class ReservationFacade {
         // 고정 예약 진행
         List<Reservation> reservationDomains = criteria.toDomain(memberService.getSessionInfo(user.getTrainerId(),
                 criteria.memberId()), user);
+        SessionInfo sessionInfo = memberService.getSessionInfo(user.getTrainerId(), criteria.memberId());
         // 세션 차감
         memberService.deductSession(user.getTrainerId(), criteria.memberId(), sessionInfo.getRemainingCount());
         List<Reservation> fixedReservations = reservationService.createFixedReservations(reservationDomains,

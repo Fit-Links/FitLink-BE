@@ -152,14 +152,12 @@ public class MemberService {
     /**
      * 세션 잔여횟수가 충분한지 확인
      */
-    public SessionInfo isSessionCountEnough(Long trainerId, Long memberId) {
+    public void isSessionCountEnough(Long trainerId, Long memberId) {
         SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(trainerId, memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND));
 
         sessionInfo.checkEnoughSession();
-        return sessionInfo;
     }
-
 
     /**
      * 연결된 정보 조회
