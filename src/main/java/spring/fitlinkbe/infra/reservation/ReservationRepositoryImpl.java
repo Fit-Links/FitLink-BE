@@ -43,6 +43,7 @@ public class ReservationRepositoryImpl implements ReservationRepository {
 
     @Override
     public List<Reservation> getFixedReservations(Long memberId) {
+
         return reservationJpaRepository.findAllFixedReservation(memberId)
                 .stream()
                 .map(ReservationEntity::toDomain)
@@ -52,7 +53,8 @@ public class ReservationRepositoryImpl implements ReservationRepository {
     @Override
     public List<Reservation> getFixedReservations(Long trainerId, LocalDateTime fixedReservationDate) {
 
-        return reservationJpaRepository.findAllFixedReservation(trainerId, fixedReservationDate)
+        return reservationJpaRepository.findFixedStatus(memberId)
+
                 .stream()
                 .map(ReservationEntity::toDomain)
                 .toList();

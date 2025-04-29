@@ -408,4 +408,16 @@ public class TestDataHandler {
 
         return attachmentRepository.save(attachment);
     }
+
+    public void createFixedReservation(Member member, Trainer trainer) {
+        Reservation reservation = Reservation.builder()
+                .member(member)
+                .trainer(trainer)
+                .status(Reservation.Status.FIXED_RESERVATION)
+                .reservationDates(List.of(LocalDateTime.now()))
+                .confirmDate(LocalDateTime.now().plusDays(1))
+                .build();
+
+        reservationRepository.saveReservation(reservation);
+    }
 }

@@ -63,6 +63,10 @@ public class ReservationService {
                 .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND,
                         "예약 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(reservationId)));
     }
+  
+    public List<Reservation> getFixedReservations(Long memberId) {
+        return reservationRepository.getFixedReservations(memberId);
+    }
 
     public List<Reservation> getWaitingMembers(LocalDateTime reservationDate, SecurityUser user) {
         List<Reservation> waitingMembers = reservationRepository.getReservationsWithWaitingStatus(user.getTrainerId());
@@ -450,6 +454,4 @@ public class ReservationService {
             throw new CustomException(ErrorCode.CONFIRMED_RESERVATION_EXISTS);
         }
     }
-
-
 }

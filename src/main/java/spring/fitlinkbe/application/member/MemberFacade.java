@@ -19,6 +19,7 @@ import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.notification.NotificationService;
 import spring.fitlinkbe.domain.notification.command.NotificationCommand;
+import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
@@ -80,8 +81,9 @@ public class MemberFacade {
         Member me = memberService.getMember(memberId);
 
         List<WorkoutSchedule> workoutSchedules = memberService.getWorkoutSchedules(memberId);
+        List<Reservation> fixedReservations = reservationService.getFixedReservations(memberId);
 
-        return MemberInfoResult.Response.of(me, connectingInfo, sessionInfo, workoutSchedules);
+        return MemberInfoResult.Response.of(me, connectingInfo, sessionInfo, workoutSchedules, fixedReservations);
     }
 
     @Transactional
@@ -222,7 +224,8 @@ public class MemberFacade {
         Member me = memberService.getMember(memberId);
 
         List<WorkoutSchedule> workoutSchedules = memberService.getWorkoutSchedules(memberId);
+        List<Reservation> fixedReservations = reservationService.getFixedReservations(memberId);
 
-        return MemberInfoResult.Response.of(me, connectingInfo, sessionInfo, workoutSchedules);
+        return MemberInfoResult.Response.of(me, connectingInfo, sessionInfo, workoutSchedules, fixedReservations);
     }
 }
