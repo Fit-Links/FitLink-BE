@@ -36,3 +36,6 @@ app:
     allowed-methods:
     allowed-origins:
     max-age:
+
+firebase:
+  config-path: src/main/resources/firebase-service-account.json

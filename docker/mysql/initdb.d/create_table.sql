@@ -76,7 +76,7 @@ CREATE TABLE token
 (
     token_id           BIGINT NOT NULL AUTO_INCREMENT,
     personal_detail_id BIGINT,
-    fcm_token          VARCHAR(255),
+    push_token          VARCHAR(255),
     refresh_token      VARCHAR(255),
     created_at         DATETIME(6),
     updated_at         DATETIME(6),
