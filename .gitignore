@@ -42,3 +42,6 @@ docker/mysql/mysql-logs/slow.log
 
 ### ymls ###
 application-secret.yml
+
+### firebase config ###
+**/firebase-service-account.json

@@ -5,7 +5,9 @@ import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,25 +25,148 @@ public class EmailParser {
         byte[] decodedBytes = Base64.getDecoder().decode(encodedContent);
         String decodedContent = new String(decodedBytes, StandardCharsets.UTF_8);
 
-        /*
-         * 정규표현식 설명:
-         *  - (?s) 플래그로 DOTALL 모드를 활성화하여 개행문자도 '.'에 포함
-         *  - "Content-Type:"으로 시작해서 "text/plain"을 포함하는 부분을 찾은 후,
-         *    헤더와 본문 사이의 빈 줄(\r?\n\r?\n)을 찾음.
-         *  - 그 뒤 이어서 공백 후 대괄호로 감싼 라인(\[[^\]]*\])이 나오고,
-         *    그 다음 줄의 첫 번째 non-empty 라인을 캡처하여 토큰으로 반환.
-         */
-        Pattern pattern = Pattern.compile(
-                "(?s)Content-Type:\\s*text/plain.*?\\r?\\n\\r?\\n\\s*\\[[^\\]]*\\]\\s*\\r?\\n\\s*([^\\r\\n]+)"
-        );
-        Matcher matcher = pattern.matcher(decodedContent);
+        String[] headerAndBody = splitHeadersAndBody(decodedContent);
+        String boundaryText = findBoundaryText(headerAndBody[0]);
+        List<String> parts = splitParts(headerAndBody[1], boundaryText);
 
-        if (matcher.find()) {
-            return matcher.group(1).trim();
+        String token = extractTokenFromParts(parts);
+        if (token != null) {
+            return token;
         }
 
         log.warn("Token not found in email content: {}", decodedContent);
         throw new CustomException(ErrorCode.TOKEN_NOT_FOUND);
+    }
+
+    /**
+     * multipart 형식의 본문에서 토큰을 추출하는 메서드
+     */
+    private static String extractTokenFromParts(List<String> parts) {
+        for (String part : parts) {
+            String token = extractTokenFromPart(part);
+            if (token != null) {
+                return token;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 본문에서 각 파트에서 토큰을 추출하는 메서드
+     */
+    private static String extractTokenFromPart(String part) {
+        List<String> headers = new ArrayList<>();
+        String[] lines = part.split("\r\n");
+
+        int blankIndex = -1;
+        for (int i = 0; i < lines.length; i++) {
+            if (lines[i].isEmpty()) {
+                blankIndex = i;
+                break;
+            }
+            headers.add(lines[i]);
+        }
+
+        // bodyContent를 빈 줄 바로 '다음 줄'로 설정
+        String bodyContent = "";
+        if (blankIndex != -1 && blankIndex + 1 < lines.length) {
+            bodyContent = lines[blankIndex + 1];
+        }
+
+        String body = decodeBodyIfEncoded(bodyContent, headers);
+
+        Pattern pattern = Pattern.compile("\\[[^]]+]\\s*([A-Za-z0-9]+)");
+        Matcher matcher = pattern.matcher(body);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return null;
+    }
+
+    private static String decodeBodyIfEncoded(String bodyContent, List<String> headers) {
+        String encoding = headers.stream()
+                .filter(h -> h.toLowerCase().startsWith("content-transfer-encoding:"))
+                .map(h -> h.substring(h.indexOf(":") + 1).trim().toLowerCase())
+                .findFirst().orElse(null);
+
+        if (encoding == null) {
+            return bodyContent;
+        }
+
+        return switch (encoding) {
+            case "base64" -> {
+                byte[] decodedBytes = Base64.getDecoder().decode(bodyContent);
+                yield new String(decodedBytes, StandardCharsets.UTF_8);
+            }
+            default -> bodyContent;
+        };
+    }
+
+
+    /**
+     * 본문을 boundary text로 나누는 메서드
+     *
+     * @param bodyContent  본문 내용
+     * @param boundaryText boundary text
+     * @return 나누어진 본문 리스트, multipart 형식이 아닌 경우 본문 내용 1개만 반환
+     */
+    private static List<String> splitParts(String bodyContent, String boundaryText) {
+        if (boundaryText == null) {
+            // boundary text가 없으면 본문을 그대로 반환
+            List<String> singlePart = new ArrayList<>();
+            singlePart.add(bodyContent);
+            return singlePart;
+        }
+
+        List<String> parts = new ArrayList<>();
+        String[] splitParts = bodyContent.split("--" + boundaryText);
+
+        for (String part : splitParts) {
+            if (!part.trim().isEmpty() && !part.trim().equals("--")) {
+                parts.add(part.trim());
+            }
+        }
+
+        return parts;
+    }
+
+    /**
+     * 헤더에서 boundary text를 찾는 메서드
+     *
+     * @return boundary text
+     */
+    private static String findBoundaryText(String headerContent) {
+        // 정규 표현식 패턴: "boundary="로 시작하는 부분
+        Pattern pattern = Pattern.compile("boundary=\"([^\"]+)\"");
+        Matcher matcher = pattern.matcher(headerContent);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+
+    /**
+     * message header 와 body를 분리하는 메서드
+     *
+     * @param content 전체 MIME 텍스트 (Base64 디코딩 직후)
+     * @return String[0] = headers, String[1] = body
+     */
+    private static String[] splitHeadersAndBody(String content) {
+        // 1) 표준 CRLF 구분자(\r\n\r\n) 위치 찾기
+        int idx = content.indexOf("\r\n\r\n");
+        // 2) 혹시 CRLF가 아닌 LF만 쓰인 경우 대비
+        if (idx < 0) {
+            idx = content.indexOf("\n\n");
+        }
+        if (idx < 0) {
+            // 구분자 자체가 없으면 전체를 headers로 보고 body는 빈 문자열
+            return new String[]{content, ""};
+        }
+
+        String headers = content.substring(0, idx);
+        String body = content.substring(idx + (content.startsWith("\r\n\r\n", idx) ? 4 : 2));
+        return new String[]{headers, body};
     }
 
     /**
