@@ -3,7 +3,7 @@ package spring.fitlinkbe.support.parser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class EmailParserTest {
 
@@ -24,8 +24,8 @@ class EmailParserTest {
                 "9udGVudC1UeXBlOiBtdWx0aXBhcnQvbWl4ZWQ7IGJvdW5kYXJ5PSItLS0tLS0tU2tUZUxlQ29NX0luVGlDdUJlX05lV19NbVNfVmVSMTBfTW0zX01JWEVEIg0KDQoNCi0tLS0tLS0tLVNrVGVMZUNvTV9JblRpQ3VCZV9OZVdfTW1TX1ZlUjEwX01tM19NSVhFRA0KQ29udGVudC1UeXBlOiB0ZXh0L3BsYWluO2NoYXJzZXQ9IlVURi04Ig0KQ29udGVudC1" +
                 "UcmFuc2Zlci1FbmNvZGluZzogYmFzZTY0DQoNClcwWnBkR3hwYm10ZENsVkdSVkp3ZEZwV1QzbDBiM3BtWWxKRFNYVkxZbmM9DQoNCi0tLS0tLS0tLVNrVGVMZUNvTV9JblRpQ3VCZV9OZVdfTW1TX1ZlUjEwX01tM19NSVhFRC0tDQoNCg==";
 
-            String token = EmailParser.parseEmailContent(encodedContent);
-            assertNotNull(token);
+        String token = EmailParser.parseEmailContent(encodedContent);
+        assertNotNull(token);
     }
 
     @Test

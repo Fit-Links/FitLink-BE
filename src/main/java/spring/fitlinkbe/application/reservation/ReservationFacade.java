@@ -22,7 +22,6 @@ import spring.fitlinkbe.support.security.SecurityUser;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
@@ -241,23 +240,12 @@ public class ReservationFacade {
     @Transactional
     public Reservation changeFixedReservation(ReservationCriteria.ChangeReqeust criteria, SecurityUser user) {
 
-        List<Reservation> cancelBeforeFixedReservations = reservationService.changeFixedReservation(
-                criteria.toCommand(), user);
-        Reservation reservationInfo = cancelBeforeFixedReservations.get(0);
-
-        if (!Objects.equals(cancelBeforeFixedReservations.get(0).getReservationId(), criteria.reservationId())) {
-            int cancelCount = cancelBeforeFixedReservations.size();
-            //취소한 만큼 회원의 세션 복구
-            memberService.restoreSession(reservationInfo.getTrainer().getTrainerId(),
-                    reservationInfo.getMember().getMemberId(), cancelCount);
-        }
-
-        PersonalDetail memberDetail = memberService.getMemberDetail(reservationInfo.getMember().getMemberId());
+        Reservation changedFixedReservation = reservationService.changeFixedReservation(criteria.toCommand());
+        PersonalDetail memberDetail = memberService.getMemberDetail(changedFixedReservation.getMember().getMemberId());
         Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
-
         // 알림 전송 트레이너 -> 멤버에게 예약 확정 됐다는 알림 발송
         notificationService.sendNotification(NotificationCommand.ApproveReservation.of(memberDetail,
-                reservationInfo.getReservationId(), criteria.changeRequestDate(),
+                changedFixedReservation.getReservationId(), criteria.changeRequestDate(),
                 user.getTrainerId(), true, token.getPushToken()));
 
         return reservationService.getReservation(criteria.reservationId());
