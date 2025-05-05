@@ -518,7 +518,7 @@ class ReservationServiceTest {
                     .thenReturn(Optional.ofNullable(reservation));
 
             //when & then
-            assertThatThrownBy(() -> reservationService.changeFixedReservation(command, user))
+            assertThatThrownBy(() -> reservationService.changeFixedReservation(command))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED);
