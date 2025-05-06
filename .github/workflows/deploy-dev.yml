@@ -48,7 +48,7 @@ jobs:
         shell: bash
 
       - name: Test And Build
-        run: ./gradlew build --no-daemon
+        run: ./gradlew build --no-daemon -Duser.timezone=Asia/Seoul
 
       - name: Upload jar artifact
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
