@@ -1,4 +1,4 @@
-package spring.fitlinkbe.domain.common.event;
+package spring.fitlinkbe.domain.outbox;
 
 import spring.fitlinkbe.domain.outbox.command.OutboxCommand;
 
