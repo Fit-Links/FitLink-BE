@@ -8,6 +8,7 @@ import spring.fitlinkbe.application.reservation.ReservationFacade;
 import spring.fitlinkbe.application.reservation.criteria.ReservationCriteria;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
+import spring.fitlinkbe.domain.producer.EventTopic;
 import spring.fitlinkbe.domain.reservation.event.GenerateFixedReservationEvent;
 import spring.fitlinkbe.support.utils.JsonUtils;
 
@@ -18,7 +19,7 @@ public class ReservationConsumer {
 
     private final ReservationFacade reservationFacade;
 
-    @SqsListener(queueNames = "${spring.cloud.aws.sqs.queue-name}")
+    @SqsListener(queueNames = EventTopic.RESERVATION_QUEUE)
     public void handleReservationMessage(String message) {
         GenerateFixedReservationEvent payload = JsonUtils.toObject(message, GenerateFixedReservationEvent.class);
         if (payload == null) {
