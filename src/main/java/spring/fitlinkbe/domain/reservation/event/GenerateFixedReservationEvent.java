@@ -1,8 +1,8 @@
 package spring.fitlinkbe.domain.reservation.event;
 
 import lombok.Builder;
-import spring.fitlinkbe.domain.common.event.OutboxEvent;
 import spring.fitlinkbe.domain.outbox.Outbox;
+import spring.fitlinkbe.domain.outbox.OutboxEvent;
 import spring.fitlinkbe.domain.outbox.command.OutboxCommand;
 import spring.fitlinkbe.support.utils.JsonUtils;
 

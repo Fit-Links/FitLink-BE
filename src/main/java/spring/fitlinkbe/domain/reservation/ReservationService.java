@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
+import spring.fitlinkbe.domain.producer.EventTopic;
 import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
 import spring.fitlinkbe.domain.reservation.event.GenerateFixedReservationEvent;
 import spring.fitlinkbe.domain.trainer.Trainer;
-import spring.fitlinkbe.infra.producer.EventTopic;
 import spring.fitlinkbe.support.security.SecurityUser;
 
 import java.time.LocalDate;
@@ -40,7 +40,6 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final SessionRepository sessionRepository;
     private final ApplicationEventPublisher publisher;
-    private final EventTopic eventTopic;
 
     /**
      * Related Reservation
@@ -145,7 +144,7 @@ public class ReservationService {
                         .sessionInfoId(reservation.getSessionInfo().getSessionInfoId())
                         .name(reservation.getName())
                         .confirmDate(reservation.getConfirmDate())
-                        .topic(eventTopic.getReservationQueue())
+                        .topic(EventTopic.RESERVATION_QUEUE)
                         .messageId(UUID.randomUUID().toString())
                         .build()));
     }

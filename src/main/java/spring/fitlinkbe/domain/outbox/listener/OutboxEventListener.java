@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import spring.fitlinkbe.domain.common.event.OutboxEvent;
+import spring.fitlinkbe.domain.outbox.OutboxEvent;
 import spring.fitlinkbe.domain.outbox.OutboxService;
 import spring.fitlinkbe.domain.producer.EventProducer;
 
