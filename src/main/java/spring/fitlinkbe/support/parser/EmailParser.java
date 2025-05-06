@@ -68,19 +68,28 @@ public class EmailParser {
         }
 
         // bodyContent를 빈 줄 바로 '다음 줄'로 설정
-        String bodyContent = "";
-        if (blankIndex != -1 && blankIndex + 1 < lines.length) {
-            bodyContent = lines[blankIndex + 1];
+        StringBuilder bodyContent = new StringBuilder();
+        if (blankIndex != -1) {
+            for (int i = blankIndex + 1; i < lines.length; i++) {
+                if(!lines[i].isEmpty()) {
+                    bodyContent.append(lines[i]);
+                } else {
+                    break;
+                }
+            }
         }
 
-        String body = decodeBodyIfEncoded(bodyContent, headers);
+        String body = decodeBodyIfEncoded(bodyContent.toString(), headers);
+        return extractTokenFromBody(body);
+    }
 
-        Pattern pattern = Pattern.compile("\\[[^]]+]\\s*([A-Za-z0-9]+)");
-        Matcher matcher = pattern.matcher(body);
-        if (matcher.find()) {
-            return matcher.group(1);
+    public static String extractTokenFromBody(String body) {
+        String[] lines = body.split("\\r?\\n");
+        for (int i = 0; i < lines.length - 1; i++) {
+            if (lines[i].trim().matches("^\\[[^]]+]$")) {
+                return lines[i + 1].trim();
+            }
         }
-
         return null;
     }
 
