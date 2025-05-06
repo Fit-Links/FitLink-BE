@@ -12,7 +12,6 @@ spring:
         endpoint:
   profiles:
     active: test
-    include: secret
   datasource:
     url: jdbc:h2:mem:test;MODE=MySQL;TIME ZONE=Asia/Seoul
     driverClassName: org.h2.Driver
@@ -26,11 +25,34 @@ spring:
       hibernate:
         format_sql: true
     database-platform: org.hibernate.dialect.H2Dialect
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-name: Google
+            client-id: client-id
+            client-secret: client-secret
+            scope:
+              - email
+              - profile
+
+        provider:
+          google:
+            authorization-uri: authorization-uri
+            token-uri: token-uri
+            user-info-uri: user-info-uri
+            user-name-attribute: id
 
 server:
   port: 8080
 
 app:
+  auth:
+    token-secret: secretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecret
+    refresh-token-secret: secretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecretsecret
+    token-expiry: 3600
+    refresh-token-expiry: 3600
   cors:
     allowed-headers:
     allowed-methods:
