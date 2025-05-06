@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - dev
+  workflow_dispatch:
 
 jobs:
   build-server:
@@ -16,6 +17,9 @@ jobs:
       packages: read
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Create test application-secret.yml from GitHub Secret
         run: |
           mkdir -p ./src/test/resources
@@ -45,3 +49,19 @@ jobs:
 
       - name: Test And Build
         run: ./gradlew build --no-daemon
+
+      - name: Upload jar artifact
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitlink-jar
+          path: build/libs/*.jar
+
+#  deploy-server:
+#    needs: build-server
+#    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
