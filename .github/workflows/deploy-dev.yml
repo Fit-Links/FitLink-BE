@@ -103,3 +103,13 @@ jobs:
         run: |
             docker build -t ${{ secrets.DEV_ECR_REPOSITORY }}:latest .
             docker push ${{ secrets.DEV_ECR_REPOSITORY }}:latest
+
+      - name: Execute remote SSH commands on EC2
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.DEV_EC2_HOST }}
+          username: ${{ secrets.DEV_EC2_USER }}
+          key: ${{ secrets.DEV_EC2_SSH_KEY }}
+          port: 22
+          script: |
+            bash ~/deploy-dev.sh
