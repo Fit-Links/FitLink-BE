@@ -2941,8 +2941,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
-            LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
-            LocalDateTime changeRequestDate = LocalDateTime.now().plusDays(2);
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime reservationDate = now.plusDays(1);
+            LocalDateTime changeRequestDate = now.plusDays(2);
 
             ReservationRequestDto.ChangeReqeust request = ReservationRequestDto.ChangeReqeust
                     .builder()
@@ -2956,7 +2957,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .member(Member.builder().memberId(1L).build())
                     .reservationDates(List.of(reservationDate))
                     .status(FIXED_RESERVATION)
-                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .createdAt(now.plusSeconds(2))
                     .build();
 
             Reservation savedReservation = reservationRepository.saveReservation(reservation1).orElseThrow();
@@ -2976,7 +2977,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .reservationDates(List.of(changeRequestDate))
                     .confirmDate(changeRequestDate)
                     .status(RESERVATION_APPROVED)
-                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .createdAt(now.plusSeconds(2))
                     .build();
 
             Reservation savedReservation2 = reservationRepository.saveReservation(reservation2).orElseThrow();
