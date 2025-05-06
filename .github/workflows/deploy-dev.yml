@@ -1,0 +1,114 @@
+name: Deploy Dev
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+  workflow_dispatch:
+
+jobs:
+  build-server:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Download main application-secret.yml from S3
+        run: |
+          mkdir -p ./src/main/resources
+          aws s3 cp ${{ secrets.SECRET_YML_S3_PATH }}/dev/application-secret.yml ./src/main/resources/application-secret.yml
+
+      - name: Download test application-secret.yml from S3
+        run: |
+          mkdir -p ./src/test/resources
+          aws s3 cp ${{ secrets.SECRET_YML_S3_PATH }}/test/application-secret.yml ./src/test/resources/application-secret.yml
+
+      - name: Download firebase-service-account.json from S3
+        run: |
+          aws s3 cp ${{ secrets.SECRET_YML_S3_PATH }}/dev/firebase-service-account.json ./src/main/resources/firebase-service-account.json
+
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+        shell: bash
+
+      - name: Test And Build
+        run: ./gradlew build --no-daemon -Duser.timezone=Asia/Seoul
+
+      - name: Upload jar artifact
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitlink-jar
+          path: build/libs/*.jar
+
+  deploy-server:
+    needs: build-server
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download jar artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fitlink-jar
+          path: build/libs
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get current time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYYMMDD-HHmmss
+          timezone: Asia/Seoul
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Tag and push backup image
+        env:
+          TAGGED_TIME: ${{ steps.current-time.outputs.formattedTime }}
+        run: |
+          docker pull ${{ secrets.DEV_ECR_REPOSITORY }}:latest
+          docker tag ${{ secrets.DEV_ECR_REPOSITORY }}:latest \
+                     ${{ secrets.DEV_ECR_REPOSITORY }}:$TAGGED_TIME
+          docker push ${{ secrets.DEV_ECR_REPOSITORY }}:$TAGGED_TIME
+
+      - name: Build new image and push as latest
+        run: |
+            docker build -t ${{ secrets.DEV_ECR_REPOSITORY }}:latest .
+            docker push ${{ secrets.DEV_ECR_REPOSITORY }}:latest
+
+      - name: Execute remote SSH commands on EC2
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.DEV_EC2_HOST }}
+          username: ${{ secrets.DEV_EC2_USER }}
+          key: ${{ secrets.DEV_EC2_SSH_KEY }}
+          port: 22
+          script: |
+            bash ~/deploy-dev.sh
