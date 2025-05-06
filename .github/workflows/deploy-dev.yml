@@ -20,28 +20,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create test application-secret.yml from GitHub Secret
-        run: |
-          mkdir -p ./src/test/resources
-          cat <<EOF >  ./src/test/resources/application-secret.yml
-          ${{ secrets.TEST_APPLICATION_SECRET_YML }}
-          EOF
-        shell: bash
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Create main application-secret.yml from GitHub Secret
+      - name: Download main application-secret.yml from S3
         run: |
           mkdir -p ./src/main/resources
-          cat <<EOF >  ./src/main/resources/application-secret.yml
-          ${{ secrets.DEV_APPLICATION_SECRET_YML }}
-          EOF
-        shell: bash
+          aws s3 cp ${{ secrets.SECRET_YML_S3_PATH }}/dev/application-secret.yml ./src/main/resources/application-secret.yml
 
-      - name: Create firebase-service-account.json from GitHub Secret
+      - name: Download test application-secret.yml from S3
         run: |
-          cat <<EOF >  ./src/main/resources/firebase-service-account.json
-          ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
-          EOF
-        shell: bash
+          mkdir -p ./src/test/resources
+          aws s3 cp ${{ secrets.SECRET_YML_S3_PATH }}/test/application-secret.yml ./src/test/resources/application-secret.yml
+
+      - name: Download firebase-service-account.json from S3
+        run: |
+          aws s3 cp ${{ secrets.SECRET_YML_S3_PATH }}/dev/firebase-service-account.json ./src/main/resources/firebase-service-account.json
+
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
