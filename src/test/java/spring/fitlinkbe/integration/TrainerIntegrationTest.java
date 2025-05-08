@@ -1140,6 +1140,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             Member member = testDataHandler.createMember();
             PersonalDetail trainerDetail = testDataHandler.getTrainerPersonalDetail(trainer.getTrainerId());
             PersonalDetail memberDetail = testDataHandler.getMemberPersonalDetail(member.getMemberId());
+            testDataHandler.createToken(memberDetail);
             ConnectingInfo connectingInfo = testDataHandler.createConnectingInfo(trainer, member);
 
             Notification notification = testDataHandler.saveNotification(
@@ -1183,6 +1184,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             Member member = testDataHandler.createMember();
             PersonalDetail trainerDetail = testDataHandler.getTrainerPersonalDetail(trainer.getTrainerId());
             PersonalDetail memberDetail = testDataHandler.getMemberPersonalDetail(member.getMemberId());
+            testDataHandler.createToken(memberDetail);
             ConnectingInfo connectingInfo = testDataHandler.createConnectingInfo(trainer, member);
 
             Notification notification = testDataHandler.saveNotification(

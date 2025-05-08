@@ -90,14 +90,13 @@ public class TestDataHandler {
                 .build();
 
         Member saved = memberRepository.saveMember(member).orElseThrow();
-        PersonalDetail pd = createPersonalDetail(saved);
-        createToken(pd);
+        createPersonalDetail(saved);
         return saved;
     }
 
-    private void createToken(PersonalDetail pd) {
+    public void createToken(PersonalDetail personalDetail) {
         Token token = Token.builder()
-                .personalDetailId(pd.getPersonalDetailId())
+                .personalDetailId(personalDetail.getPersonalDetailId())
                 .refreshToken(UUID.randomUUID().toString())
                 .pushToken(UUID.randomUUID().toString())
                 .build();
