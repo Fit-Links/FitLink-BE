@@ -5,6 +5,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.notification.client.PushNotificationClient;
 import spring.fitlinkbe.domain.notification.command.NotificationCommand;
 import spring.fitlinkbe.domain.notification.command.NotificationRequest;
@@ -28,6 +30,12 @@ public class NotificationService {
 
     public Notification getNotificationDetail(Long notificationId, SecurityUser user) {
         return notificationRepository.getNotification(notificationId, user.getPersonalDetailId());
+    }
+
+    public Notification getNotification(Long notificationId) {
+        return notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND,
+                        "알림을 찾을 수 없습니다. [notificationId: %d]".formatted(notificationId)));
     }
 
     @Transactional

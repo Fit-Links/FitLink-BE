@@ -15,6 +15,7 @@ import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.domain.member.MemberService;
+import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.domain.notification.NotificationService;
 import spring.fitlinkbe.domain.notification.command.NotificationCommand;
 import spring.fitlinkbe.domain.reservation.ReservationService;
@@ -173,5 +174,25 @@ public class TrainerFacade {
         notificationService.sendNotification(NotificationCommand.Disconnect.of(memberDetail,
                 connectingInfo.getTrainer().getTrainerId(), connectingInfo.getTrainer().getName(), UserRole.MEMBER,
                 token.getPushToken()));
+    }
+
+    @Transactional
+    public void decisionConnectRequest(Long trainerId, Long notificationId, Boolean approved) {
+        Notification notification = notificationService.getNotification(notificationId);
+        if (notification.getNotificationType() != Notification.NotificationType.CONNECT) {
+            throw new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND);
+        }
+
+        ConnectingInfo connectingInfo = trainerService.getConnectingInfo(notification.getRefId());
+        connectingInfo.decisionConnectRequest(approved);
+        trainerService.saveConnectingInfo(connectingInfo);
+
+        PersonalDetail memberDetail = memberService.getMemberDetail(connectingInfo.getMember().getMemberId());
+        Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
+        Trainer trainer = trainerService.getTrainerInfo(trainerId);
+
+        notificationService.sendNotification(
+                NotificationCommand.ConnectDecision.of(memberDetail, trainer, approved, token.getPushToken())
+        );
     }
 }

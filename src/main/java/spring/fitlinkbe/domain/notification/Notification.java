@@ -51,9 +51,9 @@ public class Notification {
 
         return Notification.builder()
                 .refId(null)
-                .refType(isApproved ? ReferenceType.CONNECT : ReferenceType.DISCONNECT)
+                .refType(ReferenceType.CONNECT_RESPONSE)
                 .target(UserRole.MEMBER)
-                .notificationType(isApproved ? NotificationType.CONNECT : NotificationType.DISCONNECT)
+                .notificationType(NotificationType.CONNECT_RESPONSE)
                 .personalDetail(memberDetail)
                 .partnerId(trainer.getTrainerId())
                 .name(NotificationType.CONNECT_RESPONSE.getName())
@@ -318,6 +318,7 @@ public class Notification {
     @Getter
     public enum ReferenceType {
         CONNECT("트레이너 연동"),
+        CONNECT_RESPONSE("트레이너 연동 응답"),
         DISCONNECT("트레이너 연동 해제"),
         RESERVATION_REQUEST("예약 요청"),
         RESERVATION_CHANGE("예약 변경"),
@@ -336,7 +337,7 @@ public class Notification {
         RESERVATION_CHANGE_REQUEST("예약 변경 요청", "예약 변경이 요청되었습니다"),
         SESSION_COMPLETED("세션 완료", "세션이 완료 되었습니다."),
         CONNECT("트레이너 연동 요청", "트레이너와 연동 요청이 왔습니다."),
-        CONNECT_RESPONSE("트레이너 연동 처리", "트레이너와 연동이 승이 또는 거절되었습니다."),
+        CONNECT_RESPONSE("트레이너 연동 처리", "트레이너와 연동 요청 결과가 생성되었습니다."),
         DISCONNECT("트레이너 연동 해제", "회원과 연동이 해제되었습니다."),
 
         //회원

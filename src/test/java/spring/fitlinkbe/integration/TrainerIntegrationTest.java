@@ -1164,7 +1164,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.status()).isEqualTo(204);
                 softly.assertThat(response.data()).isNull();
 
-                Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT);
+                Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT_RESPONSE);
                 softly.assertThat(createdNotification).isNotNull();
 
                 ConnectingInfo updatedConnectingInfo = connectingInfoRepository.findConnectingInfo(trainer.getTrainerId(), member.getMemberId()).get();
@@ -1207,7 +1207,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.status()).isEqualTo(204);
                 softly.assertThat(response.data()).isNull();
 
-                Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.DISCONNECT);
+                Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT_RESPONSE);
                 softly.assertThat(createdNotification).isNotNull();
 
                 ConnectingInfo updatedConnectingInfo = connectingInfoRepository.findConnectingInfo(trainer.getTrainerId(), member.getMemberId()).get();

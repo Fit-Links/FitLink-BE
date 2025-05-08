@@ -44,6 +44,14 @@ public class ConnectingInfo {
         return this.trainer.getTrainerId();
     }
 
+    public void decisionConnectRequest(Boolean approved) {
+        if (approved) {
+            this.status = ConnectingStatus.CONNECTED;
+        } else {
+            this.status = ConnectingStatus.REJECTED;
+        }
+    }
+
     public enum ConnectingStatus {
         REQUESTED, CONNECTED, REJECTED, DISCONNECTED
     }

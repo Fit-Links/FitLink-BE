@@ -90,8 +90,18 @@ public class TestDataHandler {
                 .build();
 
         Member saved = memberRepository.saveMember(member).orElseThrow();
-        createPersonalDetail(saved);
+        PersonalDetail pd = createPersonalDetail(saved);
+        createToken(pd);
         return saved;
+    }
+
+    private void createToken(PersonalDetail pd) {
+        Token token = Token.builder()
+                .personalDetailId(pd.getPersonalDetailId())
+                .refreshToken(UUID.randomUUID().toString())
+                .pushToken(UUID.randomUUID().toString())
+                .build();
+        tokenRepository.saveToken(token);
     }
 
     public Member createMember(PersonalDetail.Status status) {
@@ -142,7 +152,7 @@ public class TestDataHandler {
         personalDetailRepository.savePersonalDetail(personalDetail).orElseThrow();
     }
 
-    public void createPersonalDetail(Member member) {
+    public PersonalDetail createPersonalDetail(Member member) {
         PersonalDetail personalDetail = PersonalDetail.builder()
                 .name("홍길동")
                 .email("test@testcode.co.kr")
@@ -152,7 +162,7 @@ public class TestDataHandler {
                 .providerId(UUID.randomUUID().toString())
                 .build();
 
-        personalDetailRepository.savePersonalDetail(personalDetail).orElseThrow();
+        return personalDetailRepository.savePersonalDetail(personalDetail).orElseThrow();
     }
 
     public PersonalDetail createPersonalDetail(
