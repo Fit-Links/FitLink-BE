@@ -3,6 +3,7 @@ package spring.fitlinkbe.domain.notification;
 import lombok.*;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.trainer.Trainer;
 
 import java.time.LocalDateTime;
 
@@ -38,6 +39,24 @@ public class Notification {
                 .personalDetail(trainerDetail)
                 .partnerId(memberId)
                 .name(NotificationType.CONNECT.getName())
+                .content(content)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
+    public static Notification connectResponse(PersonalDetail memberDetail, Trainer trainer, Boolean isApproved) {
+        String content = isApproved ?
+                trainer.getName() + " 트레이너님과의 연동이 승인되었습니다." :
+                trainer.getName() + " 트레이너님과의 연동이 거절되었습니다.";
+
+        return Notification.builder()
+                .refId(null)
+                .refType(isApproved ? ReferenceType.CONNECT : ReferenceType.DISCONNECT)
+                .target(UserRole.MEMBER)
+                .notificationType(isApproved ? NotificationType.CONNECT : NotificationType.DISCONNECT)
+                .personalDetail(memberDetail)
+                .partnerId(trainer.getTrainerId())
+                .name(NotificationType.CONNECT_RESPONSE.getName())
                 .content(content)
                 .sendDate(LocalDateTime.now())
                 .build();
@@ -317,6 +336,7 @@ public class Notification {
         RESERVATION_CHANGE_REQUEST("예약 변경 요청", "예약 변경이 요청되었습니다"),
         SESSION_COMPLETED("세션 완료", "세션이 완료 되었습니다."),
         CONNECT("트레이너 연동 요청", "트레이너와 연동 요청이 왔습니다."),
+        CONNECT_RESPONSE("트레이너 연동 처리", "트레이너와 연동이 승이 또는 거절되었습니다."),
         DISCONNECT("트레이너 연동 해제", "회원과 연동이 해제되었습니다."),
 
         //회원

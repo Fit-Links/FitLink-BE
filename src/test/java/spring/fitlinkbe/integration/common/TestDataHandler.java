@@ -13,6 +13,8 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.member.WorkoutScheduleRepository;
+import spring.fitlinkbe.domain.notification.Notification;
+import spring.fitlinkbe.domain.notification.NotificationRepository;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationRepository;
 import spring.fitlinkbe.domain.reservation.Session;
@@ -54,6 +56,8 @@ public class TestDataHandler {
 
     private final AttachmentRepository attachmentRepository;
 
+    private final NotificationRepository notificationRepository;
+
 
     public TestDataHandler(
             PersonalDetailRepository personalDetailRepository,
@@ -62,7 +66,7 @@ public class TestDataHandler {
             ConnectingInfoRepository connectingInfoRepository, WorkoutScheduleRepository workoutScheduleRepository,
             ReservationRepository reservationRepository,
             TokenRepository tokenRepository,
-            AttachmentRepository attachmentRepository) {
+            AttachmentRepository attachmentRepository, NotificationRepository notificationRepository) {
 
         this.personalDetailRepository = personalDetailRepository;
         this.memberRepository = memberRepository;
@@ -74,6 +78,7 @@ public class TestDataHandler {
         this.reservationRepository = reservationRepository;
         this.tokenRepository = tokenRepository;
         this.attachmentRepository = attachmentRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     public Member createMember() {
@@ -419,5 +424,19 @@ public class TestDataHandler {
                 .build();
 
         reservationRepository.saveReservation(reservation);
+    }
+
+    public ConnectingInfo createConnectingInfo(Trainer trainer, Member member) {
+        ConnectingInfo connectingInfo = ConnectingInfo.builder()
+                .trainer(trainer)
+                .member(member)
+                .status(ConnectingInfo.ConnectingStatus.REQUESTED)
+                .build();
+
+        return connectingInfoRepository.save(connectingInfo);
+    }
+
+    public Notification saveNotification(Notification notification) {
+        return notificationRepository.save(notification);
     }
 }
