@@ -25,4 +25,6 @@ public interface ConnectingInfoRepository {
      * @return
      */
     Optional<ConnectingInfo> findConnectingInfo(Long trainerId, Long memberId);
+
+    ConnectingInfo getConnectedInfoById(Long connectingInfoId);
 }

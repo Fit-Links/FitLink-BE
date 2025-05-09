@@ -116,6 +116,10 @@ public class TrainerService {
         return connectingInfoRepository.getConnectingInfo(memberId, trainerId);
     }
 
+    public ConnectingInfo getConnectingInfo(Long connectingInfoId) {
+        return connectingInfoRepository.getConnectedInfoById(connectingInfoId);
+    }
+
     public void saveConnectingInfo(ConnectingInfo connectingInfo) {
         connectingInfoRepository.save(connectingInfo);
     }

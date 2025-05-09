@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface NotificationRepository {
     Notification getNotification(Long personalDetailId);
@@ -22,4 +23,5 @@ public interface NotificationRepository {
     Page<Notification> getNotifications(Notification.ReferenceType type, Pageable pageRequest, UserRole userRole,
                                         Long personalDetailId, String keyword);
 
+    Optional<Notification> findById(Long notificationId);
 }

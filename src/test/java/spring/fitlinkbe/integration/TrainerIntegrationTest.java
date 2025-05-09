@@ -23,10 +23,7 @@ import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
-import spring.fitlinkbe.interfaces.controller.trainer.dto.AvailableTimesDto;
-import spring.fitlinkbe.interfaces.controller.trainer.dto.DayOffDto;
-import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerDto;
-import spring.fitlinkbe.interfaces.controller.trainer.dto.TrainerInfoDto;
+import spring.fitlinkbe.interfaces.controller.trainer.dto.*;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -1125,6 +1122,100 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             });
         }
 
+    }
+
+    @Nested
+    @DisplayName("멤버 연결 요청 처리 api 테스트")
+    class DecisionConnectTest {
+        private static final String URL = "/v1/trainers/connect-requests/{notificationId}/decision";
+
+        @Test
+        @DisplayName("트레이너 멤버 연결 요청 처리 성공 - 연동 수락")
+        void decisionConnectSuccess() throws Exception {
+            // given
+            // 멤버가 트레이너에게 요청한 내역이 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+            Member member = testDataHandler.createMember();
+            PersonalDetail trainerDetail = testDataHandler.getTrainerPersonalDetail(trainer.getTrainerId());
+            PersonalDetail memberDetail = testDataHandler.getMemberPersonalDetail(member.getMemberId());
+            testDataHandler.createToken(memberDetail);
+            ConnectingInfo connectingInfo = testDataHandler.createConnectingInfo(trainer, member);
+
+            Notification notification = testDataHandler.saveNotification(
+                    Notification.connectRequest(trainerDetail, member.getMemberId(),
+                            member.getName(), connectingInfo.getConnectingInfoId())
+            );
+
+            // when
+            // 트레이너가 멤버 연결 요청 처리 요청을 한다면
+            String url = URL.replace("{notificationId}", notification.getNotificationId().toString());
+            ExtractableResponse<Response> result = post(url, writeValueAsString(new ConnectRequestDecisionDto(true)), token);
+
+            // then
+            // 멤버 연결 요청 처리 성공한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(204);
+                softly.assertThat(response.data()).isNull();
+
+                Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT_RESPONSE);
+                softly.assertThat(createdNotification).isNotNull();
+
+                ConnectingInfo updatedConnectingInfo = connectingInfoRepository.findConnectingInfo(trainer.getTrainerId(), member.getMemberId()).get();
+                softly.assertThat(updatedConnectingInfo.getStatus()).isEqualTo(ConnectingInfo.ConnectingStatus.CONNECTED);
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너 멤버 연결 요청 처리 성공 - 연동 거절")
+        void decisionConnectSuccess2() throws Exception {
+            // given
+            // 멤버가 트레이너에게 요청한 내역이 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+            Member member = testDataHandler.createMember();
+            PersonalDetail trainerDetail = testDataHandler.getTrainerPersonalDetail(trainer.getTrainerId());
+            PersonalDetail memberDetail = testDataHandler.getMemberPersonalDetail(member.getMemberId());
+            testDataHandler.createToken(memberDetail);
+            ConnectingInfo connectingInfo = testDataHandler.createConnectingInfo(trainer, member);
+
+            Notification notification = testDataHandler.saveNotification(
+                    Notification.connectRequest(trainerDetail, member.getMemberId(),
+                            member.getName(), connectingInfo.getConnectingInfoId())
+            );
+
+            // when
+            // 트레이너가 멤버 연결 요청 처리 요청을 한다면
+            String url = URL.replace("{notificationId}", notification.getNotificationId().toString());
+            ExtractableResponse<Response> result = post(url, writeValueAsString(new ConnectRequestDecisionDto(false)), token);
+
+            // then
+            // 멤버 연결 요청 처리 성공한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(204);
+                softly.assertThat(response.data()).isNull();
+
+                Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT_RESPONSE);
+                softly.assertThat(createdNotification).isNotNull();
+
+                ConnectingInfo updatedConnectingInfo = connectingInfoRepository.findConnectingInfo(trainer.getTrainerId(), member.getMemberId()).get();
+                softly.assertThat(updatedConnectingInfo.getStatus()).isEqualTo(ConnectingInfo.ConnectingStatus.REJECTED);
+            });
+        }
     }
 
     private void createAvailableTimes(Trainer trainer, LocalDate date) {

@@ -13,6 +13,8 @@ import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.member.WorkoutSchedule;
 import spring.fitlinkbe.domain.member.WorkoutScheduleRepository;
+import spring.fitlinkbe.domain.notification.Notification;
+import spring.fitlinkbe.domain.notification.NotificationRepository;
 import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationRepository;
 import spring.fitlinkbe.domain.reservation.Session;
@@ -54,6 +56,8 @@ public class TestDataHandler {
 
     private final AttachmentRepository attachmentRepository;
 
+    private final NotificationRepository notificationRepository;
+
 
     public TestDataHandler(
             PersonalDetailRepository personalDetailRepository,
@@ -62,7 +66,7 @@ public class TestDataHandler {
             ConnectingInfoRepository connectingInfoRepository, WorkoutScheduleRepository workoutScheduleRepository,
             ReservationRepository reservationRepository,
             TokenRepository tokenRepository,
-            AttachmentRepository attachmentRepository) {
+            AttachmentRepository attachmentRepository, NotificationRepository notificationRepository) {
 
         this.personalDetailRepository = personalDetailRepository;
         this.memberRepository = memberRepository;
@@ -74,6 +78,7 @@ public class TestDataHandler {
         this.reservationRepository = reservationRepository;
         this.tokenRepository = tokenRepository;
         this.attachmentRepository = attachmentRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     public Member createMember() {
@@ -87,6 +92,15 @@ public class TestDataHandler {
         Member saved = memberRepository.saveMember(member).orElseThrow();
         createPersonalDetail(saved);
         return saved;
+    }
+
+    public void createToken(PersonalDetail personalDetail) {
+        Token token = Token.builder()
+                .personalDetailId(personalDetail.getPersonalDetailId())
+                .refreshToken(UUID.randomUUID().toString())
+                .pushToken(UUID.randomUUID().toString())
+                .build();
+        tokenRepository.saveToken(token);
     }
 
     public Member createMember(PersonalDetail.Status status) {
@@ -137,7 +151,7 @@ public class TestDataHandler {
         personalDetailRepository.savePersonalDetail(personalDetail).orElseThrow();
     }
 
-    public void createPersonalDetail(Member member) {
+    public PersonalDetail createPersonalDetail(Member member) {
         PersonalDetail personalDetail = PersonalDetail.builder()
                 .name("홍길동")
                 .email("test@testcode.co.kr")
@@ -147,7 +161,7 @@ public class TestDataHandler {
                 .providerId(UUID.randomUUID().toString())
                 .build();
 
-        personalDetailRepository.savePersonalDetail(personalDetail).orElseThrow();
+        return personalDetailRepository.savePersonalDetail(personalDetail).orElseThrow();
     }
 
     public PersonalDetail createPersonalDetail(
@@ -419,5 +433,19 @@ public class TestDataHandler {
                 .build();
 
         reservationRepository.saveReservation(reservation);
+    }
+
+    public ConnectingInfo createConnectingInfo(Trainer trainer, Member member) {
+        ConnectingInfo connectingInfo = ConnectingInfo.builder()
+                .trainer(trainer)
+                .member(member)
+                .status(ConnectingInfo.ConnectingStatus.REQUESTED)
+                .build();
+
+        return connectingInfoRepository.save(connectingInfo);
+    }
+
+    public Notification saveNotification(Notification notification) {
+        return notificationRepository.save(notification);
     }
 }

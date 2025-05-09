@@ -12,6 +12,7 @@ import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.domain.notification.NotificationRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -71,5 +72,11 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
         return notifications.map(NotificationEntity::toDomain);
 
+    }
+
+    @Override
+    public Optional<Notification> findById(Long notificationId) {
+        return notificationJpaRepository.findById(notificationId)
+                .map(NotificationEntity::toDomain);
     }
 }

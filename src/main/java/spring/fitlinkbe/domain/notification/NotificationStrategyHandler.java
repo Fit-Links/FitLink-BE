@@ -20,6 +20,7 @@ public class NotificationStrategyHandler {
     @PostConstruct
     public void init() {
         strategyMap.put(Notification.NotificationType.CONNECT, this::handleConnectRequest);
+        strategyMap.put(Notification.NotificationType.CONNECT_RESPONSE, this::handleConnectResponse);
         strategyMap.put(Notification.NotificationType.DISCONNECT, this::handleDisconnect);
         strategyMap.put(Notification.NotificationType.RESERVATION_CANCEL, this::handleCancelReservation);
         strategyMap.put(Notification.NotificationType.RESERVATION_CANCEL_REQUEST, this::handleCancelRequestReservation);
@@ -55,6 +56,11 @@ public class NotificationStrategyHandler {
         NotificationCommand.Connect dto = (NotificationCommand.Connect) request;
         return Notification.connectRequest(dto.trainerDetail(), dto.memberId(), dto.memberName(),
                 dto.connectingInfoId());
+    }
+
+    private Notification handleConnectResponse(NotificationRequest request) {
+        NotificationCommand.ConnectDecision dto = (NotificationCommand.ConnectDecision) request;
+        return Notification.connectResponse(dto.memberDetail(), dto.trainer(), dto.isApproved());
     }
 
     private Notification handleDisconnect(NotificationRequest request) {

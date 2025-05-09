@@ -5,10 +5,41 @@ import org.springframework.data.domain.Pageable;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.notification.Notification;
+import spring.fitlinkbe.domain.trainer.Trainer;
 
 import java.time.LocalDateTime;
 
 public class NotificationCommand {
+
+
+    @Builder
+    public record ConnectDecision(
+            PersonalDetail memberDetail,
+            Trainer trainer,
+            Boolean isApproved,
+            String fcmToken
+    )implements NotificationRequest {
+
+        @Override
+        public Notification.NotificationType getType() {
+            return Notification.NotificationType.CONNECT_RESPONSE;
+        }
+
+        @Override
+        public String getPushToken() {
+            return this.fcmToken;
+        }
+
+        public static ConnectDecision of(PersonalDetail memberDetail, Trainer trainer, Boolean isApproved,
+                                         String fcmToken) {
+            return ConnectDecision.builder()
+                    .memberDetail(memberDetail)
+                    .trainer(trainer)
+                    .isApproved(isApproved)
+                    .fcmToken(fcmToken)
+                    .build();
+        }
+    }
 
     @Builder
     public record Connect(
