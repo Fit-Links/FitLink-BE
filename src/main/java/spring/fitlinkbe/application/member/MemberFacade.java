@@ -72,7 +72,7 @@ public class MemberFacade {
         memberService.saveConnectingInfo(connectingInfo);
     }
 
-    @Transactional(readOnly = true)
+
     public MemberInfoResult.Response getMyInfo(Long memberId) {
         ConnectingInfo connectingInfo = memberService.findConnectingInfo(memberId);
         SessionInfo sessionInfo = connectingInfo != null ? memberService
@@ -215,7 +215,6 @@ public class MemberFacade {
         return memberPage.map(member -> MemberInfoResult.SimpleResponse.of(member, grouped.get(member.getMemberId())));
     }
 
-    @Transactional(readOnly = true)
     public MemberInfoResult.Response getMemberInfo(Long trainerId, Long memberId) {
         memberService.checkConnected(trainerId, memberId);
 
