@@ -46,6 +46,16 @@ public class SessionInfoRepositoryImpl implements SessionInfoRepository {
     }
 
     @Override
+    public Optional<SessionInfo> getSessionInfoWithNoLock(Long trainerId, Long memberId) {
+        Optional<SessionInfoEntity> findEntity = sessionInfoJpaRepository.findByMemberIdAndTrainerId(memberId, trainerId);
+
+        if (findEntity.isPresent()) {
+            return findEntity.map(SessionInfoEntity::toDomain);
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public Optional<SessionInfo> findSessionInfo(Long memberId) {
 
         Optional<SessionInfoEntity> findEntity = sessionInfoJpaRepository.findByMemberIdJoinFetch(memberId);

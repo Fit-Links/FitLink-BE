@@ -11,8 +11,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
+import spring.fitlinkbe.domain.common.SessionInfoRepository;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.domain.notification.NotificationRepository;
@@ -30,6 +32,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class TrainerIntegrationTest extends BaseIntegrationTest {
@@ -45,6 +48,9 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     NotificationRepository notificationRepository;
+
+    @Autowired
+    SessionInfoRepository sessionInfoRepository;
 
     @Nested
     @DisplayName("트레이너 내 정보 조회 테스트")
@@ -1168,6 +1174,12 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT_RESPONSE);
                 softly.assertThat(createdNotification).isNotNull();
 
+                SessionInfo sessionInfo = sessionInfoRepository.getSessionInfoWithNoLock(trainer.getTrainerId(), member.getMemberId()).get();
+                softly.assertThat(sessionInfo).isNotNull();
+                softly.assertThat(sessionInfo.getRemainingCount()).isEqualTo(0);
+                softly.assertThat(sessionInfo.getTotalCount()).isEqualTo(0);
+
+
                 ConnectingInfo updatedConnectingInfo = connectingInfoRepository.findConnectingInfo(trainer.getTrainerId(), member.getMemberId()).get();
                 softly.assertThat(updatedConnectingInfo.getStatus()).isEqualTo(ConnectingInfo.ConnectingStatus.CONNECTED);
             });
@@ -1211,6 +1223,9 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
 
                 Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT_RESPONSE);
                 softly.assertThat(createdNotification).isNotNull();
+
+                Optional<SessionInfo> sessionInfo = sessionInfoRepository.getSessionInfoWithNoLock(trainer.getTrainerId(), member.getMemberId());
+                softly.assertThat(sessionInfo.isEmpty()).isTrue();
 
                 ConnectingInfo updatedConnectingInfo = connectingInfoRepository.findConnectingInfo(trainer.getTrainerId(), member.getMemberId()).get();
                 softly.assertThat(updatedConnectingInfo.getStatus()).isEqualTo(ConnectingInfo.ConnectingStatus.REJECTED);
