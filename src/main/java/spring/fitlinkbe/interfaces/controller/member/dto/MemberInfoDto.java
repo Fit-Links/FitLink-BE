@@ -39,6 +39,8 @@ public class MemberInfoDto {
             String name,
             Long trainerId,
             String trainerName,
+            String trainerPhone,
+            String trainerProfileUrl,
             ConnectingInfo.ConnectingStatus connectingStatus,
             String profilePictureUrl,
             List<ReservationResponse> fixedReservations,
@@ -51,6 +53,8 @@ public class MemberInfoDto {
                     .name(result.name())
                     .trainerId(result.trainerId())
                     .trainerName(result.trainerName())
+                    .trainerPhone(result.trainerPhone())
+                    .trainerProfileUrl(result.trainerProfileUrl())
                     .connectingStatus(result.connectingStatus())
                     .profilePictureUrl(result.profilePictureUrl())
                     .fixedReservations(result.fixedReservations().stream().map(ReservationResponse::from).toList())
