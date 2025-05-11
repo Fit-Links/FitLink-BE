@@ -300,6 +300,8 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(data.profilePictureUrl()).isEqualTo(member.getProfilePictureUrl());
                 softly.assertThat(data.trainerName()).isEqualTo(trainer.getName());
                 softly.assertThat(data.trainerId()).isEqualTo(trainer.getTrainerId());
+                softly.assertThat(data.trainerPhone()).isEqualTo(trainer.getPhoneNumber());
+                softly.assertThat(data.trainerProfileUrl()).isEqualTo(trainer.getProfilePictureUrl());
                 softly.assertThat(data.sessionInfo().sessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
                 softly.assertThat(data.sessionInfo().remainingCount()).isEqualTo(sessionInfo.getRemainingCount());
                 softly.assertThat(data.sessionInfo().totalCount()).isEqualTo(sessionInfo.getTotalCount());

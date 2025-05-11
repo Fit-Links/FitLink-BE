@@ -132,6 +132,9 @@ public class TestDataHandler {
     public Trainer createTrainer(String trainerCode) {
         Trainer trainer = Trainer.builder()
                 .trainerCode(trainerCode)
+                .name("trainer name")
+                .phoneNumber(new PhoneNumber("01012345678"))
+                .profilePictureUrl("test.jpg")
                 .build();
 
         Trainer saved = trainerRepository.saveTrainer(trainer).orElseThrow();
