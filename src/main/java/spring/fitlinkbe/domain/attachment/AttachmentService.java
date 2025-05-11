@@ -24,7 +24,7 @@ public class AttachmentService {
     }
 
     /**
-     * Finds the attachment by ID and updates the personal detail ID.
+     * Finds the attachment by ID and links the personal detail ID to it.
      */
     public Attachment findAttachment(Long attachmentId, Long personalDetailId) {
         if (attachmentId == null) {

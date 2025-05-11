@@ -377,6 +377,8 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(trainer).isNotNull();
                 softly.assertThat(trainer.getTrainerCode()).isNotNull();
                 softly.assertThat(trainer.getName()).isEqualTo(request.name());
+                softly.assertThat(trainer.getPhoneNumber()).isEqualTo(personalDetail.getPhoneNumber());
+                softly.assertThat(trainer.getProfilePictureUrl()).isEqualTo(attachment.getUploadFilePath());
 
                 List<AvailableTime> availableTimes = trainerRepository.getTrainerAvailableTimes(trainer.getTrainerId());
                 softly.assertThat(availableTimes).hasSize(request.availableTimes().size());

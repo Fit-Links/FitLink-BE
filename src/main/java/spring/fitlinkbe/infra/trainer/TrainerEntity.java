@@ -21,7 +21,7 @@ public class TrainerEntity extends BaseTimeEntity {
     private String trainerCode;
 
     private String name;
-
+    
     private String phoneNumber;
 
     private String profilePictureUrl;

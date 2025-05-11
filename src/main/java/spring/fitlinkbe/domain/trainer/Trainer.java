@@ -52,4 +52,8 @@ public class Trainer {
     public void updateName(String name) {
         this.name = name;
     }
+
+    public void updateProfile(String uploadFilePath) {
+        this.profilePictureUrl = uploadFilePath;
+    }
 }
