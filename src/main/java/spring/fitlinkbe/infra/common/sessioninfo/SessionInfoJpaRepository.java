@@ -28,6 +28,13 @@ public interface SessionInfoJpaRepository extends JpaRepository<SessionInfoEntit
             "AND si.trainer.trainerId = :trainerId")
     Optional<SessionInfoEntity> findWithPessimisticLock(Long memberId, Long trainerId);
 
+    @Query("SELECT si FROM SessionInfoEntity si " +
+            "LEFT JOIN FETCH si.trainer " +
+            "LEFT JOIN FETCH si.member " +
+            "WHERE si.member.memberId = :memberId " +
+            "AND si.trainer.trainerId = :trainerId")
+    Optional<SessionInfoEntity> findByMemberIdAndTrainerId(Long memberId, Long trainerId);
+
     @EntityGraph(attributePaths = {"member", "trainer"})
     List<SessionInfoEntity> findByMember_memberIdInAndTrainer_TrainerId(List<Long> memberIds, Long trainerId);
 }

@@ -54,4 +54,8 @@ public class NotificationService {
     public void pushNotification(String token, String title, String content) {
         pushNotificationClient.pushNotification(token, title, content);
     }
+
+    public void save(Notification notification) {
+        notificationRepository.save(notification);
+    }
 }

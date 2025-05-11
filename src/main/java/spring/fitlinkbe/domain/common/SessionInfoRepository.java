@@ -13,6 +13,8 @@ public interface SessionInfoRepository {
 
     Optional<SessionInfo> getSessionInfo(Long trainerId, Long memberId);
 
+    Optional<SessionInfo> getSessionInfoWithNoLock(Long trainerId, Long memberId);
+
     Optional<SessionInfo> findSessionInfo(Long memberId);
 
     List<SessionInfo> findAllSessionInfo(List<Long> memberIds, Long trainerId);
