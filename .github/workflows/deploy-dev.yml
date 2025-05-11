@@ -32,11 +32,6 @@ jobs:
           mkdir -p ./src/main/resources
           aws s3 cp ${{ secrets.SECRET_YML_S3_PATH }}/dev/application-secret.yml ./src/main/resources/application-secret.yml
 
-      - name: Download test application-secret.yml from S3
-        run: |
-          mkdir -p ./src/test/resources
-          aws s3 cp ${{ secrets.SECRET_YML_S3_PATH }}/test/application-secret.yml ./src/test/resources/application-secret.yml
-
       - name: Download firebase-service-account.json from S3
         run: |
           aws s3 cp ${{ secrets.SECRET_YML_S3_PATH }}/dev/firebase-service-account.json ./src/main/resources/firebase-service-account.json
