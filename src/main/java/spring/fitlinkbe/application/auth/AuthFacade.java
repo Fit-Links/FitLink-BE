@@ -33,12 +33,17 @@ public class AuthFacade {
 
     @Transactional
     public AuthCommand.Response registerTrainer(Long personalDetailId, AuthCommand.TrainerRegisterRequest command) {
-        Trainer savedTrainer = trainerService.saveTrainer(new Trainer(generateRandomString(Trainer.CODE_SIZE), command.name()));
-
         PersonalDetail personalDetail = authService.getPersonalDetailById(personalDetailId);
         Attachment attachment = attachmentService.findAttachment(command.attachmentId(), personalDetailId);
 
         String profileUrl = attachment != null ? attachment.getUploadFilePath() : null;
+        Trainer newTrainer = Trainer.builder()
+                .trainerCode(generateRandomString(Trainer.CODE_SIZE))
+                .name(command.name())
+                .phoneNumber(new PhoneNumber(personalDetail.getPhoneNumber()))
+                .profilePictureUrl(profileUrl)
+                .build();
+        Trainer savedTrainer = trainerService.saveTrainer(newTrainer);
         personalDetail.registerTrainer(command.name(), command.birthDate(), profileUrl, command.gender(), savedTrainer);
 
         authService.savePersonalDetail(personalDetail);

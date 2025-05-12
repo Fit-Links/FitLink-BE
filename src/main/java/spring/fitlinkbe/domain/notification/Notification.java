@@ -27,6 +27,10 @@ public class Notification {
     private boolean isProcessed;
     private LocalDateTime sendDate;
 
+    public void process() {
+        this.isProcessed = true;
+    }
+
     public static Notification connectRequest(PersonalDetail trainerDetail,
                                               Long memberId, String memberName, Long connectingInfoId) {
         String content = memberName + " 님에게 연동 요청이 왔습니다.";

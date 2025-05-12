@@ -15,6 +15,7 @@ import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
 import spring.fitlinkbe.domain.trainer.Trainer;
+import spring.fitlinkbe.domain.trainer.TrainerRepository;
 import spring.fitlinkbe.integration.common.BaseIntegrationTest;
 import spring.fitlinkbe.integration.common.TestDataHandler;
 import spring.fitlinkbe.interfaces.controller.attachment.dto.AttachmentDto;
@@ -33,6 +34,9 @@ public class AttachmentIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     PersonalDetailRepository personalDetailRepository;
+
+    @Autowired
+    TrainerRepository trainerRepository;
 
     @Nested
     @DisplayName("유저 프로필 업데이트 api 테스트")
@@ -101,6 +105,9 @@ public class AttachmentIntegrationTest extends BaseIntegrationTest {
                 });
                 softly.assertThat(response.status()).isEqualTo(201);
                 softly.assertThat(response.success()).isTrue();
+
+                Trainer updatedTrainer = trainerRepository.getTrainerInfo(trainer.getTrainerId()).orElseThrow();
+                softly.assertThat(updatedTrainer.getProfilePictureUrl()).isEqualTo(attachment.getUploadFilePath());
 
                 PersonalDetail updatedDetail = personalDetailRepository.getById(trainerDetail.getPersonalDetailId());
                 softly.assertThat(updatedDetail.getProfilePictureUrl()).isEqualTo(attachment.getUploadFilePath());

@@ -2,6 +2,7 @@ package spring.fitlinkbe.infra.trainer;
 
 import jakarta.persistence.*;
 import lombok.*;
+import spring.fitlinkbe.domain.common.model.PhoneNumber;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
 
@@ -20,12 +21,18 @@ public class TrainerEntity extends BaseTimeEntity {
     private String trainerCode;
 
     private String name;
+    
+    private String phoneNumber;
+
+    private String profilePictureUrl;
 
     public static TrainerEntity from(Trainer trainer) {
         return TrainerEntity.builder()
                 .trainerId(trainer.getTrainerId() != null ? trainer.getTrainerId() : null)
                 .trainerCode(trainer.getTrainerCode())
                 .name(trainer.getName())
+                .phoneNumber(trainer.getPhoneNumber())
+                .profilePictureUrl(trainer.getProfilePictureUrl())
                 .build();
     }
 
@@ -33,6 +40,8 @@ public class TrainerEntity extends BaseTimeEntity {
         return Trainer.builder()
                 .trainerId(trainerId)
                 .trainerCode(trainerCode)
+                .phoneNumber(new PhoneNumber(phoneNumber))
+                .profilePictureUrl(profilePictureUrl)
                 .name(name)
                 .createdAt(getCreatedAt())
                 .updatedAt(getUpdatedAt())

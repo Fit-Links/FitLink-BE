@@ -13,6 +13,7 @@ import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.notification.Notification;
@@ -182,6 +183,8 @@ public class TrainerFacade {
         if (notification.getNotificationType() != Notification.NotificationType.CONNECT) {
             throw new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND);
         }
+        notification.process();
+        notificationService.save(notification);
 
         ConnectingInfo connectingInfo = trainerService.getConnectingInfo(notification.getRefId());
         connectingInfo.decisionConnectRequest(approved);
@@ -190,6 +193,10 @@ public class TrainerFacade {
         PersonalDetail memberDetail = memberService.getMemberDetail(connectingInfo.getMember().getMemberId());
         Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
         Trainer trainer = trainerService.getTrainerInfo(trainerId);
+
+        if (approved) {
+            trainerService.createSessionInfo(trainer, connectingInfo.getMember());
+        }
 
         notificationService.sendNotification(
                 NotificationCommand.ConnectDecision.of(memberDetail, trainer, approved, token.getPushToken())

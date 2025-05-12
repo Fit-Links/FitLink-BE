@@ -5,10 +5,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
+import spring.fitlinkbe.domain.common.SessionInfoRepository;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.SessionInfo;
+import spring.fitlinkbe.domain.member.Member;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -25,6 +28,7 @@ public class TrainerService {
     private final PersonalDetailRepository personalDetailRepository;
     private final AvailableTimeRepository availableTimeRepository;
     private final ConnectingInfoRepository connectingInfoRepository;
+    private final SessionInfoRepository sessionInfoRepository;
 
     @Transactional(readOnly = true)
     public Trainer getTrainerInfo(Long trainerId) {
@@ -122,5 +126,13 @@ public class TrainerService {
 
     public void saveConnectingInfo(ConnectingInfo connectingInfo) {
         connectingInfoRepository.save(connectingInfo);
+    }
+
+    public void createSessionInfo(Trainer trainer, Member member) {
+        SessionInfo sessionInfo = SessionInfo.builder()
+                .trainer(trainer)
+                .member(member)
+                .build();
+        sessionInfoRepository.saveSessionInfo(sessionInfo);
     }
 }

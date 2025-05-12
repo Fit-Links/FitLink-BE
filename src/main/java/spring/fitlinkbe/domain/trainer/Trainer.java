@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import spring.fitlinkbe.domain.common.model.PhoneNumber;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,10 @@ public class Trainer {
     private Long trainerId;
 
     private String name;
+
+    private PhoneNumber phoneNumber;
+
+    private String profilePictureUrl;
 
     private Long sessionInfoId;
 
@@ -37,7 +42,18 @@ public class Trainer {
         this.name = name;
     }
 
+    public String getPhoneNumber() {
+        if (phoneNumber == null) {
+            return null;
+        }
+        return phoneNumber.getPhoneNumber();
+    }
+
     public void updateName(String name) {
         this.name = name;
+    }
+
+    public void updateProfile(String uploadFilePath) {
+        this.profilePictureUrl = uploadFilePath;
     }
 }
