@@ -51,7 +51,7 @@ public class Notification {
 
         return Notification.builder()
                 .refId(null)
-                .refType(ReferenceType.CONNECT_RESPONSE)
+                .refType(isApproved ? ReferenceType.CONNECT : ReferenceType.DISCONNECT)
                 .target(UserRole.MEMBER)
                 .notificationType(NotificationType.CONNECT_RESPONSE)
                 .personalDetail(memberDetail)
@@ -318,7 +318,6 @@ public class Notification {
     @Getter
     public enum ReferenceType {
         CONNECT("트레이너 연동"),
-        CONNECT_RESPONSE("트레이너 연동 응답"),
         DISCONNECT("트레이너 연동 해제"),
         RESERVATION_REQUEST("예약 요청"),
         RESERVATION_CHANGE("예약 변경"),
