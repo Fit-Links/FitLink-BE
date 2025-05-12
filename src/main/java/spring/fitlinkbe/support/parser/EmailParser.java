@@ -71,7 +71,7 @@ public class EmailParser {
         StringBuilder bodyContent = new StringBuilder();
         if (blankIndex != -1) {
             for (int i = blankIndex + 1; i < lines.length; i++) {
-                if(!lines[i].isEmpty()) {
+                if (!lines[i].isEmpty()) {
                     bodyContent.append(lines[i]);
                 } else {
                     break;

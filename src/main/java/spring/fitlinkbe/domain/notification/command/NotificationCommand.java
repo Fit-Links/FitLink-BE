@@ -18,7 +18,7 @@ public class NotificationCommand {
             Trainer trainer,
             Boolean isApproved,
             String fcmToken
-    )implements NotificationRequest {
+    ) implements NotificationRequest {
 
         @Override
         public Notification.NotificationType getType() {
