@@ -49,7 +49,7 @@ CREATE TABLE connecting_info
     connecting_info_id BIGINT NOT NULL AUTO_INCREMENT,
     member_id          BIGINT,
     trainer_id         BIGINT,
-    status             ENUM ('CONNECT_PROCESSING', 'CONNECT_COMPLETED', 'CONNECT_REFUSED'),
+    status             ENUM ('REQUESTED', 'CONNECTED', 'REJECTED', 'DISCONNECTED'),
     created_at         DATETIME(6),
     updated_at         DATETIME(6),
     PRIMARY KEY (connecting_info_id)
@@ -130,7 +130,7 @@ CREATE TABLE session
 (
     session_id     BIGINT NOT NULL AUTO_INCREMENT,
     reservation_id BIGINT,
-    status         ENUM ('SESSION_CANCELLED', 'SESSION_WAITING', 'SESSION_COMPLETED'),
+    status         ENUM ('SESSION_CANCELLED', 'SESSION_WAITING', 'SESSION_NOT_ATTEND', 'SESSION_COMPLETED'),
     cancel_reason  VARCHAR(255),
     is_completed   BOOLEAN,
     created_at     DATETIME(6),
@@ -150,7 +150,8 @@ CREATE TABLE reservation
     confirm_date      DATETIME(6),
     change_date       DATETIME(6),
     status            ENUM ('FIXED_RESERVATION','DISABLED_TIME_RESERVATION', 'RESERVATION_WAITING','RESERVATION_APPROVED',
-        'RESERVATION_CANCELLED', 'RESERVATION_REFUSED', 'RESERVATION_CHANGE_REQUEST', 'RESERVATION_COMPLETED'),
+        'RESERVATION_CANCELLED','RESERVATION_CANCEL_REQUEST','RESERVATION_CANCEL_REQUEST_REFUSED',
+        'RESERVATION_REFUSED', 'RESERVATION_CHANGE_REQUEST','RESERVATION_CHANGE_REQUEST_REFUSED', 'RESERVATION_COMPLETED'),
     cancel_reason     VARCHAR(255),
     day_of_week       ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'),
     is_day_off        BOOLEAN,
