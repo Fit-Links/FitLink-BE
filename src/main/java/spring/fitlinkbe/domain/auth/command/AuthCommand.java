@@ -40,6 +40,7 @@ public class AuthCommand {
                     .map(availableTimeRequest ->
                             AvailableTime.builder()
                                     .trainer(savedTrainer)
+                                    .applyAt(LocalDate.now())
                                     .dayOfWeek(availableTimeRequest.dayOfWeek())
                                     .isHoliday(availableTimeRequest.isHoliday())
                                     .startTime(availableTimeRequest.startTime())

@@ -27,6 +27,7 @@ public class AvailableTimeEntity extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private DayOfWeek dayOfWeek;
 
+    @Column(nullable = false)
     private LocalDate applyAt;
 
     private Boolean isHoliday;
