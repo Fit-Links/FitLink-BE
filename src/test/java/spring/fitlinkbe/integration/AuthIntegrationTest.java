@@ -754,4 +754,65 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             });
         }
     }
+
+    @Nested
+    @DisplayName("Access Token 재발급 API 테스트")
+    public class AccessTokenTest {
+        private static final String ACCESS_TOKEN_API = "/v1/auth/access-token";
+
+        @Test
+        @DisplayName("Access Token 재발급 성공")
+        public void renewAccessTokenSuccess() throws Exception {
+            // given
+            // 정상적인 refresh token 이 있을 때
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.NORMAL);
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                    personalDetail.getUserRole());
+            String refreshToken = authTokenProvider.createRefreshToken(personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            AuthDto.AccessTokenRequest request = new AuthDto.AccessTokenRequest(refreshToken);
+            String requestBody = writeValueAsString(request);
+
+            // when
+            // Access Token 재발급 요청을 보낸다면
+            ExtractableResponse<Response> result = post(ACCESS_TOKEN_API, requestBody, accessToken);
+
+            // then
+            // 요청에 성공해야 한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AuthDto.AccessTokenResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.data().accessToken()).isNotNull();
+            });
+        }
+
+        @Test
+        @DisplayName("Access Token 재발급 실패 - refresh token 이 유효하지 않은 경우")
+        public void renewAccessTokenFailBecauseOfInvalidRefreshToken() throws Exception {
+            // given
+            // 유효하지 않은 refresh token 이 있을 때
+            String invalidRefreshToken = "invalid_refresh_token";
+            AuthDto.AccessTokenRequest request = new AuthDto.AccessTokenRequest(invalidRefreshToken);
+            String requestBody = writeValueAsString(request);
+
+            // when
+            // Access Token 재발급 요청을 보낸다면
+            ExtractableResponse<Response> result = post(ACCESS_TOKEN_API, requestBody, null);
+
+            // then
+            // 에러를 반환한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AuthDto.AccessTokenResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.status()).isEqualTo(401);
+                softly.assertThat(response.success()).isFalse();
+            });
+        }
+
+    }
 }
