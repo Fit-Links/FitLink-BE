@@ -26,33 +26,33 @@ public class TrainerController {
     private final TrainerFacade trainerFacade;
 
     @GetMapping("/me")
-    public TrainerInfoDto.Response getTrainerInfo(@Login SecurityUser user) {
+    public ApiResultResponse<TrainerInfoDto.Response> getTrainerInfo(@Login SecurityUser user) {
         TrainerInfoResult.Response response = trainerFacade.getTrainerInfo(user.getTrainerId());
 
-        return TrainerInfoDto.Response.from(response);
+        return ApiResultResponse.of(HttpStatus.OK, true, TrainerInfoDto.Response.from(response));
     }
 
     @PatchMapping("/me")
-    public TrainerInfoDto.TrainerUpdateResponse updateTrainerInfo(
+    public ApiResultResponse<TrainerInfoDto.TrainerUpdateResponse> updateTrainerInfo(
             @Login SecurityUser user,
             @Valid @RequestBody TrainerInfoDto.TrainerUpdateRequest request) {
         TrainerInfoResult.Response response = trainerFacade.updateTrainerInfo(user.getTrainerId(), request.toRequest());
 
-        return TrainerInfoDto.TrainerUpdateResponse.from(response);
+        return ApiResultResponse.of(HttpStatus.OK, true, TrainerInfoDto.TrainerUpdateResponse.from(response));
     }
 
     @GetMapping("/me/trainer-code")
-    public TrainerInfoDto.TrainerCodeResponse getTrainerCode(@Login SecurityUser user) {
+    public ApiResultResponse<TrainerInfoDto.TrainerCodeResponse> getTrainerCode(@Login SecurityUser user) {
         TrainerInfoResult.TrainerCodeResponse response = trainerFacade.getTrainerCode(user.getTrainerId());
 
-        return TrainerInfoDto.TrainerCodeResponse.from(response);
+        return ApiResultResponse.of(HttpStatus.OK, true, TrainerInfoDto.TrainerCodeResponse.from(response));
     }
 
     @GetMapping("/me/available-times")
-    public AvailableTimesDto.Response getAvailableTimes(@Login SecurityUser user) {
+    public ApiResultResponse<AvailableTimesDto.Response> getAvailableTimes(@Login SecurityUser user) {
         AvailableTimesResult.Response response = trainerFacade.getAvailableTimes(user.getTrainerId());
 
-        return AvailableTimesDto.Response.from(response);
+        return ApiResultResponse.of(HttpStatus.OK, true, AvailableTimesDto.Response.from(response));
     }
 
     @GetMapping("/{trainerId}/available-times")
