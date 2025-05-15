@@ -166,4 +166,14 @@ public class AuthDto {
                     .build();
         }
     }
+
+    public record AccessTokenRequest(
+            @NotNull String refreshToken
+    ) {
+    }
+
+    public record AccessTokenResponse(
+            String accessToken
+    ) {
+    }
 }
