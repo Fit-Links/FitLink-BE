@@ -75,11 +75,11 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 내 정보 조회가 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<TrainerInfoDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
                 softly.assertThat(response).isNotNull();
 
-                TrainerInfoDto.Response trainerInfo = readValue(result.body().jsonPath().prettify(), TrainerInfoDto.Response.class);
+                TrainerInfoDto.Response trainerInfo = response.data();
                 softly.assertThat(trainerInfo.trainerId()).isEqualTo(trainer.getTrainerId());
                 softly.assertThat(trainerInfo.name()).isEqualTo(personalDetail.getName());
                 softly.assertThat(trainerInfo.birthDate()).isEqualTo(personalDetail.getBirthDate());
@@ -114,11 +114,11 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 내 정보 수정이 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<TrainerInfoDto.TrainerUpdateResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
                 softly.assertThat(response).isNotNull();
 
-                TrainerInfoDto.TrainerUpdateResponse trainerUpdateResponse = readValue(result.body().jsonPath().prettify(), TrainerInfoDto.TrainerUpdateResponse.class);
+                TrainerInfoDto.TrainerUpdateResponse trainerUpdateResponse = response.data();
                 softly.assertThat(trainerUpdateResponse.trainerId()).isEqualTo(trainer.getTrainerId());
                 softly.assertThat(trainerUpdateResponse.name()).isEqualTo(updateRequest.name());
                 softly.assertThat(trainerUpdateResponse.phoneNumber()).isEqualTo(updateRequest.phoneNumber());
@@ -145,11 +145,11 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 내 정보 수정이 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<TrainerInfoDto.TrainerUpdateResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
                 softly.assertThat(response).isNotNull();
 
-                TrainerInfoDto.TrainerUpdateResponse trainerUpdateResponse = readValue(result.body().jsonPath().prettify(), TrainerInfoDto.TrainerUpdateResponse.class);
+                TrainerInfoDto.TrainerUpdateResponse trainerUpdateResponse = response.data();
                 softly.assertThat(trainerUpdateResponse.trainerId()).isEqualTo(trainer.getTrainerId());
                 softly.assertThat(trainerUpdateResponse.name()).isEqualTo(updateRequest.name());
                 softly.assertThat(trainerUpdateResponse.phoneNumber()).isEqualTo(personalDetail.getPhoneNumber());
@@ -176,11 +176,11 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 내 정보 수정이 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<TrainerInfoDto.TrainerUpdateResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
                 softly.assertThat(response).isNotNull();
 
-                TrainerInfoDto.TrainerUpdateResponse trainerUpdateResponse = readValue(result.body().jsonPath().prettify(), TrainerInfoDto.TrainerUpdateResponse.class);
+                TrainerInfoDto.TrainerUpdateResponse trainerUpdateResponse = response.data();
                 softly.assertThat(trainerUpdateResponse.trainerId()).isEqualTo(trainer.getTrainerId());
                 softly.assertThat(trainerUpdateResponse.name()).isEqualTo(personalDetail.getName());
                 softly.assertThat(trainerUpdateResponse.phoneNumber()).isEqualTo(updateRequest.phoneNumber());
@@ -206,7 +206,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 내 정보 수정이 실패한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<TrainerInfoDto.TrainerUpdateResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
 
                 softly.assertThat(response).isNotNull();
@@ -240,11 +240,11 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 코드 조회가 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<TrainerInfoDto.TrainerCodeResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
                 softly.assertThat(response).isNotNull();
 
-                TrainerInfoDto.TrainerCodeResponse code = readValue(result.body().jsonPath().prettify(), TrainerInfoDto.TrainerCodeResponse.class);
+                TrainerInfoDto.TrainerCodeResponse code = response.data();
                 softly.assertThat(code.trainerCode()).isEqualTo(trainerCode);
             });
         }
@@ -280,11 +280,11 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 수업 가능 시간 조회가 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<AvailableTimesDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
                 softly.assertThat(response).isNotNull();
 
-                AvailableTimesDto.Response availableTimes = readValue(result.body().jsonPath().prettify(), AvailableTimesDto.Response.class);
+                AvailableTimesDto.Response availableTimes = response.data();
 
                 softly.assertThat(availableTimes.currentSchedules().schedules().size()).isEqualTo(4);
                 softly.assertThat(availableTimes.scheduledChanges().schedules().size()).isEqualTo(4);
@@ -312,11 +312,11 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 수업 가능 시간 조회가 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<AvailableTimesDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
                 softly.assertThat(response).isNotNull();
 
-                AvailableTimesDto.Response availableTimes = readValue(result.body().jsonPath().prettify(), AvailableTimesDto.Response.class);
+                AvailableTimesDto.Response availableTimes = response.data();
 
                 softly.assertThat(availableTimes.currentSchedules().schedules().size()).isEqualTo(4);
                 softly.assertThat(availableTimes.scheduledChanges()).isNull();
@@ -344,11 +344,11 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 수업 가능 시간 조회가 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<AvailableTimesDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
                 softly.assertThat(response).isNotNull();
 
-                AvailableTimesDto.Response availableTimes = readValue(result.body().jsonPath().prettify(), AvailableTimesDto.Response.class);
+                AvailableTimesDto.Response availableTimes = response.data();
 
                 softly.assertThat(availableTimes.currentSchedules()).isNull();
                 softly.assertThat(availableTimes.scheduledChanges().schedules().size()).isEqualTo(4);

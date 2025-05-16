@@ -103,7 +103,7 @@ CREATE TABLE available_time
     available_time_id BIGINT NOT NULL AUTO_INCREMENT,
     trainer_id        BIGINT,
     is_holiday        BOOLEAN,
-    apply_at          DATETIME(6),
+    apply_at          DATETIME(6) NOT NULL,
     day_of_week       ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'),
     start_time        TIME,
     end_time          TIME,
