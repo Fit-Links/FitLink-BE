@@ -37,7 +37,7 @@ public class MemberInfoResult {
                     .name(me.getName())
                     .trainerId(trainer != null ? trainer.getTrainerId() : null)
                     .trainerName(trainer != null ? trainer.getName() : null)
-                    .trainerPhone(trainer != null ? trainer.getPhoneNumber(): null)
+                    .trainerPhone(trainer != null ? trainer.getPhoneNumber() : null)
                     .trainerProfileUrl(trainer != null ? trainer.getProfilePictureUrl() : null)
                     .connectingStatus(connectingInfo != null ? connectingInfo.getStatus() : null)
                     .profilePictureUrl(me.getProfilePictureUrl())
