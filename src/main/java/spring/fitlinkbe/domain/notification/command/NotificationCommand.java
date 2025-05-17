@@ -17,7 +17,7 @@ public class NotificationCommand {
             PersonalDetail memberDetail,
             Trainer trainer,
             Boolean isApproved,
-            String fcmToken
+            String pushToken
     ) implements NotificationRequest {
 
         @Override
@@ -27,16 +27,16 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static ConnectDecision of(PersonalDetail memberDetail, Trainer trainer, Boolean isApproved,
-                                         String fcmToken) {
+                                         String pushToken) {
             return ConnectDecision.builder()
                     .memberDetail(memberDetail)
                     .trainer(trainer)
                     .isApproved(isApproved)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
     }
@@ -44,7 +44,7 @@ public class NotificationCommand {
     @Builder
     public record Connect(
             PersonalDetail trainerDetail, Long memberId, String memberName,
-            Long connectingInfoId, String fcmToken
+            Long connectingInfoId, String pushToken
     ) implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -53,18 +53,18 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
 
         public static Connect of(PersonalDetail trainerDetail, Long memberId, String memberName,
-                                 Long connectingInfoId, String fcmToken) {
+                                 Long connectingInfoId, String pushToken) {
             return Connect.builder()
                     .trainerDetail(trainerDetail)
                     .memberId(memberId)
                     .memberName(memberName)
                     .connectingInfoId(connectingInfoId)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
     }
@@ -75,7 +75,7 @@ public class NotificationCommand {
             Long memberId,
             String memberName,
             UserRole target,
-            String fcmToken
+            String pushToken
     ) implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -84,17 +84,17 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static Disconnect of(PersonalDetail trainerDetail, Long memberId, String memberName, UserRole target,
-                                    String fcmToken) {
+                                    String pushToken) {
             return Disconnect.builder()
                     .trainerDetail(trainerDetail)
                     .memberId(memberId)
                     .memberName(memberName)
                     .target(target)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
     }
@@ -105,7 +105,7 @@ public class NotificationCommand {
             Long reservationId,
             Long trainerId,
             Notification.Reason reason,
-            String fcmToken
+            String pushToken
     ) implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -114,20 +114,20 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static Cancel of(PersonalDetail memberDetail,
                                 Long reservationId,
                                 Long trainerId,
                                 Notification.Reason reason,
-                                String fcmToken) {
+                                String pushToken) {
             return Cancel.builder()
                     .memberDetail(memberDetail)
                     .reservationId(reservationId)
                     .trainerId(trainerId)
                     .reason(reason)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
     }
@@ -138,7 +138,7 @@ public class NotificationCommand {
             Long reservationId, Long memberId, String name,
             LocalDateTime cancelDate, String cancelReason,
             Notification.Reason reason,
-            String fcmToken) implements NotificationRequest {
+            String pushToken) implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
             return Notification.NotificationType.RESERVATION_CANCEL_REQUEST;
@@ -146,14 +146,14 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static CancelRequestReservation of(PersonalDetail trainerDetail,
                                                   Long reservationId, Long memberId, String name,
                                                   LocalDateTime cancelDate, String cancelReason,
                                                   Notification.Reason reason,
-                                                  String fcmToken) {
+                                                  String pushToken) {
             return CancelRequestReservation.builder()
                     .trainerDetail(trainerDetail)
                     .reservationId(reservationId)
@@ -162,14 +162,14 @@ public class NotificationCommand {
                     .cancelDate(cancelDate)
                     .cancelReason(cancelReason)
                     .reason(reason)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
     }
 
     @Builder
     public record ApproveReservation(PersonalDetail memberDetail, Long reservationId, LocalDateTime reservationDate,
-                                     Long trainerId, boolean isApprove, String fcmToken)
+                                     Long trainerId, boolean isApprove, String pushToken)
             implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -179,25 +179,25 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static ApproveReservation of(PersonalDetail memberDetail, Long reservationId, LocalDateTime reservationDate,
-                                            Long trainerId, boolean isApprove, String fcmToken) {
+                                            Long trainerId, boolean isApprove, String pushToken) {
             return ApproveReservation.builder()
                     .memberDetail(memberDetail)
                     .reservationId(reservationId)
                     .reservationDate(reservationDate)
                     .trainerId(trainerId)
                     .isApprove(isApprove)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
     }
 
     @Builder
     public record ApproveRequestReservation(PersonalDetail memberDetail, Long reservationId, Long trainerId,
-                                            boolean isApprove, String fcmToken)
+                                            boolean isApprove, String pushToken)
             implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -207,17 +207,17 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static ApproveRequestReservation of(PersonalDetail memberDetail, Long reservationId, Long trainerId,
-                                                   boolean isApprove, String fcmToken) {
+                                                   boolean isApprove, String pushToken) {
             return ApproveRequestReservation.builder()
                     .memberDetail(memberDetail)
                     .reservationId(reservationId)
                     .trainerId(trainerId)
                     .isApprove(isApprove)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
 
@@ -225,7 +225,7 @@ public class NotificationCommand {
 
     @Builder
     public record RequestReservation(PersonalDetail trainerDetail, Long reservationId, LocalDateTime reservationDate,
-                                     Long memberId, String name, String fcmToken)
+                                     Long memberId, String name, String pushToken)
             implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -234,25 +234,25 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static RequestReservation of(PersonalDetail trainerDetail, Long reservationId, LocalDateTime reservationDate,
-                                            Long memberId, String name, String fcmToken) {
+                                            Long memberId, String name, String pushToken) {
             return RequestReservation.builder()
                     .trainerDetail(trainerDetail)
                     .reservationId(reservationId)
                     .reservationDate(reservationDate)
                     .memberId(memberId)
                     .name(name)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
     }
 
     @Builder
     public record CompleteSession(PersonalDetail trainerDetail, Long sessionId, Long memberId, String name,
-                                  String fcmToken)
+                                  String pushToken)
             implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -261,24 +261,24 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static CompleteSession of(PersonalDetail trainerDetail, Long sessionId, Long memberId, String name,
-                                         String fcmToken) {
+                                         String pushToken) {
             return CompleteSession.builder()
                     .trainerDetail(trainerDetail)
                     .sessionId(sessionId)
                     .memberId(memberId)
                     .name(name)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
     }
 
     @Builder
     public record DeductSession(PersonalDetail memberDetail, Long sessionId, Long trainerId,
-                                String fcmToken)
+                                String pushToken)
             implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -287,16 +287,16 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static DeductSession of(PersonalDetail memberDetail, Long sessionId, Long trainerId,
-                                       String fcmToken) {
+                                       String pushToken) {
             return DeductSession.builder()
                     .memberDetail(memberDetail)
                     .sessionId(sessionId)
                     .trainerId(trainerId)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
     }
@@ -304,7 +304,7 @@ public class NotificationCommand {
     @Builder
     public record ChangeRequestReservation(PersonalDetail trainerDetail, Long reservationId, Long memberId,
                                            String name, LocalDateTime reservationDate, LocalDateTime changeDate,
-                                           String fcmToken)
+                                           String pushToken)
             implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -313,12 +313,12 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static ChangeRequestReservation of(PersonalDetail trainerDetail, Long reservationId, Long memberId,
                                                   String name, LocalDateTime reservationDate, LocalDateTime changeDate,
-                                                  String fcmToken) {
+                                                  String pushToken) {
             return ChangeRequestReservation.builder()
                     .trainerDetail(trainerDetail)
                     .reservationId(reservationId)
@@ -326,14 +326,14 @@ public class NotificationCommand {
                     .name(name)
                     .reservationDate(reservationDate)
                     .changeDate(changeDate)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
     }
 
     @Builder
     public record CancelApproveReservation(PersonalDetail memberDetail, Long reservationId, Long trainerId,
-                                           boolean isApprove, String fcmToken)
+                                           boolean isApprove, String pushToken)
             implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -343,29 +343,30 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static CancelApproveReservation of(PersonalDetail memberDetail, Long reservationId, Long trainerId,
-                                                  boolean isApprove, String fcmToken) {
+                                                  boolean isApprove, String pushToken) {
             return CancelApproveReservation.builder()
                     .memberDetail(memberDetail)
                     .reservationId(reservationId)
                     .trainerId(trainerId)
                     .isApprove(isApprove)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
     }
 
     @Builder
-    public record GetNotifications(Notification.ReferenceType type, Pageable pageRequest, String keyword) {
+    public record SearchCondition(Notification.ReferenceType type, Pageable pageRequest, String keyword,
+                                  Long memberId) {
     }
 
     @Builder
     public record SessionTodayReminder(PersonalDetail memberDetail, Long sessionId,
                                        Long trainerId, LocalDateTime confirmDate,
-                                       String fcmToken)
+                                       String pushToken)
             implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -374,18 +375,18 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static SessionTodayReminder of(PersonalDetail memberDetail, Long sessionId,
                                               Long trainerId, LocalDateTime confirmDate,
-                                              String fcmToken) {
+                                              String pushToken) {
             return SessionTodayReminder.builder()
                     .memberDetail(memberDetail)
                     .sessionId(sessionId)
                     .trainerId(trainerId)
                     .confirmDate(confirmDate)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
     }
@@ -393,7 +394,7 @@ public class NotificationCommand {
     @Builder
     public record EditSession(PersonalDetail memberDetail, Long sessionInfoId, Long trainerId, int beforeTotalCnt,
                               int afterTotalCnt, int beforeRemainingCnt, int afterRemainingCnt,
-                              String fcmToken)
+                              String pushToken)
             implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -402,12 +403,12 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static EditSession of(PersonalDetail memberDetail, Long sessionInfoId, Long trainerId, int beforeTotalCnt,
                                      int afterTotalCnt, int beforeRemainingCnt, int afterRemainingCnt,
-                                     String fcmToken) {
+                                     String pushToken) {
             return EditSession.builder()
                     .memberDetail(memberDetail)
                     .sessionInfoId(sessionInfoId)
@@ -416,7 +417,7 @@ public class NotificationCommand {
                     .afterTotalCnt(afterTotalCnt)
                     .beforeRemainingCnt(beforeRemainingCnt)
                     .afterRemainingCnt(afterRemainingCnt)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
 
@@ -424,7 +425,7 @@ public class NotificationCommand {
 
     @Builder
     public record SessionChargeReminder(PersonalDetail memberDetail, Long sessionInfoId, Long trainerId,
-                                        String fcmToken)
+                                        String pushToken)
             implements NotificationRequest {
         @Override
         public Notification.NotificationType getType() {
@@ -433,16 +434,16 @@ public class NotificationCommand {
 
         @Override
         public String getPushToken() {
-            return this.fcmToken;
+            return this.pushToken;
         }
 
         public static SessionChargeReminder of(PersonalDetail memberDetail, Long sessionInfoId, Long trainerId,
-                                               String fcmToken) {
+                                               String pushToken) {
             return SessionChargeReminder.builder()
                     .memberDetail(memberDetail)
                     .sessionInfoId(sessionInfoId)
                     .trainerId(trainerId)
-                    .fcmToken(fcmToken)
+                    .pushToken(pushToken)
                     .build();
         }
 
