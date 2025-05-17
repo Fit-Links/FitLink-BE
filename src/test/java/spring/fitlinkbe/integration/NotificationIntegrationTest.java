@@ -67,6 +67,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
         testDataHandler.settingUserInfo();
         testDataHandler.settingSessionInfo();
         testDataHandler.createTokenInfo();
+        testDataHandler.createMember();
     }
 
     @Nested
@@ -161,9 +162,9 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
 
     @Nested
     @DisplayName("알림 목록 조회 Integration TEST")
-    class GetNotificationsIntegrationTest {
+    class SearchConditionIntegrationTest {
         @Test
-        @DisplayName("알림 목록 조회 - 성공 : 전부 조회")
+        @DisplayName("트레이너 알림 목록 조회 - 성공 : 전부 조회")
         void getNotificationsWithAllType() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
@@ -199,7 +200,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("알림 목록 조회 - 성공 : 검색어 입력")
+        @DisplayName("트레이너 알림 목록 조회 - 성공 : 검색어 입력")
         void getNotificationsWithKeyword() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
@@ -239,7 +240,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("알림 목록 조회 - 성공 : session 타입 조회")
+        @DisplayName("트레이너 알림 목록 조회 - 성공 : session 타입 조회")
         void getNotificationsWithSessionType() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
@@ -278,7 +279,47 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("알림 목록 조회 - 성공 : 멤버일 때")
+        @DisplayName("트레이너 알림 목록 조회 - 성공 : 특정 멤버를 검색할 때")
+        void getNotificationsWithTrainerWhenTargetMemberGiven() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            Member member = memberRepository.getMember(1L).orElseThrow();
+            Member member2 = memberRepository.getMember(2L).orElseThrow();
+
+            UserRole userRole = UserRole.TRAINER;
+
+            // 알림 20개 저장
+            createNotifications(personalDetail, member.getMemberId(), userRole);
+            // 새로운 알림 2개 추가
+            createNotification(personalDetail, member2.getMemberId(), userRole);
+            createNotification(personalDetail, member2.getMemberId(), userRole);
+
+            Map<String, String> params = new HashMap<>();
+            params.put("page", "0");
+            params.put("size", "10");
+            params.put("memberId", "2");
+
+            // when
+            ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH, params, accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                List<NotificationResponseDto.Summary> content = result.body().jsonPath()
+                        .getList("data.content", NotificationResponseDto.Summary.class);
+                softly.assertThat(content.size()).isEqualTo(2);
+                Boolean hasNext = result.body().jsonPath().getBoolean("data.hasNext");
+                softly.assertThat(hasNext).isFalse();
+            });
+        }
+
+        @Test
+        @DisplayName("멤버 알림 목록 조회 - 성공")
         void getNotificationsWithMember() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
@@ -293,7 +334,6 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
 
             // 알림 20개 저장
             createNotifications(personalDetail, trainer.getTrainerId(), userRole);
-
 
             Map<String, String> params = new HashMap<>();
             params.put("page", "0");
@@ -313,7 +353,6 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(hasNext).isTrue();
             });
         }
-
 
         @Test
         @DisplayName("알림 목록 조회 - 실패 : 잘못된 타입을 줬을 때")
@@ -490,9 +529,9 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
 
     private void createNotifications(PersonalDetail personalDetail, Long partnerId, UserRole userRole) {
         for (int i = 0; i < 20; i++) {
-
+            Notification notification;
             if (i < 5) {
-                Notification notification = Notification.builder()
+                notification = Notification.builder()
                         .refId((long) i)
                         .refType(Notification.ReferenceType.RESERVATION_REQUEST)
                         .target(userRole)
@@ -504,9 +543,8 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
                         .sendDate(LocalDateTime.now().minusDays(i))
                         .build();
 
-                notificationRepository.save(notification);
             } else {
-                Notification notification = Notification.builder()
+                notification = Notification.builder()
                         .refId((long) i)
                         .refType(Notification.ReferenceType.SESSION)
                         .target(userRole)
@@ -518,9 +556,25 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
                         .sendDate(LocalDateTime.now().minusDays(i))
                         .build();
 
-                notificationRepository.save(notification);
             }
+            notificationRepository.save(notification);
         }
+    }
+
+    private void createNotification(PersonalDetail personalDetail, Long partnerId, UserRole userRole) {
+        Notification notification = Notification.builder()
+                .refId((long) 1)
+                .refType(Notification.ReferenceType.RESERVATION_REQUEST)
+                .target(userRole)
+                .notificationType(Notification.NotificationType.RESERVATION_APPROVE)
+                .personalDetail(personalDetail)
+                .partnerId(partnerId)
+                .name(Notification.NotificationType.RESERVATION_APPROVE.name())
+                .content("예약이 확정되었습니다.")
+                .sendDate(LocalDateTime.now().minusDays(1))
+                .build();
+
+        notificationRepository.save(notification);
     }
 
 }
