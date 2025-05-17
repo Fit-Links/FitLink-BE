@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
-import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.*;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
 
@@ -63,7 +62,6 @@ public class Reservation {
 
     public static List<Reservation> createFixedReservations(List<Reservation> baseReservations, int remainingCount) {
         List<Reservation> generatedReservations = new ArrayList<>();
-
         List<Reservation> currentReservations = new ArrayList<>(baseReservations);
 
         while (generatedReservations.size() < remainingCount) {
@@ -113,11 +111,13 @@ public class Reservation {
         if (this.status != FIXED_RESERVATION) {
             throw new CustomException(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED, "고정 예약 상태가 아닙니다.");
         }
+
         LocalDateTime targetDate = beforeDate.truncatedTo(ChronoUnit.HOURS);
 
         boolean dateExists = this.reservationDates.stream()
                 .map(date -> date.truncatedTo(ChronoUnit.HOURS))
                 .anyMatch(targetDate::isEqual);
+
         if (!dateExists) {
             throw new CustomException(RESERVATION_DATE_NOT_FOUND);
         }
@@ -132,6 +132,7 @@ public class Reservation {
         if (changeDate.isBefore(LocalDateTime.now().plusHours(2))) {
             throw new CustomException(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED, "현재시간보다 2시간 이후부터 변경 가능합니다.");
         }
+
         if (this.status != RESERVATION_APPROVED && this.status != RESERVATION_WAITING) {
             throw new CustomException(RESERVATION_CHANGE_REQUEST_NOT_ALLOWED);
         }
@@ -147,7 +148,6 @@ public class Reservation {
         }
 
         this.changeDate = changeDate;
-
         this.status = RESERVATION_CHANGE_REQUEST;
     }
 
@@ -230,35 +230,8 @@ public class Reservation {
         return dates.get(0).isAfter(dates.get(1)) ? dates.get(1) : dates.get(0);
     }
 
-    public void refuse() {
-
+    public Reservation refuse() {
         this.status = RESERVATION_REFUSED;
-    }
-
-    public Reservation complete(Long trainerId, Long memberId) {
-        if (!trainerId.equals(this.trainer.getTrainerId()) || !memberId.equals(this.member.getMemberId())) {
-            throw new CustomException(RESERVATION_COMPLETE_NOT_ALLOWED);
-        }
-
-        if (this.status == RESERVATION_COMPLETED) {
-            throw new CustomException(RESERVATION_IS_ALREADY_COMPLETED);
-        }
-
-        this.status = RESERVATION_COMPLETED;
-
-        return this;
-    }
-
-    public Reservation cancel(String message) {
-        if (this.status == RESERVATION_CANCELLED) {
-            throw new CustomException(RESERVATION_IS_ALREADY_CANCEL);
-        }
-        if (this.status == DISABLED_TIME_RESERVATION || this.status == RESERVATION_REFUSED) {
-            throw new CustomException(RESERVATION_CANCEL_NOT_ALLOWED);
-        }
-        this.cancelReason = message;
-        this.confirmDate = null;
-        this.status = RESERVATION_CANCELLED;
 
         return this;
     }
@@ -281,29 +254,76 @@ public class Reservation {
         return this;
     }
 
-    public void cancelRequest(String message, LocalDateTime cancelDate, UserRole role) {
-        // 당일 예약 취소는 불가능 함
-        if (LocalDateTime.now().isAfter(cancelDate.minusDays(1).truncatedTo(ChronoUnit.DAYS).plusHours(23))) {
-            throw new CustomException(RESERVATION_CANCEL_NOT_ALLOWED, "당일 예약 취소 요청은 불가합니다.");
+    public Reservation complete(Long trainerId, Long memberId) {
+        if (!trainerId.equals(this.trainer.getTrainerId()) || !memberId.equals(this.member.getMemberId())) {
+            throw new CustomException(RESERVATION_COMPLETE_NOT_ALLOWED);
         }
-        if (this.status == DISABLED_TIME_RESERVATION || this.status == RESERVATION_REFUSED) {
-            throw new CustomException(RESERVATION_CANCEL_NOT_ALLOWED);
-        }
-        if (this.status == RESERVATION_CANCELLED) {
-            throw new CustomException(RESERVATION_IS_ALREADY_CANCEL);
-        }
-        this.cancelReason = message;
-        this.confirmDate = role == TRAINER ? null : this.confirmDate;
-        this.status = role == TRAINER ? RESERVATION_CANCELLED : RESERVATION_CANCEL_REQUEST;
 
+        if (this.status == RESERVATION_COMPLETED) {
+            throw new CustomException(RESERVATION_IS_ALREADY_COMPLETED);
+        }
+
+        this.status = RESERVATION_COMPLETED;
+
+        return this;
+    }
+
+    public Reservation cancel(String message) {
+        validateCancellable();
+
+        this.cancelReason = message;
+        this.confirmDate = null;
+        this.status = RESERVATION_CANCELLED;
+
+        return this;
+    }
+
+    public void cancel(String message, LocalDateTime cancelDate) {
+        if (!isReservationDateSame(List.of(cancelDate))) {
+            throw new CustomException(RESERVATION_DATE_NOT_FOUND);
+        }
+
+        validateCancellable();
+        validateNotSameDayCancellation(cancelDate);
+
+        this.cancelReason = message;
+        this.confirmDate = null;
+        this.status = RESERVATION_CANCELLED;
+    }
+
+    public void cancelRequest(String message, LocalDateTime cancelDate) {
+        if (!isReservationDateSame(List.of(cancelDate))) {
+            throw new CustomException(RESERVATION_DATE_NOT_FOUND);
+        }
+
+        validateCancellable();
+
+        if (this.status != RESERVATION_WAITING) {
+            validateNotSameDayCancellation(cancelDate);
+        }
+
+        this.cancelReason = message;
+        this.confirmDate = (this.status == RESERVATION_WAITING) ? null : this.confirmDate;
+        this.status = (this.status == RESERVATION_WAITING) ? RESERVATION_CANCELLED : RESERVATION_CANCEL_REQUEST;
     }
 
     public boolean isReservationNotAllowed() {
-
         return (this.isDayOff || (this.status == DISABLED_TIME_RESERVATION));
     }
 
-    public boolean isSameReservationAndMember(Long reservationId, Long memberId) {
-        return !Objects.equals(this.reservationId, reservationId) && Objects.equals(this.member.getMemberId(), memberId);
+    private static void validateNotSameDayCancellation(LocalDateTime cancelDate) {
+        if (LocalDateTime.now().isAfter(cancelDate.minusDays(1).truncatedTo(ChronoUnit.DAYS).plusHours(23))) {
+            throw new CustomException(RESERVATION_CANCEL_NOT_ALLOWED, "당일 예약 취소 요청은 불가합니다.");
+        }
+    }
+
+    private void validateCancellable() {
+        if (this.status == RESERVATION_CANCELLED) {
+            throw new CustomException(RESERVATION_IS_ALREADY_CANCEL);
+        }
+
+        if (this.status == DISABLED_TIME_RESERVATION || this.status == RESERVATION_REFUSED) {
+            throw new CustomException(RESERVATION_CANCEL_NOT_ALLOWED);
+        }
     }
 }
