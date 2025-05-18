@@ -1,5 +1,10 @@
 package spring.fitlinkbe.interfaces.controller.common.exception;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -78,6 +83,26 @@ public class ApiControllerAdvice {
         log.error("HandlerMethodValidationException is occurred! {}", e.getMessage());
         return ApiResultResponse.of(HttpStatus.BAD_REQUEST, false, getErrorCustomMessage(e), null);
     }
+
+    @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler({
+            ExpiredJwtException.class,
+            UnsupportedJwtException.class,
+            MalformedJwtException.class,
+            SignatureException.class,
+            JwtException.class,
+    })
+    public ApiResultResponse<Object> handleJwtException(Exception e) {
+        log.warn("JWT authentication error: {} \nerror class: {}", e.getMessage(), e.getClass());
+        return ApiResultResponse.of(
+                HttpStatus.UNAUTHORIZED,
+                false,
+                "유효하지 않은 토큰입니다. 다시 로그인해주세요.",
+                null
+        );
+    }
+
+
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)

@@ -103,6 +103,15 @@ public class TestDataHandler {
         tokenRepository.saveToken(token);
     }
 
+    public void createToken(PersonalDetail personalDetail, String refreshToken) {
+        Token token = Token.builder()
+                .personalDetailId(personalDetail.getPersonalDetailId())
+                .refreshToken(refreshToken)
+                .pushToken(UUID.randomUUID().toString())
+                .build();
+        tokenRepository.saveToken(token);
+    }
+
     public Member createMember(PersonalDetail.Status status) {
         Member member = Member.builder()
                 .name("김민수")

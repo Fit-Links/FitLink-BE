@@ -65,8 +65,10 @@ public class AuthTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + refreshTokenExpiry);
 
-        Map<String, Object> claims = Map.of(CLAIM_KEY_DETAIL_ID, personalDetailId,
-                CLAIM_KEY_USER_ROLE, userRole);
+        Map<String, Object> claims = Map.of(
+                CLAIM_KEY_DETAIL_ID, personalDetailId,
+                CLAIM_KEY_USER_ROLE, userRole
+        );
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -90,6 +92,14 @@ public class AuthTokenProvider {
             return null;
         }
         return Status.valueOf(claims.get(CLAIM_KEY_STATUS, String.class));
+    }
+
+    public Long getPersonalDetailIdFromRefreshToken(String refreshToken) {
+        Claims claims = getClaims(refreshToken, refreshKey);
+        if (claims == null) {
+            return null;
+        }
+        return claims.get(CLAIM_KEY_DETAIL_ID, Long.class);
     }
 
     private Claims getClaims(String token, Key key) {

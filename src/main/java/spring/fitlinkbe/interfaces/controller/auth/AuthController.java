@@ -71,4 +71,13 @@ public class AuthController {
         return ApiResultResponse.ok(new AuthDto.UserStatusResponse(status, accessToken));
     }
 
+    @PostMapping("/access-token")
+    public ApiResultResponse<AuthDto.AccessTokenResponse> getAccessToken(
+            @RequestBody @Valid AuthDto.AccessTokenRequest requestBody
+    ) {
+        String accessToken = authFacade.renewAccessToken(requestBody.refreshToken());
+
+        return ApiResultResponse.ok(new AuthDto.AccessTokenResponse(accessToken));
+    }
+
 }
