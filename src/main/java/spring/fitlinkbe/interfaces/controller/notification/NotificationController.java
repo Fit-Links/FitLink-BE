@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.notification.NotificationFacade;
+import spring.fitlinkbe.application.notification.criteria.NotificationCriteria;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
@@ -31,7 +32,7 @@ public class NotificationController {
      * 알림 조회
      *
      * @param type        알림 조회 타입
-     * @param pageRequest 조회하고 싶은 페이지 옵션(page, size)
+     * @param pageRequest 조회하고 싶은 페이지 옵션(page, size...)
      * @param user        인증된 유저 정보
      * @return ApiResultResponse 알림 목록을 반환한다.
      */
@@ -40,14 +41,14 @@ public class NotificationController {
             @RequestParam(required = false) Notification.ReferenceType type,
             @PageableDefault Pageable pageRequest,
             @RequestParam(required = false) String q,
+            @RequestParam(required = false) Long memberId,
             @Login SecurityUser user) {
-
-        Page<Notification> result = notificationFacade.getNotifications(type, pageRequest, user, q);
+        Page<Notification> result = notificationFacade.getNotifications(
+                new NotificationCriteria.SearchCondition(type, pageRequest, q, memberId),
+                user);
 
         return ApiResultResponse.ok(CustomPageResponse.of(result, NotificationResponseDto.Summary::of));
-
     }
-
 
     /**
      * 알림 상세 조회
@@ -60,7 +61,6 @@ public class NotificationController {
     public ApiResultResponse<NotificationResponseDto.Detail> getNotificationDetail(@PathVariable("notificationId")
                                                                                    Long notificationId,
                                                                                    @Login SecurityUser user) {
-
         Notification result = notificationFacade.getNotificationDetail(notificationId, user);
 
         return ApiResultResponse.ok(NotificationResponseDto.Detail.of(result));
@@ -78,7 +78,6 @@ public class NotificationController {
                                                                                   NotificationRequestDto.PushTokenRequest
                                                                                           request,
                                                                                   @Login SecurityUser user) {
-
         notificationFacade.registerPushToken(request.toCriteria(), user);
 
         return ApiResultResponse.ok(NotificationResponseDto.PushToken.of("푸쉬 토큰 등록에 성공하였습니다."));

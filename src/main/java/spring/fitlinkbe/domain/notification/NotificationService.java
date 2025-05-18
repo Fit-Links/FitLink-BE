@@ -3,8 +3,10 @@ package spring.fitlinkbe.domain.notification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.notification.client.PushNotificationClient;
@@ -22,10 +24,16 @@ public class NotificationService {
     private final PushNotificationClient pushNotificationClient;
     private final ApplicationEventPublisher publisher;
 
-    public Page<Notification> getNotifications(NotificationCommand.GetNotifications command, SecurityUser user) {
+    public Page<Notification> getNotifications(NotificationCommand.SearchCondition command, SecurityUser user) {
+        Notification.ReferenceType type = command.type();
+        Pageable pageRequest = command.pageRequest();
+        UserRole userRole = user.getUserRole();
+        Long partnerId = command.memberId();
+        String keyword = command.keyword();
+        Long personalDetailId = user.getPersonalDetailId();
 
-        return notificationRepository.getNotifications(command.type(), command.pageRequest(),
-                user.getUserRole(), user.getPersonalDetailId(), command.keyword());
+
+        return notificationRepository.getNotifications(type, pageRequest, userRole, partnerId, personalDetailId, keyword);
     }
 
     public Notification getNotificationDetail(Long notificationId, SecurityUser user) {

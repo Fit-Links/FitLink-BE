@@ -8,5 +8,5 @@ import spring.fitlinkbe.domain.notification.Notification;
 public interface NotificationRepositoryCustom {
 
     Page<NotificationEntity> findNotifications(Notification.ReferenceType type, Pageable pageRequest,
-                                               UserRole userRole, Long personalDetailId, String keyword);
+                                               UserRole userRole, Long partnerId, Long personalDetailId, String keyword);
 }

@@ -21,7 +21,7 @@ public class NotificationRepositoryCustomImpl implements NotificationRepositoryC
 
     @Override
     public Page<NotificationEntity> findNotifications(Notification.ReferenceType type, Pageable pageRequest, UserRole userRole,
-                                                      Long personalDetailId, String keyword) {
+                                                      Long partnerId, Long personalDetailId, String keyword) {
 
         List<NotificationEntity> notifications = queryFactory.selectFrom(notificationEntity)
                 .leftJoin(personalDetailEntity)
@@ -30,6 +30,7 @@ public class NotificationRepositoryCustomImpl implements NotificationRepositoryC
                         eqRefType(type),
                         eqUserRole(userRole),
                         eqPersonalDetailId(personalDetailId),
+                        eqPartnerId(partnerId),
                         likeKeyword(keyword)
                 )
                 .offset(pageRequest.getOffset())
@@ -42,6 +43,7 @@ public class NotificationRepositoryCustomImpl implements NotificationRepositoryC
                         eqRefType(type),
                         eqUserRole(userRole),
                         eqPersonalDetailId(personalDetailId),
+                        eqPartnerId(partnerId),
                         likeKeyword(keyword)
                 )
                 .fetchOne();
@@ -58,8 +60,12 @@ public class NotificationRepositoryCustomImpl implements NotificationRepositoryC
                 .or(notificationEntity.name.containsIgnoreCase(keyword)) : null;
     }
 
-    private static BooleanExpression eqPersonalDetailId(Long personalDetailId) {
-        return notificationEntity.personalDetail.personalDetailId.eq(personalDetailId);
+    private static BooleanExpression eqPersonalDetailId(Long targetUserId) {
+        return notificationEntity.personalDetail.personalDetailId.eq(targetUserId);
+    }
+
+    private BooleanExpression eqPartnerId(Long partnerId) {
+        return partnerId != null ? notificationEntity.partnerId.eq(partnerId) : null;
     }
 
     private static BooleanExpression eqUserRole(UserRole userRole) {

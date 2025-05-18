@@ -44,11 +44,9 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Override
     public List<Notification> getNotification(Long refId, Notification.ReferenceType refType) {
-
         return notificationJpaRepository.findByRefIdAndRefType(refId, refType)
                 .stream().map(NotificationEntity::toDomain)
                 .toList();
-
     }
 
     @Override
@@ -66,12 +64,11 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Override
     public Page<Notification> getNotifications(Notification.ReferenceType type, Pageable pageRequest, UserRole userRole,
-                                               Long userId, String keyword) {
+                                               Long partnerId, Long personalDetailId, String keyword) {
         Page<NotificationEntity> notifications = notificationJpaRepository
-                .findNotifications(type, pageRequest, userRole, userId, keyword);
+                .findNotifications(type, pageRequest, userRole, partnerId, personalDetailId, keyword);
 
         return notifications.map(NotificationEntity::toDomain);
-
     }
 
     @Override
