@@ -73,6 +73,7 @@ public enum ErrorCode {
     NEED_REQUIRED_SMS_STATUS("유저의 상태가 소셜 로그인만 진행된 상태어야 합니다", 403),
 
     TOKEN_NOT_FOUND("토큰 정보를 찾지 못하였습니다.", 404),
+    INVALID_TOKEN("유효하지 않은 토큰입니다.", 401),
 
     // Common ErrorCode
     INVALID_PHONE_NUMBER_FORMAT("유효하지 않은 전화번호 형식입니다.", 400),

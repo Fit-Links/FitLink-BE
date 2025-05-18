@@ -104,6 +104,8 @@ public class AuthFacade {
     public String renewAccessToken(String refreshToken) {
         Long personalDetailId = authTokenProvider.getPersonalDetailIdFromRefreshToken(refreshToken);
         PersonalDetail personalDetail = authService.getPersonalDetailById(personalDetailId);
+        Token token = authService.getTokenByPersonalDetailId(personalDetailId);
+        token.validate(refreshToken);
 
         return authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetailId, personalDetail.getUserRole());
     }

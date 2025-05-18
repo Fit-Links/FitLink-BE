@@ -769,6 +769,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
                     personalDetail.getUserRole());
             String refreshToken = authTokenProvider.createRefreshToken(personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+            testDataHandler.createToken(personalDetail, refreshToken);
 
             AuthDto.AccessTokenRequest request = new AuthDto.AccessTokenRequest(refreshToken);
             String requestBody = writeValueAsString(request);
@@ -801,6 +802,36 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             // when
             // Access Token 재발급 요청을 보낸다면
             ExtractableResponse<Response> result = post(ACCESS_TOKEN_API, requestBody, null);
+
+            // then
+            // 에러를 반환한다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<AuthDto.AccessTokenResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.status()).isEqualTo(401);
+                softly.assertThat(response.success()).isFalse();
+            });
+        }
+
+        @Test
+        @DisplayName("Access Token 재발급 실패 - refresh token 이 저장되어 있는 토큰과 다른 경우")
+        public void renewAccessTokenFailBecauseOfDifferentRefreshToken() throws Exception {
+            // given
+            // 다른 refresh token 이 있을 때
+            PersonalDetail personalDetail = testDataHandler.createPersonalDetail(PersonalDetail.Status.NORMAL);
+            String accessToken = authTokenProvider.createAccessToken(personalDetail.getStatus(), personalDetail.getPersonalDetailId(),
+                    personalDetail.getUserRole());
+            String refreshToken = authTokenProvider.createRefreshToken(personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+            testDataHandler.createToken(personalDetail, refreshToken);
+
+            AuthDto.AccessTokenRequest request = new AuthDto.AccessTokenRequest("different_refresh_token");
+            String requestBody = writeValueAsString(request);
+
+            // when
+            // Access Token 재발급 요청을 보낸다면
+            ExtractableResponse<Response> result = post(ACCESS_TOKEN_API, requestBody, accessToken);
 
             // then
             // 에러를 반환한다
