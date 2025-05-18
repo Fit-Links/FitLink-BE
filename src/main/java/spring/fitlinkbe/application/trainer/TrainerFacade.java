@@ -13,7 +13,6 @@ import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
-import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.notification.Notification;
@@ -139,12 +138,10 @@ public class TrainerFacade {
 
     private List<DayOff> createAndSaveDayOff(Trainer trainer, List<LocalDate> dayOffDates) {
         List<DayOff> dayOffs = dayOffDates.stream()
-                .map(dayOffDate -> {
-                    return DayOff.builder()
-                            .trainer(trainer)
-                            .dayOffDate(dayOffDate)
-                            .build();
-                })
+                .map(dayOffDate -> DayOff.builder()
+                        .trainer(trainer)
+                        .dayOffDate(dayOffDate)
+                        .build())
                 .toList();
         return trainerService.saveAllDayOffs(dayOffs);
     }

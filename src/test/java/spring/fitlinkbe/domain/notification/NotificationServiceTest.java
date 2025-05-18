@@ -107,9 +107,7 @@ public class NotificationServiceTest {
 
     @Nested
     @DisplayName("알림 보내기 Service TEST")
-    class GetNotificationsServiceTest {
-
-
+    class SearchConditionServiceTest {
         @DisplayName("알림 목록 조회 - 성공")
         @Test
         void getNotifications() {
@@ -118,8 +116,8 @@ public class NotificationServiceTest {
             Notification.ReferenceType refType = Notification.ReferenceType.CONNECT;
             String keyword = "멤버1";
 
-            NotificationCommand.GetNotifications command = new NotificationCommand.GetNotifications(refType,
-                    pageable, keyword);
+            NotificationCommand.SearchCondition command = new NotificationCommand.SearchCondition(refType,
+                    pageable, keyword, 1L);
             SecurityUser user = mock(SecurityUser.class);
 
             when(user.getUserRole()).thenReturn(UserRole.TRAINER);
@@ -128,7 +126,7 @@ public class NotificationServiceTest {
             List<Notification> content = List.of(Notification.builder().notificationId(1L).build());
             Page<Notification> expectedPage = new PageImpl<>(content, pageable, 1L);
 
-            when(notificationRepository.getNotifications(refType, pageable, UserRole.TRAINER, 1L,
+            when(notificationRepository.getNotifications(refType, pageable, UserRole.TRAINER, 1L, 1L,
                     keyword))
                     .thenReturn(expectedPage);
 
@@ -137,7 +135,7 @@ public class NotificationServiceTest {
 
             // then
             assertThat(result).isEqualTo(expectedPage);
-            verify(notificationRepository).getNotifications(refType, pageable, UserRole.TRAINER, 1L,
+            verify(notificationRepository).getNotifications(refType, pageable, UserRole.TRAINER, 1L, 1L,
                     keyword);
         }
 
@@ -148,14 +146,14 @@ public class NotificationServiceTest {
             Pageable pageable = PageRequest.of(0, 10);
             String keyword = "멤버1";
             Notification.ReferenceType refType = Notification.ReferenceType.CONNECT;
-            NotificationCommand.GetNotifications command = new NotificationCommand.GetNotifications(refType, pageable,
-                    keyword);
+            NotificationCommand.SearchCondition command = new NotificationCommand.SearchCondition(refType, pageable,
+                    keyword, null);
             SecurityUser user = mock(SecurityUser.class);
 
             when(user.getUserRole()).thenReturn(UserRole.TRAINER);
             when(user.getPersonalDetailId()).thenReturn(1L);
 
-            when(notificationRepository.getNotifications(any(), any(), any(), any(), any()))
+            when(notificationRepository.getNotifications(any(), any(), any(), any(), any(), any()))
                     .thenThrow(new RuntimeException("DB 오류"));
 
             // when & then

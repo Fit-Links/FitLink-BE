@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import spring.fitlinkbe.application.notification.NotificationFacade;
+import spring.fitlinkbe.application.notification.criteria.NotificationCriteria;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.notification.Notification;
@@ -107,8 +108,9 @@ public class NotificationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(notificationFacade.getNotifications(any(Notification.ReferenceType.class), any(PageRequest.class)
-                    , any(SecurityUser.class), any())).thenReturn(response);
+
+            when(notificationFacade.getNotifications(any(NotificationCriteria.SearchCondition.class),
+                    any(SecurityUser.class))).thenReturn(response);
 
             //when & then
             mockMvc.perform(get("/v1/notifications")
@@ -171,8 +173,8 @@ public class NotificationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(notificationFacade.getNotifications(any(Notification.ReferenceType.class), any(PageRequest.class)
-                    , any(SecurityUser.class), any())).thenReturn(response);
+            when(notificationFacade.getNotifications(any(NotificationCriteria.SearchCondition.class),
+                    any(SecurityUser.class))).thenReturn(response);
 
             //when & then
             mockMvc.perform(get("/v1/notifications")
@@ -229,8 +231,8 @@ public class NotificationControllerTest {
 
             String accessToken = getAccessToken(personalDetail);
 
-            when(notificationFacade.getNotifications(any(Notification.ReferenceType.class), any(PageRequest.class)
-                    , any(SecurityUser.class), any(String.class))).thenReturn(response);
+            when(notificationFacade.getNotifications(any(NotificationCriteria.SearchCondition.class),
+                    any(SecurityUser.class))).thenReturn(response);
 
             //when & then
             mockMvc.perform(get("/v1/notifications")
@@ -296,7 +298,6 @@ public class NotificationControllerTest {
     @Nested
     @DisplayName("푸쉬 토큰 등록 Controller TEST")
     class RegisterPushTokenControllerTest {
-
         @Test
         @DisplayName("푸쉬 토큰 등록 - 성공")
         void registerPushToken() throws Exception {
@@ -375,9 +376,7 @@ public class NotificationControllerTest {
         }
     }
 
-
     private String getAccessToken(PersonalDetail personalDetail) {
-
         String accessToken = "mockedAccessToken";
         when(authTokenProvider.createAccessToken(PersonalDetail.Status.NORMAL, personalDetail.getPersonalDetailId(),
                 personalDetail.getUserRole()))
@@ -391,5 +390,4 @@ public class NotificationControllerTest {
 
         return accessToken;
     }
-
 }

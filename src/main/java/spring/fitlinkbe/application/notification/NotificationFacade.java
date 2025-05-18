@@ -18,13 +18,18 @@ public class NotificationFacade {
     private final NotificationService notificationService;
     private final AuthService authService;
 
-    public Page<Notification> getNotifications(Notification.ReferenceType type, Pageable pageRequest,
-                                               SecurityUser user, String keyword) {
+    public Page<Notification> getNotifications(NotificationCriteria.SearchCondition criteria,
+                                               SecurityUser user) {
+        Notification.ReferenceType type = criteria.type();
+        Pageable pageRequest = criteria.pageRequest();
+        String keyword = criteria.q();
+        Long memberId = criteria.memberId();
 
-        NotificationCommand.GetNotifications command = NotificationCommand.GetNotifications.builder()
+        NotificationCommand.SearchCondition command = NotificationCommand.SearchCondition.builder()
                 .type(type)
                 .pageRequest(pageRequest)
                 .keyword(keyword)
+                .memberId(memberId)
                 .build();
 
         return notificationService.getNotifications(command, user);
@@ -35,7 +40,6 @@ public class NotificationFacade {
     }
 
     public void registerPushToken(NotificationCriteria.PushTokenRequest criteria, SecurityUser user) {
-
         authService.registerPushToken(criteria.toCommand(), user);
     }
 }

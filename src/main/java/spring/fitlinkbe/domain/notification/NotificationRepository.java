@@ -21,7 +21,7 @@ public interface NotificationRepository {
     Notification save(Notification notification);
 
     Page<Notification> getNotifications(Notification.ReferenceType type, Pageable pageRequest, UserRole userRole,
-                                        Long personalDetailId, String keyword);
+                                        Long partnerId, Long personalDetailId, String keyword);
 
     Optional<Notification> findById(Long notificationId);
 }
