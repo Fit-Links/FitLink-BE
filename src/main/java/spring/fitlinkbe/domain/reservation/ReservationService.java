@@ -12,6 +12,7 @@ import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.producer.EventTopic;
 import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
 import spring.fitlinkbe.domain.reservation.event.GenerateFixedReservationEvent;
+import spring.fitlinkbe.domain.reservation.strategy.cancel.ReservationCancelStrategy;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.support.security.SecurityUser;
 
@@ -22,7 +23,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_WAITING_MEMBERS_EMPTY;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.SESSION_CREATE_FAILED;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status;
@@ -38,18 +38,15 @@ import static spring.fitlinkbe.domain.reservation.Session.Status.SESSION_WAITING
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
-    private final SessionRepository sessionRepository;
+    private final List<ReservationCancelStrategy> cancelStrategies;
     private final ApplicationEventPublisher publisher;
 
     /**
      * Related Reservation
      */
-
     public List<Reservation> getReservations(ReservationCommand.GetReservations command) {
-
         LocalDateTime startDate = command.date().atStartOfDay();
         LocalDateTime endDate = getEndDate(startDate, command.role());
-
         List<Reservation> reservations = reservationRepository.getReservations(command.role(), command.userId());
 
         return reservations.stream()
@@ -81,13 +78,11 @@ public class ReservationService {
 
     @Transactional
     public Reservation setDisabledReservation(ReservationCommand.SetDisabledTime command) {
-
         Reservation reservation = Reservation.builder()
                 .trainer(Trainer.builder().trainerId(command.trainerId()).build())
                 .reservationDates(List.of(command.date()))
                 .status(DISABLED_TIME_RESERVATION)
                 .build();
-
         // 예약 불가 설정 정보 리턴
         return reservationRepository.saveReservation(reservation).orElseThrow(() ->
                 new CustomException(ErrorCode.SET_DISABLE_DATE_FAILED,
@@ -96,7 +91,6 @@ public class ReservationService {
 
     @Transactional
     public Reservation cancelDisabledReservation(Long reservationId, Long trainerId) {
-
         Reservation reservation = reservationRepository.getReservation(reservationId, trainerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND,
                         "예약 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(reservationId)));
@@ -109,12 +103,8 @@ public class ReservationService {
 
     @Transactional
     public List<Reservation> createFixedReservations(List<Reservation> baseReservations, int remainingCount) {
-
-
         List<Reservation> newFixedReservations = Reservation.createFixedReservations(baseReservations, remainingCount);
-
         List<Reservation> savedReservations = reservationRepository.saveReservations(newFixedReservations);
-
         // 세션 생성
         List<Session> sessions = savedReservations.stream()
                 .map(reservation -> Session.builder()
@@ -159,20 +149,17 @@ public class ReservationService {
 
     @Transactional
     public Reservation approveReservation(ReservationCommand.Approve command) {
-
         Reservation reservation = this.getReservation(command.reservationId());
-        reservation.approve(command.reservationDate());
 
+        reservation.approve(command.reservationDate());
         Reservation savedReservation = reservationRepository.saveReservation(reservation)
                 .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED,
                         "예약 승인에 실패하였습니다."));
 
-        // 세션 생성
         Session session = Session.builder()
                 .reservation(reservation)
                 .status(SESSION_WAITING)
                 .build();
-        // 세션 저장
         reservationRepository.saveSession(session);
 
         return savedReservation;
@@ -180,9 +167,7 @@ public class ReservationService {
 
     @Transactional
     public List<Reservation> refuseReservations(ReservationCommand.RefuseReservations command, SecurityUser user) {
-
         List<Reservation> reservations = reservationRepository.getReservations(user.getUserRole(), user.getUserId());
-
         List<Reservation> refuseReservations = reservations.stream()
                 .filter(r -> r.getStatus() == RESERVATION_WAITING)
                 .filter(r -> r.isReservationDateSame(List.of(command.reservationDate())))
@@ -191,7 +176,6 @@ public class ReservationService {
         refuseReservations.forEach(Reservation::refuse);
 
         return reservationRepository.saveReservations(refuseReservations);
-
     }
 
     /**
@@ -204,28 +188,13 @@ public class ReservationService {
     @Transactional
     public Reservation cancelReservation(ReservationCommand.Cancel command, SecurityUser user) {
         Reservation reservation = this.getReservation(command.reservationId());
-        //트레이너의 경우
-        if (user.getUserRole() == TRAINER) {
-            // 예약을 취소한다.
-            reservation.cancelRequest("트레이너가 예약을 취소하였습니다", command.cancelDate(), user.getUserRole());
-            Reservation canceledReservation = reservationRepository.saveReservation(reservation)
-                    .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_CANCEL_FAILED,
-                            "예약 취소를 실패하였습니다. [reservationId: %d]".formatted(command.reservationId())));
-            // 세션이 있는 경우, 세션도 취소한다.
-            Session getSession = reservationRepository.getSession(reservation.getReservationId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND,
-                            "세션 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(reservation.getReservationId())));
-            getSession.cancel("트레이너의 요청으로 세션이 최소되었습니다");
-            reservationRepository.saveSession(getSession);
 
-            return canceledReservation;
-        }
-        // 멤버의 경우
-        // 예약 취소 요청
-        reservation.cancelRequest("회원이 예약 취소를 요청 하였습니다.", command.cancelDate(), user.getUserRole());
-        // 취소한 예약 정보 저장
-        return reservationRepository.saveReservation(reservation).orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_CANCEL_FAILED,
-                "예약 취소 요청에 실패하였습니다. [reservationId: %d]".formatted(command.reservationId())));
+        ReservationCancelStrategy strategy = cancelStrategies.stream()
+                .filter(s -> s.supports(user.getUserRole()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("지원하지 않는 역할"));
+
+        return strategy.cancel(reservation, command);
     }
 
     @Transactional
@@ -236,7 +205,6 @@ public class ReservationService {
                 .filter(r -> r.getStatus() == RESERVATION_WAITING)
                 .filter(r -> r.isReservationDateSame(dates))
                 .toList();
-
         //2. 대기 중인 예약 거절
         reservations.forEach((r) -> {
             r.refuse();
@@ -254,12 +222,10 @@ public class ReservationService {
         reservation.approveCancelReqeust(command.memberId(), command.isApprove());
 
         Optional<Session> session = reservationRepository.getSession(command.reservationId());
-
         //만약 세션이 있다면 세션도 취소
         if (command.isApprove() && session.isPresent()) {
             session.get().cancel("예약 취소 요청으로 인한 취소");
             reservationRepository.saveSession(session.get());
-
         }
 
         return reservationRepository.saveReservation(reservation)
@@ -283,7 +249,6 @@ public class ReservationService {
         Reservation reservation = this.getReservation(command.reservationId());
         // 변경하고자 하는 날짜에 확정된 예약이 있는지 확인
         this.checkConfirmedReservationExistOrThrow(reservation.getTrainer().getTrainerId(), command.changeRequestDate());
-
         // 멤버의 경우 예약 변경 요청
         reservation.changeRequestDate(command.reservationDate(), command.changeRequestDate());
 
@@ -293,10 +258,8 @@ public class ReservationService {
 
     @Transactional
     public Reservation changeApproveReservation(ReservationCommand.ChangeApproval command) {
-
         Reservation reservation = this.getReservation(command.reservationId());
         reservation.approveChangeReqeust(command.memberId(), command.isApprove());
-
         //만약 만들어진 세션이 없다면 생성
         Optional<Session> session = reservationRepository.getSession(reservation.getReservationId());
 
@@ -308,12 +271,10 @@ public class ReservationService {
         return reservationRepository.saveReservation(reservation)
                 .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED,
                         "예약 변경 승인에 실패하였습니다."));
-
     }
 
     @Transactional
     public Session completeSession(ReservationCommand.Complete command, SecurityUser user) {
-
         Session session = reservationRepository.getSession(command.reservationId()).orElseThrow(() ->
                 new CustomException(ErrorCode.SESSION_NOT_FOUND,
                         "세션 정보를 찾지 못하였습니다. [reservationId: %d].".formatted(command.reservationId())));
@@ -323,38 +284,34 @@ public class ReservationService {
         Reservation reservation = reservationRepository.getReservation(command.reservationId()).orElseThrow(() ->
                 new CustomException(ErrorCode.RESERVATION_NOT_FOUND,
                         "예약 정보를 찾지 못하였습니다. [reservationId: %d].".formatted(command.reservationId())));
-
         // 예약 종료 처리
         reservation.complete(user.getTrainerId(), command.memberId());
-
         reservationRepository.saveReservation(reservation).orElseThrow(() ->
                 new CustomException(ErrorCode.RESERVATION_IS_FAILED));
 
         return reservationRepository.saveSession(session).orElseThrow(() ->
                 new CustomException(ErrorCode.SESSION_CREATE_FAILED));
-
     }
 
     @Transactional
     public List<Reservation> releaseFixedReservation(Long reservationId) {
         Reservation reservation = this.getReservation(reservationId);
         List<Reservation> fixedReservations = reservationRepository.getFixedReservations(reservation.getMember().getMemberId());
-
         List<Reservation> releaseFixedReservations = fixedReservations.stream()
                 .filter(r -> r.isFixedWithBaseDate(reservation.getConfirmDate()))
                 .map(r -> r.cancel("예약 해지로 취소되었습니다."))
                 .toList();
-
         // 세션이 있는 경우, 세션도 취소한다.
         List<Session> sessions = new ArrayList<>();
+
         releaseFixedReservations.forEach(r -> {
             Session session = reservationRepository.getSession(r.getReservationId())
                     .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND,
                             "세션 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(r.getReservationId())));
             session.cancel("트레이너의 요청으로 세션이 최소되었습니다");
-
             sessions.add(session);
         });
+
         reservationRepository.saveSessions(sessions);
 
         return reservationRepository.saveReservations(releaseFixedReservations);
@@ -363,9 +320,8 @@ public class ReservationService {
     /**
      * Related Session
      */
-
     public Page<Session> getSessions(ReservationCommand.GetSessions command) {
-        return sessionRepository.getSessions(command.memberId(), command.trainerId(),
+        return reservationRepository.getSessions(command.memberId(), command.trainerId(),
                 command.status(), command.pageRequest());
     }
 
@@ -382,7 +338,6 @@ public class ReservationService {
 
     @Transactional
     public Session saveSession(Reservation savedReservation) {
-
         Session session = Session.builder()
                 .reservation(savedReservation)
                 .status(SESSION_WAITING)
@@ -399,7 +354,6 @@ public class ReservationService {
         return reservations.stream().filter(r -> r.getConfirmDate().toLocalDate().isEqual(today))
                 .toList();
     }
-
 
     /**
      * 해당 날짜에 확정된 예약이 있는지 검사

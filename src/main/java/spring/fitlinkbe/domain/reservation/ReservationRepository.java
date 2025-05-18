@@ -1,5 +1,7 @@
 package spring.fitlinkbe.domain.reservation;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 
 import java.time.LocalDate;
@@ -34,6 +36,8 @@ public interface ReservationRepository {
     void deleteReservation(Reservation reservation);
 
     Optional<Session> getSession(Long reservationId);
+
+    Page<Session> getSessions(Long memberId, Long trainerId, Session.Status status, Pageable pageRequest);
 
     Optional<Session> saveSession(Session session);
 

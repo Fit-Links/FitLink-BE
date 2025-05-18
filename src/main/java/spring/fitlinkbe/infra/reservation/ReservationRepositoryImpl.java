@@ -2,6 +2,8 @@ package spring.fitlinkbe.infra.reservation;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.reservation.Reservation;
@@ -136,6 +138,13 @@ public class ReservationRepositoryImpl implements ReservationRepository {
             return findEntity.map(SessionEntity::toDomain);
         }
         return Optional.empty();
+    }
+
+    @Override
+    public Page<Session> getSessions(Long memberId, Long trainerId, Session.Status status, Pageable pageRequest) {
+        Page<SessionEntity> result = sessionJpaRepository.findSessions(memberId, trainerId, status, pageRequest);
+
+        return result.map(SessionEntity::toDomain);
     }
 
     @Override
