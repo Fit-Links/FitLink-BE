@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.trainer.TrainerFacade;
 import spring.fitlinkbe.application.trainer.criteria.AvailableTimesResult;
+import spring.fitlinkbe.application.trainer.criteria.ConnectRequestDecisionResult;
 import spring.fitlinkbe.application.trainer.criteria.DayOffResult;
 import spring.fitlinkbe.application.trainer.criteria.TrainerInfoResult;
 import spring.fitlinkbe.domain.common.enums.UserRole;
@@ -128,13 +129,16 @@ public class TrainerController {
     }
 
     @PostMapping("/connect-requests/{notificationId}/decision")
-    public ApiResultResponse<Object> decisionConnectRequest(
+    public ApiResultResponse<ConnectRequestDecisionDto.Response> decisionConnectRequest(
             @Login SecurityUser user,
             @PathVariable Long notificationId,
-            @RequestBody @Valid ConnectRequestDecisionDto request
+            @RequestBody @Valid ConnectRequestDecisionDto.Request request
     ) {
-        trainerFacade.decisionConnectRequest(user.getTrainerId(), notificationId, request.isApproved());
+        ConnectRequestDecisionResult result = trainerFacade.decisionConnectRequest(user.getTrainerId(), notificationId, request.isApproved());
 
-        return ApiResultResponse.of(HttpStatus.NO_CONTENT, true, null);
+        return ApiResultResponse.of(
+                HttpStatus.NO_CONTENT, true,
+                ConnectRequestDecisionDto.Response.from(result)
+        );
     }
 }
