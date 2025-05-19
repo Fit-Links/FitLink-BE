@@ -73,6 +73,8 @@ dependencies {
     /* integration test */
     testImplementation 'io.rest-assured:rest-assured:5.1.1'
 
+    /* mock */
+    testImplementation 'org.mockito:mockito-core:5.3.1'
 }
 
 tasks.named('test') {
