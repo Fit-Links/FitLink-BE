@@ -9,6 +9,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.notification.NotificationFacade;
 import spring.fitlinkbe.application.notification.criteria.NotificationCriteria;
+import spring.fitlinkbe.application.notification.criteria.NotificationResult;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
@@ -61,7 +62,7 @@ public class NotificationController {
     public ApiResultResponse<NotificationResponseDto.Detail> getNotificationDetail(@PathVariable("notificationId")
                                                                                    Long notificationId,
                                                                                    @Login SecurityUser user) {
-        Notification result = notificationFacade.getNotificationDetail(notificationId, user);
+        NotificationResult.NotificationDetail result = notificationFacade.getNotificationDetail(notificationId, user);
 
         return ApiResultResponse.ok(NotificationResponseDto.Detail.of(result));
 

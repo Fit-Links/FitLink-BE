@@ -86,6 +86,10 @@ public class PersonalDetail {
         return trainerId == null ? MEMBER : TRAINER;
     }
 
+    public Long getUserId() {
+        return trainerId == null ? memberId : trainerId;
+    }
+
     public void updateName(String name) {
         this.name = name;
     }
