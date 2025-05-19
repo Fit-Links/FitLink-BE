@@ -423,6 +423,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
 
                 softly.assertThat(content.notificationId()).isEqualTo(1L);
                 softly.assertThat(content.content()).contains("예약");
+                softly.assertThat(content.userDetail().name()).contains("김민수"); //회원 이름
                 softly.assertThat(content.userDetail()).isNotNull();
             });
         }
@@ -455,6 +456,7 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
 
                 softly.assertThat(content.notificationId()).isEqualTo(1L);
                 softly.assertThat(content.content()).contains("예약");
+                softly.assertThat(content.userDetail().name()).contains("트레이너황"); //트레이너 이름
                 softly.assertThat(content.userDetail()).isNotNull();
             });
         }
