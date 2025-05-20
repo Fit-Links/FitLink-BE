@@ -133,6 +133,7 @@ public class TrainerService {
                 .trainer(trainer)
                 .member(member)
                 .build();
-        return sessionInfoRepository.saveSessionInfo(sessionInfo).orElseThrow();
+        return sessionInfoRepository.saveSessionInfo(sessionInfo)
+                .orElseThrow(() -> new CustomException(ErrorCode.SESSION_INFO_SAVE_FAILED));
     }
 }
