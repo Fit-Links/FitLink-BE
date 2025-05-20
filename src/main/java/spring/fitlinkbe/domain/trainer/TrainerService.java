@@ -128,11 +128,12 @@ public class TrainerService {
         connectingInfoRepository.save(connectingInfo);
     }
 
-    public void createSessionInfo(Trainer trainer, Member member) {
+    public SessionInfo createSessionInfo(Trainer trainer, Member member) {
         SessionInfo sessionInfo = SessionInfo.builder()
                 .trainer(trainer)
                 .member(member)
                 .build();
-        sessionInfoRepository.saveSessionInfo(sessionInfo);
+        return sessionInfoRepository.saveSessionInfo(sessionInfo)
+                .orElseThrow(() -> new CustomException(ErrorCode.SESSION_INFO_SAVE_FAILED));
     }
 }

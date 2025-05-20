@@ -3,16 +3,14 @@ package spring.fitlinkbe.application.trainer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import spring.fitlinkbe.application.trainer.criteria.AvailableTimeCriteria;
-import spring.fitlinkbe.application.trainer.criteria.AvailableTimesResult;
-import spring.fitlinkbe.application.trainer.criteria.DayOffResult;
-import spring.fitlinkbe.application.trainer.criteria.TrainerInfoResult;
+import spring.fitlinkbe.application.trainer.criteria.*;
 import spring.fitlinkbe.domain.auth.AuthService;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
+import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.domain.member.MemberService;
 import spring.fitlinkbe.domain.notification.Notification;
@@ -175,7 +173,7 @@ public class TrainerFacade {
     }
 
     @Transactional
-    public void decisionConnectRequest(Long trainerId, Long notificationId, Boolean approved) {
+    public ConnectRequestDecisionResult decisionConnectRequest(Long trainerId, Long notificationId, Boolean approved) {
         Notification notification = notificationService.getNotification(notificationId);
         if (notification.getNotificationType() != Notification.NotificationType.CONNECT) {
             throw new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND);
@@ -191,12 +189,18 @@ public class TrainerFacade {
         Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
         Trainer trainer = trainerService.getTrainerInfo(trainerId);
 
+        SessionInfo sessionInfo = null;
         if (approved) {
-            trainerService.createSessionInfo(trainer, connectingInfo.getMember());
+            sessionInfo = trainerService.createSessionInfo(trainer, connectingInfo.getMember());
         }
 
         notificationService.sendNotification(
                 NotificationCommand.ConnectDecision.of(memberDetail, trainer, approved, token.getPushToken())
+        );
+
+        return ConnectRequestDecisionResult.of(
+                connectingInfo.getMember().getMemberId(),
+                sessionInfo != null ? sessionInfo.getSessionInfoId() : null
         );
     }
 }

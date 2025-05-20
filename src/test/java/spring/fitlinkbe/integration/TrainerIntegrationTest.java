@@ -1157,19 +1157,19 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // when
             // 트레이너가 멤버 연결 요청 처리 요청을 한다면
             String url = URL.replace("{notificationId}", notification.getNotificationId().toString());
-            ExtractableResponse<Response> result = post(url, writeValueAsString(new ConnectRequestDecisionDto(true)), token);
+            ExtractableResponse<Response> result = post(url, writeValueAsString(new ConnectRequestDecisionDto.Request(true)), token);
 
             // then
             // 멤버 연결 요청 처리 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<ConnectRequestDecisionDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
 
                 softly.assertThat(response).isNotNull();
                 softly.assertThat(response.success()).isTrue();
                 softly.assertThat(response.status()).isEqualTo(204);
-                softly.assertThat(response.data()).isNull();
+                softly.assertThat(response.data().memberId()).isEqualTo(member.getMemberId());
 
                 Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT_RESPONSE);
                 softly.assertThat(createdNotification).isNotNull();
@@ -1207,19 +1207,21 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // when
             // 트레이너가 멤버 연결 요청 처리 요청을 한다면
             String url = URL.replace("{notificationId}", notification.getNotificationId().toString());
-            ExtractableResponse<Response> result = post(url, writeValueAsString(new ConnectRequestDecisionDto(false)), token);
+            ExtractableResponse<Response> result = post(url, writeValueAsString(new ConnectRequestDecisionDto.Request(false)), token);
 
             // then
             // 멤버 연결 요청 처리 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<ConnectRequestDecisionDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
 
                 softly.assertThat(response).isNotNull();
                 softly.assertThat(response.success()).isTrue();
                 softly.assertThat(response.status()).isEqualTo(204);
-                softly.assertThat(response.data()).isNull();
+                softly.assertThat(response.data().memberId()).isEqualTo(member.getMemberId());
+                softly.assertThat(response.data().sessionInfoId()).isNull();
+
 
                 Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT_RESPONSE);
                 softly.assertThat(createdNotification).isNotNull();
