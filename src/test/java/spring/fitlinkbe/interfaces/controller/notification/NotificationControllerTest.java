@@ -15,6 +15,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import spring.fitlinkbe.application.notification.NotificationFacade;
 import spring.fitlinkbe.application.notification.criteria.NotificationCriteria;
+import spring.fitlinkbe.application.notification.criteria.NotificationResult;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.notification.Notification;
@@ -279,8 +280,12 @@ public class NotificationControllerTest {
                     .isProcessed(false)
                     .build();
 
+            NotificationResult.NotificationDetail notificationDetail = NotificationResult.NotificationDetail
+                    .from(notification, personalDetail);
+
+
             when(notificationFacade.getNotificationDetail(any(Long.class), any(SecurityUser.class)))
-                    .thenReturn(notification);
+                    .thenReturn(notificationDetail);
 
             //when & then
             mockMvc.perform(get("/v1/notifications/%s".formatted(notificationId))

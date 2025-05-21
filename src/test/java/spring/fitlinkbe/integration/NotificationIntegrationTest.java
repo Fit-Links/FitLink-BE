@@ -396,8 +396,8 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
     @DisplayName("알림 상세 조회 Integration TEST")
     class GetNotificationDetailIntegrationTest {
         @Test
-        @DisplayName("알림 상세 조회 - 성공")
-        void getNotificationDetail() {
+        @DisplayName("트레이너 알림 상세 조회 - 성공")
+        void getNotificationDetailWithTrainer() {
             // given
             PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
                     .orElseThrow();
@@ -423,6 +423,40 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
 
                 softly.assertThat(content.notificationId()).isEqualTo(1L);
                 softly.assertThat(content.content()).contains("예약");
+                softly.assertThat(content.userDetail().name()).contains("김민수"); //회원 이름
+                softly.assertThat(content.userDetail()).isNotNull();
+            });
+        }
+
+        @Test
+        @DisplayName("멤버 알림 상세 조회 - 성공")
+        void getNotificationDetailWithMember() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+
+            UserRole userRole = UserRole.MEMBER;
+
+            // 알림 20개 저장
+            createNotifications(personalDetail, trainer.getTrainerId(), userRole);
+
+            // when
+            ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/1", accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                NotificationResponseDto.Detail content = result.body().jsonPath()
+                        .getObject("data", NotificationResponseDto.Detail.class);
+
+                softly.assertThat(content.notificationId()).isEqualTo(1L);
+                softly.assertThat(content.content()).contains("예약");
+                softly.assertThat(content.userDetail().name()).contains("트레이너황"); //트레이너 이름
                 softly.assertThat(content.userDetail()).isNotNull();
             });
         }

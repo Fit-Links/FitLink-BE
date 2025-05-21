@@ -29,7 +29,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     @Override
-    public Notification getNotification(Long personalDetailId, Long notificationId) {
+    public Notification getNotification(Long notificationId, Long personalDetailId) {
         return notificationJpaRepository.findByNotificationIdAndPersonalDetail_PersonalDetailId(notificationId,
                         personalDetailId).map(NotificationEntity::toDomain)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));

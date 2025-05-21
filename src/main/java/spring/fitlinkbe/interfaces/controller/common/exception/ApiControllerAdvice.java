@@ -102,8 +102,6 @@ public class ApiControllerAdvice {
         );
     }
 
-
-
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public ApiResultResponse<Object> handlerException(Exception e) {
