@@ -220,11 +220,11 @@ public class MemberFacade {
 
         ConnectingInfo connectingInfo = memberService.findConnectedInfo(memberId);
         SessionInfo sessionInfo = memberService.findSessionInfo(trainerId, memberId);
-        Member me = memberService.getMember(memberId);
+        Member member = memberService.getMember(memberId);
 
         List<WorkoutSchedule> workoutSchedules = memberService.getWorkoutSchedules(memberId);
         List<Reservation> fixedReservations = reservationService.getFixedReservations(memberId);
 
-        return MemberInfoResult.Response.of(me, connectingInfo, sessionInfo, workoutSchedules, fixedReservations);
+        return MemberInfoResult.Response.of(member, connectingInfo, sessionInfo, workoutSchedules, fixedReservations);
     }
 }

@@ -37,6 +37,8 @@ public class MemberInfoDto {
     public record Response(
             Long memberId,
             String name,
+            LocalDate birthDate,
+            String phoneNumber,
             Long trainerId,
             String trainerName,
             String trainerPhone,
@@ -51,6 +53,8 @@ public class MemberInfoDto {
             return Response.builder()
                     .memberId(result.memberId())
                     .name(result.name())
+                    .birthDate(result.birthDate())
+                    .phoneNumber(result.phoneNumber())
                     .trainerId(result.trainerId())
                     .trainerName(result.trainerName())
                     .trainerPhone(result.trainerPhone())
