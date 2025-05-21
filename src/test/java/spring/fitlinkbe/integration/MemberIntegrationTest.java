@@ -297,6 +297,8 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.status()).isEqualTo(200);
                 softly.assertThat(data.memberId()).isEqualTo(member.getMemberId());
                 softly.assertThat(data.name()).isEqualTo(member.getName());
+                softly.assertThat(data.birthDate()).isEqualTo(member.getBirthDate());
+                softly.assertThat(data.phoneNumber()).isEqualTo(member.getPhoneNumber());
                 softly.assertThat(data.profilePictureUrl()).isEqualTo(member.getProfilePictureUrl());
                 softly.assertThat(data.trainerName()).isEqualTo(trainer.getName());
                 softly.assertThat(data.trainerId()).isEqualTo(trainer.getTrainerId());
@@ -1291,6 +1293,8 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(response.status()).isEqualTo(200);
                 softly.assertThat(data.memberId()).isEqualTo(member.getMemberId());
                 softly.assertThat(data.name()).isEqualTo(member.getName());
+                softly.assertThat(data.phoneNumber()).isEqualTo(member.getPhoneNumber());
+                softly.assertThat(data.birthDate()).isEqualTo(member.getBirthDate());
                 softly.assertThat(data.profilePictureUrl()).isEqualTo(member.getProfilePictureUrl());
                 softly.assertThat(data.trainerName()).isEqualTo(trainer.getName());
                 softly.assertThat(data.trainerId()).isEqualTo(trainer.getTrainerId());
