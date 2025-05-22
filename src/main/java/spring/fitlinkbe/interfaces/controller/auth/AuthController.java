@@ -54,7 +54,6 @@ public class AuthController {
     public ApiResultResponse<AuthDto.EmailAuthTokenResponse> getEmailVerificationToken(
             @Login SecurityUser user
     ) {
-        user.checkUserStatusOrThrow(PersonalDetail.Status.REQUIRED_SMS);
         String verificationToken = authFacade.getEmailVerificationToken(user.getPersonalDetailId());
 
         return ApiResultResponse.ok(new AuthDto.EmailAuthTokenResponse(verificationToken));

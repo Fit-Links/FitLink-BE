@@ -87,12 +87,23 @@ public class AuthFacade {
         return authService.createEmailVerificationToken(personalDetailId);
     }
 
+    @Transactional
     public void verifySnsEmail(SnsEmailNotificationDto dto) {
         String token = EmailParser.parseEmailContent(dto.content());
         PhoneNumber phoneNumber = new PhoneNumber(EmailParser.extractPhoneNumber(dto.mail().source()));
 
         PersonalDetail personalDetail = authService.getPersonalDetailByToken(token);
         personalDetail.verifySnsEmail(phoneNumber);
+
+        if (personalDetail.getStatus() == PersonalDetail.Status.NORMAL && personalDetail.getUserRole() == UserRole.TRAINER) {
+            Trainer trainer = trainerService.getTrainerInfo(personalDetail.getTrainerId());
+            trainer.updatePhoneNumber(phoneNumber);
+            trainerService.saveTrainer(trainer);
+        } else if (personalDetail.getStatus() == PersonalDetail.Status.NORMAL && personalDetail.getUserRole() == UserRole.MEMBER) {
+            Member member = memberService.getMember(personalDetail.getMemberId());
+            member.updatePhoneNumber(phoneNumber);
+            memberService.saveMember(member);
+        }
 
         authService.savePersonalDetail(personalDetail);
     }
