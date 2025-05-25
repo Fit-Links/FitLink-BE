@@ -99,11 +99,11 @@ public class PersonalDetail {
     }
 
     public void verifySnsEmail(PhoneNumber phoneNumber) {
-        if (this.status != Status.REQUIRED_SMS) {
-            throw new CustomException(ErrorCode.USER_STATUS_NOT_ALLOWED);
-        }
         this.phoneNumber = phoneNumber;
-        this.status = Status.REQUIRED_REGISTER;
+
+        if (this.status == Status.REQUIRED_SMS) {
+            this.status = Status.REQUIRED_REGISTER;
+        }
     }
 
     public void updateProfile(String uploadFilePath) {

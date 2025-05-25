@@ -731,7 +731,7 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
         }
 
         @Test
-        @DisplayName("회원 이메일 인증 코드 발급 실패 - 회원의 상태가 REQUIRED_SMS 가 아닌 경우")
+        @DisplayName("회원 이메일 인증 코드 발급 성공 - 회원의 상태가 REQUIRED_SMS 가 아닌 경우")
         public void sendEmailAuthCodeFailBecauseOfNotRequiredSmsStatus() throws Exception {
             // given
             // NORMAL 상태의 유저가 있을 때
@@ -743,14 +743,14 @@ public class AuthIntegrationTest extends BaseIntegrationTest {
             ExtractableResponse<Response> result = get(EMAIL_AUTH_API, accessToken);
 
             // then
-            // 에러를 반환한다
+            // 요청에 성공해야 한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
                 ApiResultResponse<AuthDto.EmailAuthTokenResponse> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
+
                 softly.assertThat(response).isNotNull();
-                softly.assertThat(response.status()).isEqualTo(403);
-                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.data().verificationToken()).isNotNull();
             });
         }
     }
