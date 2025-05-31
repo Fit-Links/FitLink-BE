@@ -707,6 +707,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             testDataHandler.createTokenInfo(member);
             PersonalDetail personalDetail = testDataHandler.getMemberPersonalDetail(member.getMemberId());
             testDataHandler.connectMemberAndTrainer(member, trainer);
+            testDataHandler.createSessionInfo(member, trainer);
 
             // when
             // 트레이너가 회원 연결 해제 요청을 한다면
@@ -730,6 +731,9 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
 
                 Notification notification = notificationRepository.getNotification(personalDetail.getPersonalDetailId(), Notification.NotificationType.DISCONNECT_TRAINER);
                 softly.assertThat(notification).isNotNull();
+
+                Optional<SessionInfo> updatedSessionInfo = sessionInfoRepository.getSessionInfoWithNoLock(trainer.getTrainerId(), member.getMemberId());
+                softly.assertThat(updatedSessionInfo).isEmpty();
             });
         }
 

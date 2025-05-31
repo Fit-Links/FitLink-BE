@@ -164,6 +164,11 @@ public class TrainerFacade {
         ConnectingInfo connectingInfo = trainerService.getConnectingInfo(trainerId, memberId);
         connectingInfo.disconnect();
 
+        SessionInfo sessionInfo = memberService.getSessionInfo(trainerId, memberId);
+        if (sessionInfo != null) {
+            memberService.deleteSessionInfo(sessionInfo);
+        }
+
         trainerService.saveConnectingInfo(connectingInfo);
         // -> 멤버에게 알림 보내기
         Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
