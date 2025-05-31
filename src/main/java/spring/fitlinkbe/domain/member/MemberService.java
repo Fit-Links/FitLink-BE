@@ -206,4 +206,8 @@ public class MemberService {
     public PersonalDetail getPersonalDetail(Long personalDetailId) {
         return personalDetailRepository.getById(personalDetailId);
     }
+
+    public void deleteSessionInfo(SessionInfo sessionInfo) {
+        sessionInfoRepository.delete(sessionInfo);
+    }
 }

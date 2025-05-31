@@ -30,6 +30,7 @@ import spring.fitlinkbe.interfaces.controller.member.dto.*;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class MemberIntegrationTest extends BaseIntegrationTest {
@@ -164,6 +165,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             Member member = testDataHandler.createMember();
             Trainer trainer = testDataHandler.createTrainer("AB1423");
             testDataHandler.connectMemberAndTrainer(member, trainer);
+            testDataHandler.createSessionInfo(member, trainer);
             testDataHandler.createTokenInfo(member);
             testDataHandler.createTokenInfo(trainer);
             String token = testDataHandler.createTokenFromMember(member);
@@ -192,6 +194,10 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 Notification notification = notificationRepository.getNotification(trainerPersonalDetail.getPersonalDetailId(),
                         Notification.NotificationType.DISCONNECT);
                 softly.assertThat(notification).isNotNull();
+
+                // 세션 정보가 삭제되었는지 확인
+                Optional<SessionInfo> updatedSessionInfo = sessionInfoRepository.getSessionInfoWithNoLock(trainer.getTrainerId(), member.getMemberId());
+                softly.assertThat(updatedSessionInfo).isEmpty();
             });
         }
 

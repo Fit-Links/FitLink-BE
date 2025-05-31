@@ -76,4 +76,9 @@ public class SessionInfoRepositoryImpl implements SessionInfoRepository {
                 .map(SessionInfoEntity::toDomain)
                 .toList();
     }
+
+    @Override
+    public void delete(SessionInfo sessionInfo) {
+        sessionInfoJpaRepository.deleteById(sessionInfo.getSessionInfoId());
+    }
 }

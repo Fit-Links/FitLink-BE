@@ -18,4 +18,6 @@ public interface SessionInfoRepository {
     Optional<SessionInfo> findSessionInfo(Long memberId);
 
     List<SessionInfo> findAllSessionInfo(List<Long> memberIds, Long trainerId);
+
+    void delete(SessionInfo sessionInfo);
 }
