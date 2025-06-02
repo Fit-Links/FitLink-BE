@@ -194,10 +194,6 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 Notification notification = notificationRepository.getNotification(trainerPersonalDetail.getPersonalDetailId(),
                         Notification.NotificationType.DISCONNECT);
                 softly.assertThat(notification).isNotNull();
-
-                // 세션 정보가 삭제되었는지 확인
-                Optional<SessionInfo> updatedSessionInfo = sessionInfoRepository.getSessionInfoWithNoLock(trainer.getTrainerId(), member.getMemberId());
-                softly.assertThat(updatedSessionInfo).isEmpty();
             });
         }
 

@@ -70,11 +70,6 @@ public class MemberFacade {
 
         connectingInfo.disconnect();
         memberService.saveConnectingInfo(connectingInfo);
-
-        SessionInfo sessionInfo = memberService.findSessionInfo(connectingInfo.getTrainerId(), memberId);
-        if (sessionInfo != null) {
-            memberService.deleteSessionInfo(sessionInfo);
-        }
     }
 
 

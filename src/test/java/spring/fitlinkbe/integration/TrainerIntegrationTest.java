@@ -733,7 +733,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(notification).isNotNull();
 
                 Optional<SessionInfo> updatedSessionInfo = sessionInfoRepository.getSessionInfoWithNoLock(trainer.getTrainerId(), member.getMemberId());
-                softly.assertThat(updatedSessionInfo).isEmpty();
+                softly.assertThat(updatedSessionInfo).isNotEmpty();
             });
         }
 
@@ -1183,6 +1183,57 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(sessionInfo.getRemainingCount()).isEqualTo(0);
                 softly.assertThat(sessionInfo.getTotalCount()).isEqualTo(0);
 
+                ConnectingInfo updatedConnectingInfo = connectingInfoRepository.findConnectingInfo(trainer.getTrainerId(), member.getMemberId()).get();
+                softly.assertThat(updatedConnectingInfo.getStatus()).isEqualTo(ConnectingInfo.ConnectingStatus.CONNECTED);
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너 멤버 연결 요청 처리 성공 - 이미 세션 정보가 있을 때")
+        void decisionConnectSuccessWithExistingSession() throws Exception {
+            // given
+            // 멤버가 트레이너와 연동한 세션 정보가 이미 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+            Member member = testDataHandler.createMember();
+            PersonalDetail trainerDetail = testDataHandler.getTrainerPersonalDetail(trainer.getTrainerId());
+            PersonalDetail memberDetail = testDataHandler.getMemberPersonalDetail(member.getMemberId());
+            testDataHandler.createToken(memberDetail);
+            ConnectingInfo connectingInfo = testDataHandler.createConnectingInfo(trainer, member);
+
+            Notification notification = testDataHandler.saveNotification(
+                    Notification.connectRequest(trainerDetail, member.getMemberId(),
+                            member.getName(), connectingInfo.getConnectingInfoId())
+            );
+
+            // 세션 정보 생성
+            SessionInfo sessionInfo = testDataHandler.createSessionInfo(member, trainer);
+
+            // when
+            // 트레이너가 멤버 연결 요청 처리 요청을 한다면
+            String url = URL.replace("{notificationId}", notification.getNotificationId().toString());
+            ExtractableResponse<Response> result = post(url, writeValueAsString(new ConnectRequestDecisionDto.Request(true)), token);
+
+            // then
+            // 멤버 연결 요청 처리 성공한다, 세션 정보는 새로 생성하지 않는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<ConnectRequestDecisionDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(204);
+                softly.assertThat(response.data().memberId()).isEqualTo(member.getMemberId());
+                softly.assertThat(response.data().sessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
+
+                Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT_RESPONSE);
+                softly.assertThat(createdNotification).isNotNull();
+
+                Optional<SessionInfo> updatedSessionInfo = sessionInfoRepository.getSessionInfoWithNoLock(trainer.getTrainerId(), member.getMemberId());
+                softly.assertThat(updatedSessionInfo).isNotEmpty();
+                softly.assertThat(updatedSessionInfo.get().getSessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
 
                 ConnectingInfo updatedConnectingInfo = connectingInfoRepository.findConnectingInfo(trainer.getTrainerId(), member.getMemberId()).get();
                 softly.assertThat(updatedConnectingInfo.getStatus()).isEqualTo(ConnectingInfo.ConnectingStatus.CONNECTED);

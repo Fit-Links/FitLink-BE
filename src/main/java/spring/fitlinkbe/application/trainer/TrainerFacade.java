@@ -164,11 +164,6 @@ public class TrainerFacade {
         ConnectingInfo connectingInfo = trainerService.getConnectingInfo(trainerId, memberId);
         connectingInfo.disconnect();
 
-        SessionInfo sessionInfo = memberService.getSessionInfo(trainerId, memberId);
-        if (sessionInfo != null) {
-            memberService.deleteSessionInfo(sessionInfo);
-        }
-
         trainerService.saveConnectingInfo(connectingInfo);
         // -> 멤버에게 알림 보내기
         Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
@@ -194,8 +189,8 @@ public class TrainerFacade {
         Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
         Trainer trainer = trainerService.getTrainerInfo(trainerId);
 
-        SessionInfo sessionInfo = null;
-        if (approved) {
+        SessionInfo sessionInfo = memberService.findSessionInfo(trainerId, connectingInfo.getMember().getMemberId());
+        if (approved && sessionInfo == null) {
             sessionInfo = trainerService.createSessionInfo(trainer, connectingInfo.getMember());
         }
 
