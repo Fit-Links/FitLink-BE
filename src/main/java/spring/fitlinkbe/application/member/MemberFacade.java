@@ -26,12 +26,10 @@ import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -44,17 +42,38 @@ public class MemberFacade {
 
     @Transactional
     public void connectTrainer(Long memberId, String trainerCode) {
-        memberService.checkMemberAlreadyConnected(memberId);
-
         Trainer trainer = trainerService.getTrainerByCode(trainerCode);
         Member member = memberService.getMember(memberId);
 
-        ConnectingInfo connectingInfo = memberService.requestConnectTrainer(trainer, member);
+        Optional<ConnectingInfo> exist = validateAndGetExistConnectingInfo(memberId, trainer);
+        ConnectingInfo connectingInfo;
+        if (exist.isPresent()) {
+            connectingInfo = exist.get();
+            connectingInfo.requestConnect();
+            memberService.saveConnectingInfo(connectingInfo);
+        } else {
+            connectingInfo = memberService.requestConnectTrainer(trainer, member);
+        }
         PersonalDetail trainerDetail = trainerService.getTrainerDetail(trainer.getTrainerId());
         Token token = authService.getTokenByPersonalDetailId(trainerDetail.getPersonalDetailId());
 
         notificationService.sendNotification(NotificationCommand.Connect.of(trainerDetail, member.getMemberId(),
                 member.getName(), connectingInfo.getConnectingInfoId(), token.getPushToken()));
+    }
+
+    private Optional<ConnectingInfo> validateAndGetExistConnectingInfo(Long memberId, Trainer trainer) {
+        List<ConnectingInfo> connectingInfos = memberService.findConnectingInfos(memberId);
+
+        // 현재 요청하는 트레이너 이외에 다른 트레이너에게 연결된 정보가 있는지 확인
+        Optional<ConnectingInfo> exist = connectingInfos.stream().filter(connectingInfo ->
+                !connectingInfo.getTrainerId().equals(trainer.getTrainerId()) && connectingInfo.isNotDisConnected()
+        ).findFirst();
+        if (exist.isPresent()) {
+            throw new CustomException(ErrorCode.CONNECT_AVAILABLE_AFTER_DISCONNECTED);
+        }
+
+        return connectingInfos.stream()
+                .filter(info -> info.getTrainerId().equals(trainer.getTrainerId())).findFirst();
     }
 
     @Transactional

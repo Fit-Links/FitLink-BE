@@ -32,13 +32,6 @@ public class MemberService {
     private final ConnectingInfoRepository connectingInfoRepository;
     private final SessionInfoRepository sessionInfoRepository;
 
-    public PersonalDetail registerMember(Long personalDetailId, AuthCommand.MemberRegisterRequest command, Member savedMember) {
-        PersonalDetail personalDetail = personalDetailRepository.getById(personalDetailId);
-        personalDetailRepository.savePersonalDetail(personalDetail);
-
-        return personalDetail;
-    }
-
     @Transactional(readOnly = true)
     public List<WorkoutSchedule> getWorkoutSchedules(Long memberId) {
         return workoutScheduleRepository.findAllByMemberId(memberId);
@@ -57,19 +50,6 @@ public class MemberService {
 
     public List<WorkoutSchedule> saveWorkoutSchedules(List<WorkoutSchedule> workoutSchedules) {
         return workoutScheduleRepository.saveAll(workoutSchedules);
-    }
-
-    /**
-     * 이미 연결된, 연결 시도중인 트레이너가 있는지 확인
-     *
-     * @param memberId 연결 확인할 멤버 ID
-     * @throws CustomException 이미 연결된, 연결 시도중인 트레이너가 있을 경우
-     */
-    public void checkMemberAlreadyConnected(Long memberId) {
-        Optional<ConnectingInfo> existsConnectingInfo = connectingInfoRepository.getConnectedInfo(memberId);
-        if (existsConnectingInfo.isPresent()) {
-            throw new CustomException(ErrorCode.CONNECT_AVAILABLE_AFTER_DISCONNECTED);
-        }
     }
 
     @Transactional(readOnly = true)
@@ -203,11 +183,7 @@ public class MemberService {
         this.saveSessionInfo(getSessionInfo);
     }
 
-    public PersonalDetail getPersonalDetail(Long personalDetailId) {
-        return personalDetailRepository.getById(personalDetailId);
-    }
-
-    public void deleteSessionInfo(SessionInfo sessionInfo) {
-        sessionInfoRepository.delete(sessionInfo);
+    public List<ConnectingInfo> findConnectingInfos(Long memberId) {
+        return connectingInfoRepository.findConnectingInfos(memberId);
     }
 }
