@@ -81,7 +81,10 @@ public class TrainerFacade {
         memberService.checkConnected(trainerId, memberId);
 
         List<AvailableTime> currentSchedules = trainerService.getCurrentAvailableTimes(trainerId);
-        return AvailableTimesResult.CurrentAvailableTimesResponse.of(currentSchedules);
+        List<DayOff> dayOffs = trainerService.findAllDayOff(trainerId);
+        return AvailableTimesResult.CurrentAvailableTimesResponse.of(
+                currentSchedules, dayOffs.stream().map(DayOff::getDayOffDate).toList()
+        );
     }
 
     @Transactional
