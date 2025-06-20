@@ -36,4 +36,8 @@ public class AttachmentService {
         saveAttachment(attachment);
         return attachment;
     }
+
+    public void deleteAttachment(Long personalDetailId) {
+        attachmentRepository.deleteByPersonalDetailId(personalDetailId);
+    }
 }

@@ -62,4 +62,8 @@ public class Member {
     public void updatePhoneNumber(PhoneNumber phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
+    public void deleteProfile() {
+        this.profilePictureUrl = null;
+    }
 }
