@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ConnectingInfoJpaRepository extends JpaRepository<ConnectingInfoEntity, Long> {
@@ -24,4 +25,7 @@ public interface ConnectingInfoJpaRepository extends JpaRepository<ConnectingInf
 
     @EntityGraph(attributePaths = {"member", "trainer"})
     Optional<ConnectingInfoEntity> findByTrainer_TrainerIdAndMember_MemberId(Long trainerId, Long memberId);
+
+    @EntityGraph(attributePaths = {"member", "trainer"})
+    List<ConnectingInfoEntity> findByMember_MemberId(Long memberId);
 }

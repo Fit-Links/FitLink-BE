@@ -129,8 +129,8 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             // 멤버와 트레이너가 있을 때
             String trainerCode = "AB1423";
             Member member = testDataHandler.createMember();
-            Trainer trainer = testDataHandler.createTrainer(trainerCode);
-            testDataHandler.connectMemberAndTrainer(member, trainer);
+            testDataHandler.createTrainer(trainerCode);
+            testDataHandler.connectMemberAndTrainer(member, testDataHandler.createTrainer("AB1234"));
             String token = testDataHandler.createTokenFromMember(member);
 
             // when
