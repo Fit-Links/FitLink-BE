@@ -8,6 +8,7 @@ import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.SessionInfoRepository;
 import spring.fitlinkbe.domain.common.TokenRepository;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.model.*;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.member.MemberRepository;
@@ -431,6 +432,32 @@ public class TestDataHandler {
                 .fileSize(1024)
                 .fileExtension("jpg")
                 .build();
+
+        return attachmentRepository.save(attachment);
+    }
+
+    public Attachment createAttachment(PersonalDetail personalDetail) {
+        Attachment attachment = Attachment.builder()
+                .origFileName("test.jpg")
+                .uuid(UUID.randomUUID().toString())
+                .uploadFilePath("test/upload/path")
+                .fileSize(1024)
+                .fileExtension("jpg")
+                .personalDetailId(personalDetail.getPersonalDetailId())
+                .build();
+
+        if (personalDetail.getUserRole() == UserRole.MEMBER) {
+            Member member = memberRepository.getMember(personalDetail.getMemberId()).orElseThrow();
+            member.updateProfile(attachment.getUploadFilePath());
+            memberRepository.saveMember(member);
+        } else if (personalDetail.getUserRole() == UserRole.TRAINER) {
+            Trainer trainer = trainerRepository.getTrainerInfo(personalDetail.getTrainerId()).orElseThrow();
+            trainer.updateProfile(attachment.getUploadFilePath());
+            trainerRepository.saveTrainer(trainer);
+        }
+
+        personalDetail.updateProfile(attachment.getUploadFilePath());
+        personalDetailRepository.savePersonalDetail(personalDetail);
 
         return attachmentRepository.save(attachment);
     }

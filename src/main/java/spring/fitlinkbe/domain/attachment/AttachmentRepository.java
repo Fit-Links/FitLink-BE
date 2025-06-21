@@ -8,4 +8,6 @@ public interface AttachmentRepository {
     Attachment save(Attachment attachment);
 
     Optional<Attachment> findById(Long attachmentId);
+
+    void deleteByPersonalDetailId(Long personalDetailId);
 }

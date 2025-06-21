@@ -110,6 +110,10 @@ public class PersonalDetail {
         this.profilePictureUrl = uploadFilePath;
     }
 
+    public void deleteProfile() {
+        this.profilePictureUrl = null;
+    }
+
     public enum Gender {
         MALE, FEMALE
     }

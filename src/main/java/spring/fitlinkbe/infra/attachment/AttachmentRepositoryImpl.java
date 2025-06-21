@@ -27,4 +27,9 @@ public class AttachmentRepositoryImpl implements AttachmentRepository {
         return attachmentJpaRepository.findById(attachmentId)
                 .map(AttachmentEntity::toDomain);
     }
+
+    @Override
+    public void deleteByPersonalDetailId(Long personalDetailId) {
+        attachmentJpaRepository.deleteByPersonalDetailId(personalDetailId);
+    }
 }

@@ -21,6 +21,8 @@ import spring.fitlinkbe.integration.common.TestDataHandler;
 import spring.fitlinkbe.interfaces.controller.attachment.dto.AttachmentDto;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 
+import java.util.Optional;
+
 public class AttachmentIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
@@ -114,6 +116,82 @@ public class AttachmentIntegrationTest extends BaseIntegrationTest {
 
                 Attachment updatedAttachment = attachmentRepository.findById(attachment.getAttachmentId()).orElseThrow();
                 softly.assertThat(updatedAttachment.getPersonalDetailId()).isEqualTo(trainerDetail.getPersonalDetailId());
+            });
+        }
+    }
+
+    @Nested
+    @DisplayName("유저 프로필 삭제 api 테스트")
+    class UserProfileDeleteTest {
+
+        private static final String url = "/v1/attachments/user-profile";
+
+        @DisplayName("유저 프로필 삭제 성공 - 회원일 때")
+        @Test
+        void userProfileDeleteTestSuccessMember() {
+            // given
+            // 멤버와 attachment 정보가 있을 때
+            Member member = testDataHandler.createMember();
+            PersonalDetail memberDetail = testDataHandler.getMemberPersonalDetail(member.getMemberId());
+            String token = testDataHandler.createTokenFromMember(member);
+            Attachment attachment = testDataHandler.createAttachment(memberDetail);
+
+            // when
+            // 회원 프로필 삭제 api 호출시
+            ExtractableResponse<Response> result = delete(url, token);
+
+            // then
+            // 프로필 삭제 성공
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response.status()).isEqualTo(204);
+                softly.assertThat(response.success()).isTrue();
+
+                Member updatedMember = memberRepository.getMember(member.getMemberId()).orElseThrow();
+                softly.assertThat(updatedMember.getProfilePictureUrl()).isNull();
+
+                PersonalDetail updatedDetail = personalDetailRepository.getById(memberDetail.getPersonalDetailId());
+                softly.assertThat(updatedDetail.getProfilePictureUrl()).isNull();
+
+                Optional<Attachment> updatedAttachment = attachmentRepository.findById(attachment.getAttachmentId());
+                softly.assertThat(updatedAttachment.isEmpty()).isTrue();
+            });
+        }
+
+        @Test
+        @DisplayName("유저 프로필 삭제 성공 - 트레이너일 때")
+        void userProfileDeleteTestSuccessTrainer() {
+            // given
+            // 트레이너와 attachment 정보가 있을 때
+            String trainerCode = "123sDSD";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            PersonalDetail trainerDetail = testDataHandler.getTrainerPersonalDetail(trainer.getTrainerId());
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+            Attachment attachment = testDataHandler.createAttachment(trainerDetail);
+
+            // when
+            // 트레이너 프로필 삭제 api 호출시
+            ExtractableResponse<Response> result = delete(url, token);
+
+            // then
+            // 프로필 삭제 성공
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+                softly.assertThat(response.status()).isEqualTo(204);
+                softly.assertThat(response.success()).isTrue();
+
+                Trainer updatedTrainer = trainerRepository.getTrainerInfo(trainer.getTrainerId()).orElseThrow();
+                softly.assertThat(updatedTrainer.getProfilePictureUrl()).isNull();
+
+                PersonalDetail updatedDetail = personalDetailRepository.getById(trainerDetail.getPersonalDetailId());
+                softly.assertThat(updatedDetail.getProfilePictureUrl()).isNull();
+
+                Optional<Attachment> updatedAttachment = attachmentRepository.findById(attachment.getAttachmentId());
+                softly.assertThat(updatedAttachment.isEmpty()).isTrue();
             });
         }
     }
