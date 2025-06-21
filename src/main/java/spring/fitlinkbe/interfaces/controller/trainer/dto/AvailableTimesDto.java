@@ -30,11 +30,13 @@ public class AvailableTimesDto {
 
     @Builder
     public record CurrentAvailableTimesResponse(
-            ScheduledChangeResponse currentSchedules
+            ScheduledChangeResponse currentSchedules,
+            List<LocalDate> dayOffs
     ) {
         public static CurrentAvailableTimesResponse from(AvailableTimesResult.CurrentAvailableTimesResponse response) {
             return CurrentAvailableTimesResponse.builder()
                     .currentSchedules(ScheduledChangeResponse.from(response.currentSchedules()))
+                    .dayOffs(response.dayOffs())
                     .build();
         }
     }

@@ -1075,6 +1075,8 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 수업 가능 시간 생성
             LocalDate now = LocalDate.now();
             createAvailableTimes(trainer, now);
+            testDataHandler.createDayOff(trainer, LocalDate.now().plusDays(3));
+            testDataHandler.createDayOff(trainer, LocalDate.now().plusDays(4));
 
             // when
             // 트레이너가 수업 가능 시간 조회 요청을 한다면
@@ -1095,6 +1097,8 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(availableTimes.currentSchedules()).isNotNull();
                 softly.assertThat(availableTimes.currentSchedules().schedules().size()).isEqualTo(4);
                 softly.assertThat(availableTimes.currentSchedules().applyAt()).isEqualTo(now);
+
+                softly.assertThat(availableTimes.dayOffs().size()).isEqualTo(2);
             });
         }
 
