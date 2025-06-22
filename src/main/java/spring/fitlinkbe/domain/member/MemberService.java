@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import spring.fitlinkbe.domain.auth.command.AuthCommand;
 import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.SessionInfoRepository;
