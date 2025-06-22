@@ -93,6 +93,12 @@ public class TrainerService {
         }
     }
 
+    public void checkDayOffExistOrThrow(Long trainerId, LocalDate dayOffDate) {
+        if (trainerRepository.isDayOffExist(trainerId, dayOffDate)) {
+            throw new CustomException(ErrorCode.DAY_OFF_EXISTS);
+        }
+    }
+
     public List<DayOff> saveAllDayOffs(List<DayOff> dayOffs) {
         return trainerRepository.saveAllDayOffs(dayOffs);
     }

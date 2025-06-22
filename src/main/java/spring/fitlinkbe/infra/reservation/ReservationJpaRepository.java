@@ -65,6 +65,12 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             "AND r.member.memberId = :memberId")
     List<ReservationEntity> findFixedStatus(Long memberId);
 
+    @Query("SELECT r FROM ReservationEntity r " +
+            "LEFT JOIN FETCH r.trainer " +
+            "WHERE r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.DISABLED_TIME_RESERVATION " +
+            "AND r.trainer.trainerId = :trainerId")
+    List<ReservationEntity> findDisabledTimeStatus(Long trainerId);
+
     @Query("SELECT COUNT(r) > 0 FROM ReservationEntity r " +
             "WHERE r.trainer.trainerId = :trainerId " +
             "AND r.confirmDate = :checkDateTime " +
@@ -78,8 +84,4 @@ public interface ReservationJpaRepository extends JpaRepository<ReservationEntit
             "AND r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.FIXED_RESERVATION")
     List<ReservationEntity> findAllFixedReservation(Long trainerId, LocalDateTime checkDateTime);
 
-    @Query("SELECT r FROM ReservationEntity r " +
-            "WHERE r.member.memberId = :memberId " +
-            "AND r.status = spring.fitlinkbe.domain.reservation.Reservation.Status.FIXED_RESERVATION")
-    List<ReservationEntity> findAllFixedReservation(Long memberId);
 }

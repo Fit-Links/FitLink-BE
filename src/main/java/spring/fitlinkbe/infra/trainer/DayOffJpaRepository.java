@@ -13,6 +13,8 @@ public interface DayOffJpaRepository extends JpaRepository<DayOffEntity, Long> {
 
     boolean existsByTrainer_TrainerIdAndDayOffDateIn(Long trainerId, List<LocalDate> dayOffDates);
 
+    boolean existsByTrainer_TrainerIdAndDayOffDateIs(Long trainerId, LocalDate dayOffDate);
+
     Optional<DayOffEntity> findByTrainer_TrainerIdAndDayOffId(Long trainerId, Long dayOffId);
 
 
