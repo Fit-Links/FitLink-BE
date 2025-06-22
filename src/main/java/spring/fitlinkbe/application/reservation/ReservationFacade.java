@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import spring.fitlinkbe.application.reservation.criteria.ReservationCriteria;
 import spring.fitlinkbe.application.reservation.criteria.ReservationResult;
 import spring.fitlinkbe.domain.auth.AuthService;
+import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.common.model.Token;
@@ -16,12 +17,15 @@ import spring.fitlinkbe.domain.reservation.Reservation;
 import spring.fitlinkbe.domain.reservation.ReservationService;
 import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.domain.reservation.command.ReservationCommand;
+import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.domain.trainer.TrainerService;
 import spring.fitlinkbe.support.security.SecurityUser;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
@@ -40,8 +44,38 @@ public class ReservationFacade {
 
     public List<Reservation> getReservations(LocalDate date, SecurityUser user) {
 
-        return reservationService.getReservations(ReservationCommand.GetReservations.of(date, user.getUserRole(),
+        List<Reservation> reservations = reservationService.getReservations(ReservationCommand.GetReservations.of(date, user.getUserRole(),
                 user.getUserId()));
+
+        //트레이너의 경우, 연동된 멤버와의 예약만 리턴
+        if (user.getUserRole() == TRAINER) {
+            Set<Long> connectedMemberIds = trainerService.getConnectingInfos(user.getTrainerId())
+                    .stream()
+                    .filter(c -> c.getStatus() == ConnectingInfo.ConnectingStatus.CONNECTED)
+                    .map(c -> c.getMember().getMemberId())
+                    .collect(Collectors.toSet());
+
+            return reservations.stream()
+                    .filter(r -> {
+                        if (r.getStatus() == Reservation.Status.DISABLED_TIME_RESERVATION) {
+                            return true;
+                        }
+
+                        return connectedMemberIds.contains(r.getMember().getMemberId());
+                    })
+                    .toList();
+        }
+
+        // 멤버의 경우, 연동된 트레이너와의 예약만 리턴
+        if (user.getUserRole() == MEMBER) {
+            ConnectingInfo connectingInfo = memberService.getConnectingInfo(user.getMemberId());
+            Trainer trainer = connectingInfo.getTrainer();
+
+            return reservations.stream()
+                    .filter(r -> r.getTrainer().getTrainerId().equals(trainer.getTrainerId()))
+                    .toList();
+        }
+        return List.of();
     }
 
 
@@ -220,7 +254,7 @@ public class ReservationFacade {
         // 멤버 -> 트레이너에게 예약 취소 요청 알림을 보낸다.
         Reservation.Status cancelStatus = reservation.getStatus();
 
-        if(cancelStatus == Reservation.Status.RESERVATION_CANCEL_REQUEST) {
+        if (cancelStatus == Reservation.Status.RESERVATION_CANCEL_REQUEST) {
             PersonalDetail trainerDetail = trainerService.getTrainerDetail(reservation.getTrainer().getTrainerId());
             Token token = authService.getTokenByPersonalDetailId(trainerDetail.getPersonalDetailId());
 

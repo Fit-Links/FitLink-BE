@@ -55,4 +55,11 @@ public class ConnectingInfoRepositoryImpl implements ConnectingInfoRepository {
                 .map(ConnectingInfoEntity::toDomain)
                 .toList();
     }
+
+    @Override
+    public List<ConnectingInfo> getConnectingInfos(Long trainerId) {
+        return connectingInfoJpaRepository.findAllByTrainer_TrainerId(trainerId).stream()
+                .map(ConnectingInfoEntity::toDomain)
+                .toList();
+    }
 }

@@ -7,9 +7,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import spring.fitlinkbe.domain.common.ConnectingInfoRepository;
 import spring.fitlinkbe.domain.common.PersonalDetailRepository;
 import spring.fitlinkbe.domain.common.SessionInfoRepository;
 import spring.fitlinkbe.domain.common.enums.UserRole;
+import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.member.Member;
@@ -70,6 +72,9 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
     NotificationRepository notificationRepository;
 
     @Autowired
+    ConnectingInfoRepository connectingInfoRepository;
+
+    @Autowired
     MemberRepository memberRepository;
 
     @Autowired
@@ -110,6 +115,14 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             Member member = memberRepository.getMember(1L).orElseThrow();
 
+            ConnectingInfo connectingInfo = ConnectingInfo.builder()
+                    .trainer(trainer)
+                    .member(member)
+                    .status(ConnectingInfo.ConnectingStatus.CONNECTED)
+                    .build();
+
+            connectingInfoRepository.save(connectingInfo);
+
             LocalDateTime reqeustDate = LocalDateTime.now().plusWeeks(2).minusDays(1).minusSeconds(1);
 
             SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
@@ -147,6 +160,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             params.put("date", LocalDate.now().toString());
 
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+            Member member = memberRepository.getMember(1L).orElseThrow();
 
             LocalDate dayOffDate = LocalDate.now().plusDays(1);
 
@@ -156,6 +170,14 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .build();
 
             trainerRepository.saveDayOff(dayOff);
+
+            ConnectingInfo connectingInfo = ConnectingInfo.builder()
+                    .trainer(trainer)
+                    .member(member)
+                    .status(ConnectingInfo.ConnectingStatus.CONNECTED)
+                    .build();
+
+            connectingInfoRepository.save(connectingInfo);
 
             Reservation reservation = Reservation.builder()
                     .reservationDates(List.of(dayOffDate.atStartOfDay()))
@@ -247,6 +269,14 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
             Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
 
             Member member = memberRepository.getMember(1L).orElseThrow();
+
+            ConnectingInfo connectingInfo = ConnectingInfo.builder()
+                    .trainer(trainer)
+                    .member(member)
+                    .status(ConnectingInfo.ConnectingStatus.CONNECTED)
+                    .build();
+
+            connectingInfoRepository.save(connectingInfo);
 
             SessionInfo sessionInfo = sessionInfoRepository.getSessionInfo(1L).orElseThrow();
 

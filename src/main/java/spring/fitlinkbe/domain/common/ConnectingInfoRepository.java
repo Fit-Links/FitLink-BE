@@ -30,4 +30,6 @@ public interface ConnectingInfoRepository {
     ConnectingInfo getConnectedInfoById(Long connectingInfoId);
 
     List<ConnectingInfo> findConnectingInfos(Long memberId);
+
+    List<ConnectingInfo> getConnectingInfos(Long trainerId);
 }

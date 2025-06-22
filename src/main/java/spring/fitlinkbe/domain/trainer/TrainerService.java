@@ -126,6 +126,10 @@ public class TrainerService {
         return connectingInfoRepository.getConnectingInfo(memberId, trainerId);
     }
 
+    public List<ConnectingInfo> getConnectingInfos(Long trainerId) {
+        return connectingInfoRepository.getConnectingInfos(trainerId);
+    }
+
     public ConnectingInfo getConnectingInfo(Long connectingInfoId) {
         return connectingInfoRepository.getConnectedInfoById(connectingInfoId);
     }
