@@ -3,8 +3,11 @@ package spring.fitlinkbe.infra.reservation;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.springframework.data.annotation.CreatedDate;
 import spring.fitlinkbe.domain.reservation.Session;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
+
+import java.time.LocalDateTime;
 
 import static spring.fitlinkbe.domain.reservation.Session.Status;
 
@@ -31,6 +34,9 @@ public class SessionEntity extends BaseTimeEntity {
 
     private boolean isCompleted;
 
+    @CreatedDate
+    private LocalDateTime createdAt;
+
     public static SessionEntity from(Session session, EntityManager em) {
 
         return SessionEntity.builder()
@@ -40,6 +46,7 @@ public class SessionEntity extends BaseTimeEntity {
                 .status(session.getStatus())
                 .cancelReason(session.getCancelReason())
                 .isCompleted(session.isCompleted())
+                .createdAt(session.getCreatedAt())
                 .build();
     }
 
@@ -50,6 +57,8 @@ public class SessionEntity extends BaseTimeEntity {
                 .status(status)
                 .cancelReason(cancelReason)
                 .isCompleted(isCompleted)
+                .createdAt(getCreatedAt())
+                .updatedAt(getUpdatedAt())
                 .build();
     }
 }

@@ -4,6 +4,8 @@ package spring.fitlinkbe.domain.reservation;
 import lombok.*;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 
+import java.time.LocalDateTime;
+
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.SESSION_IS_ALREADY_CANCEL;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.SESSION_IS_ALREADY_END;
 
@@ -17,6 +19,8 @@ public class Session {
     private Status status;
     private String cancelReason;
     private boolean isCompleted;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     @RequiredArgsConstructor
     @Getter
@@ -56,7 +60,6 @@ public class Session {
         }
 
         status = join ? Status.SESSION_COMPLETED : Status.SESSION_NOT_ATTEND;
+        isCompleted = true;
     }
-
-
 }
