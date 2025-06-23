@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface NotificationRepository {
-    Notification getNotification(Long personalDetailId);
+    List<Notification> getNotifications();
+
+    Notification getNotification(Long notificationId);
 
     Notification getNotification(Long personalDetailId, Long notificationId);
 

@@ -69,6 +69,22 @@ public class NotificationResponseDto {
     }
 
     @Builder(toBuilder = true)
+    public record Success(
+            Long notificationId,
+            boolean isProcessed
+
+    ) {
+
+        public static NotificationResponseDto.Success of(Notification notification) {
+
+            return Success.builder()
+                    .notificationId(notification.getNotificationId())
+                    .isProcessed(notification.isProcessed())
+                    .build();
+        }
+    }
+
+    @Builder(toBuilder = true)
     public record PushToken(String message) {
         public static PushToken of(String message) {
             return PushToken.builder()

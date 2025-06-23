@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import spring.fitlinkbe.domain.common.enums.UserRole;
-import spring.fitlinkbe.domain.common.exception.CustomException;
-import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
