@@ -15,6 +15,8 @@ import spring.fitlinkbe.domain.notification.command.NotificationRequest;
 import spring.fitlinkbe.domain.notification.event.PushEvent;
 import spring.fitlinkbe.support.security.SecurityUser;
 
+import java.util.List;
+
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -43,6 +45,13 @@ public class NotificationService {
         return notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND,
                         "알림을 찾을 수 없습니다. [notificationId: %d]".formatted(notificationId)));
+    }
+
+    public Notification getNotificationByReferenceAndMember(Long refId, Notification.ReferenceType refType, Long memberId) {
+        List<Notification> notifications = notificationRepository.getNotification(refId, refType);
+
+        return notifications.stream().filter(n -> n.getPartnerId().equals(memberId)).findFirst()
+                .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
     }
 
     public Notification markAsRead(Long notificationId) {

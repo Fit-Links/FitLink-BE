@@ -10,6 +10,7 @@ import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.domain.common.model.Token;
 import spring.fitlinkbe.domain.member.MemberService;
+import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.domain.notification.NotificationService;
 import spring.fitlinkbe.domain.notification.command.NotificationCommand;
 import spring.fitlinkbe.domain.reservation.Reservation;
@@ -230,8 +231,14 @@ public class ReservationFacade {
         // 트레이너 -> 멤버에게 예약 취소 여부 결과 알림 발송
         PersonalDetail memberDetail = memberService.getMemberDetail(approvedReservation.getMember().getMemberId());
         Token token = authService.getTokenByPersonalDetailId(memberDetail.getPersonalDetailId());
-        notificationService.sendNotification(NotificationCommand.CancelApproveReservation.of(memberDetail, approvedReservation.getReservationId(),
+        notificationService.sendNotification(NotificationCommand.CancelApproveReservation.of(memberDetail,
+                approvedReservation.getReservationId(),
                 approvedReservation.getTrainer().getTrainerId(), criteria.isApprove(), token.getPushToken()));
+
+        // 해당 알림에 대한 읽음 처리
+        Notification notificationByRef = notificationService.getNotificationByReferenceAndMember(criteria.reservationId(),
+                Notification.ReferenceType.RESERVATION_CANCEL, criteria.memberId());
+        notificationService.markAsRead(notificationByRef.getNotificationId());
 
         return approvedReservation;
     }
@@ -264,7 +271,6 @@ public class ReservationFacade {
                 reservation.getName(), criteria.reservationDate(), criteria.changeRequestDate(),
                 token.getPushToken()));
 
-
         return reservation;
     }
 
@@ -287,6 +293,11 @@ public class ReservationFacade {
         notificationService.sendNotification(NotificationCommand.ApproveRequestReservation.of(memberDetail,
                 approvedReservation.getReservationId(), approvedReservation.getTrainer().getTrainerId(),
                 criteria.isApprove(), token.getPushToken()));
+
+        // 해당 알림에 대한 읽음 처리
+        Notification notificationByRef = notificationService.getNotificationByReferenceAndMember(criteria.reservationId(),
+                Notification.ReferenceType.RESERVATION_CHANGE, criteria.memberId());
+        notificationService.markAsRead(notificationByRef.getNotificationId());
 
         return approvedReservation;
     }
@@ -313,6 +324,11 @@ public class ReservationFacade {
             notificationService.sendNotification(NotificationCommand.SessionChargeReminder.of(memberDetail,
                     sessionInfo.getSessionInfoId(), user.getTrainerId(), memberToken.getPushToken()));
         }
+
+        // 해당 알림에 대한 읽음 처리
+        Notification notificationByRef = notificationService.getNotificationByReferenceAndMember(criteria.reservationId(),
+                Notification.ReferenceType.SESSION, criteria.memberId());
+        notificationService.markAsRead(notificationByRef.getNotificationId());
 
         return completedSession;
     }
