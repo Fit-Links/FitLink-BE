@@ -30,7 +30,7 @@ import spring.fitlinkbe.interfaces.controller.member.dto.*;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class MemberIntegrationTest extends BaseIntegrationTest {
@@ -86,7 +86,12 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(connectingInfo.getStatus()).isEqualTo(ConnectingInfo.ConnectingStatus.REQUESTED);
 
                 // 알림 정보가 생성되었는지 확인
-                Notification notification = notificationRepository.getNotification(trainerPersonalDetail.getPersonalDetailId());
+                List<Notification> notifications = notificationRepository.getNotifications();
+                Notification notification = notifications.stream()
+                        .filter(n -> Objects.equals(n.getPersonalDetail().getPersonalDetailId(),
+                                trainerPersonalDetail.getPersonalDetailId()))
+                        .findFirst().orElseThrow();
+
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getRefType()).isEqualTo(Notification.ReferenceType.CONNECT);
                 softly.assertThat(notification.getRefId()).isEqualTo(connectingInfo.getConnectingInfoId());

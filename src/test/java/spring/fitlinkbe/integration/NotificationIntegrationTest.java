@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -109,8 +110,11 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
 
                 // 알림이 잘 생성됐는지 확인
                 PersonalDetail memberDetail = personalDetailRepository.getMemberDetail(1L).orElseThrow();
-
-                Notification notification = notificationRepository.getNotification(memberDetail.getPersonalDetailId());
+                Notification notification = notificationRepository.getNotifications()
+                        .stream()
+                        .filter(n -> Objects.equals(n.getPersonalDetail().getPersonalDetailId(),
+                                memberDetail.getPersonalDetailId()))
+                        .findFirst().orElseThrow();
                 softly.assertThat(notification).isNotNull();
                 softly.assertThat(notification.getContent()).contains("김민수 회원님의 예약이 확정되었습니다.");
 
@@ -152,7 +156,8 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
             // 알림 생성 실패 확인
             PersonalDetail memberDetail = personalDetailRepository.getMemberDetail(1L).orElseThrow();
 
-            assertThatThrownBy(() -> notificationRepository.getNotification(memberDetail.getPersonalDetailId()))
+            assertThatThrownBy(() -> notificationRepository.getNotification(memberDetail.getPersonalDetailId(),
+                    Notification.NotificationType.RESERVATION_REFUSE))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(NOTIFICATION_NOT_FOUND);
@@ -490,6 +495,41 @@ public class NotificationIntegrationTest extends BaseIntegrationTest {
                         .contains("알림 정보를 찾지 못하였습니다.");
                 softly.assertThat(result.body().jsonPath().getObject("data", NotificationResponseDto.Detail.class))
                         .isNull();
+            });
+        }
+    }
+
+    @Nested
+    @DisplayName("알림 읽음 처리 Integration TEST")
+    class MarkAsReadIntegrationTest {
+        @Test
+        @DisplayName("알림 읽음 처리 - 성공")
+        void MarkAsRead() {
+            // given
+            PersonalDetail personalDetail = personalDetailRepository.getTrainerDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            Member member = memberRepository.getMember(1L).orElseThrow();
+
+            UserRole userRole = UserRole.TRAINER;
+
+            // 알림 20개 저장
+            createNotifications(personalDetail, member.getMemberId(), userRole);
+
+            // when
+            ExtractableResponse<Response> result = patch(LOCAL_HOST + port + PATH + "/1", accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                NotificationResponseDto.Detail content = result.body().jsonPath()
+                        .getObject("data", NotificationResponseDto.Detail.class);
+
+                softly.assertThat(content.notificationId()).isEqualTo(1L);
+                softly.assertThat(content.isProcessed()).isEqualTo(true);
             });
         }
     }
