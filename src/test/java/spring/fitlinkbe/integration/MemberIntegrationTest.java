@@ -31,6 +31,7 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
+
 import java.util.stream.Stream;
 
 public class MemberIntegrationTest extends BaseIntegrationTest {
@@ -54,7 +55,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("멤버 트레이너 연결 요청 성공")
-        public void memberConnectSuccess() throws Exception {
+        public void memberConnectSuccess() {
             // given
             // 멤버와 트레이너가 있을 때
             String trainerCode = "AB1423";
@@ -101,7 +102,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("멤버 트레이너 연결 요청 실패 - 트레이너 코드가 올바르지 않을 때")
-        public void memberConnectFailByInvalidTrainerCode() throws Exception {
+        public void memberConnectFailByInvalidTrainerCode() {
             // given
             // 멤버와 트레이너가 있을 때
             String trainerCode = "AB1423";
@@ -129,7 +130,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("멤버 트레이너 연결 요청 실패 - 멤버가 이미 연결된 트레이너가 있을 때")
-        public void memberConnectFailByAlreadyConnected() throws Exception {
+        public void memberConnectFailByAlreadyConnected() {
             // given
             // 멤버와 트레이너가 있을 때
             String trainerCode = "AB1423";
@@ -164,7 +165,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("멤버 트레이너 연결 해제 요청 성공")
-        public void memberDisconnectSuccess() throws Exception {
+        public void memberDisconnectSuccess() {
             // given
             // 멤버와 트레이너가 연결되어 있을 때
             Member member = testDataHandler.createMember();
@@ -204,7 +205,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("멤버 트레이너 연결 해제 요청 성공 - 연결 요청 중일 때")
-        public void memberDisconnectFailByRequested() throws Exception {
+        public void memberDisconnectFailByRequested() {
             // given
             // 멤버와 트레이너가 연결 요청 중일 때
             Member member = testDataHandler.createMember();
@@ -243,7 +244,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("멤버 트레이너 연결 해제 요청 실패 - 연결 정보가 없을 때")
-        public void memberDisconnectFailByNotConnected() throws Exception {
+        public void memberDisconnectFailByNotConnected() {
             // given
             // 트레이너와 연동된 회원이 있을 때
             Member member = testDataHandler.createMember();
@@ -275,7 +276,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("멤버 내 정보 조회 성공")
-        public void memberInfoSuccess() throws Exception {
+        public void memberInfoSuccess() {
             // given
             // NORMAL 상태의 멤버, 트레이너, 세션 정보, PT 희망 시간 정보가 있을 때
             Member member = testDataHandler.createMember();
@@ -338,7 +339,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 정보 수정 성공")
-        public void memberUpdateSuccess() throws Exception {
+        public void memberUpdateSuccess() {
             // given
             // 회원이 있을 때
             Member member = testDataHandler.createMember();
@@ -376,7 +377,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 정보 수정 실패 - 이름, 전화번호 둘 다 입력하지 않았을 때")
-        public void memberUpdateFailByEmptyNameAndPhoneNumber() throws Exception {
+        public void memberUpdateFailByEmptyNameAndPhoneNumber() {
             // given
             // 회원이 있을 때
             Member member = testDataHandler.createMember();
@@ -410,7 +411,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 정보 상세 조회 성공")
-        public void memberDetailSuccess() throws Exception {
+        public void memberDetailSuccess() {
             // given
             // 회원이 있을 때
             Member member = testDataHandler.createMember();
@@ -448,7 +449,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 희망 시간 수정 성공 - PT 희망 시간이 없을 때")
-        public void memberPtTimeUpdateSuccess() throws Exception {
+        public void memberPtTimeUpdateSuccess() {
             // given
             // 회원이 있고 PT 희망 시간이 없을 때
             Member member = testDataHandler.createMember();
@@ -492,7 +493,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 희망 시간 수정 성공 - PT 희망 시간이 있을 때 PT 희망 시간 수정, 삭제")
-        public void memberPtTimeUpdateSuccessByExist() throws Exception {
+        public void memberPtTimeUpdateSuccessByExist() {
             // given
             // 회원이 있고 PT 희망 시간이 있을 때
             Member member = testDataHandler.createMember();
@@ -537,7 +538,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 희망 시간 수정 성공 - PT 희망 시간이 있을 때 추가, 수정")
-        public void memberPtTimeUpdateSuccessByExist2() throws Exception {
+        public void memberPtTimeUpdateSuccessByExist2() {
             // given
             // 회원이 있고 PT 희망 시간이 있을 때
             Member member = testDataHandler.createMember();
@@ -591,7 +592,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 희망 시간 수정 실패 - PT 희망 시간이 없을 때 요일이 중복되는 경우")
-        public void memberPtTimeUpdateFailByDuplicateDayOfWeek() throws Exception {
+        public void memberPtTimeUpdateFailByDuplicateDayOfWeek() {
             // given
             // 회원이 있고 PT 희망 시간이 없을 때
             Member member = testDataHandler.createMember();
@@ -627,7 +628,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
         @ParameterizedTest
         @MethodSource("invalidRequests")
         @DisplayName("회원 PT 희망 시간 수정 실패 - 요일, 시간이 올바르지 않은 경우")
-        public void memberPtTimeUpdateFailByInvalidRequest(List<WorkoutScheduleDto.Request> request) throws Exception {
+        public void memberPtTimeUpdateFailByInvalidRequest(List<WorkoutScheduleDto.Request> request) {
             // given
             // 회원이 있을 때
             Member member = testDataHandler.createMember();
@@ -694,7 +695,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 내역 조회 성공 - 전체 조회")
-        public void memberSessionSuccess() throws Exception {
+        public void memberSessionSuccess() {
             // given
             // 회원, 트레이너, 세션 정보가 있을 때
             Member member = testDataHandler.createMember();
@@ -732,7 +733,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 내역 조회 성공 - 상태별 조회")
-        public void memberSessionSuccessByStatus() throws Exception {
+        public void memberSessionSuccessByStatus() {
             // given
             // 회원, 트레이너, 세션 정보가 있을 때
             Member member = testDataHandler.createMember();
@@ -770,7 +771,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 내역 조회 성공 - 페이징 조회")
-        public void memberSessionSuccessByPaging() throws Exception {
+        public void memberSessionSuccessByPaging() {
             // given
             // 회원, 트레이너, 세션 정보가 있을 때
             Member member = testDataHandler.createMember();
@@ -808,7 +809,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 내역 조회 성공 - 페이징 기본값 (page=0, size=5) 조회")
-        public void memberSessionSuccessByDefaultPaging() throws Exception {
+        public void memberSessionSuccessByDefaultPaging() {
             // given
             // 회원, 트레이너, 세션 정보가 있을 때
             Member member = testDataHandler.createMember();
@@ -843,7 +844,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 내역 조회 성공 - 세션 정보 없을 때 빈리스트")
-        public void memberSessionSuccessByEmpty() throws Exception {
+        public void memberSessionSuccessByEmpty() {
             // given
             // 회원이 있을 때
             Member member = testDataHandler.createMember();
@@ -882,7 +883,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 내역 조회 성공 - 전체 조회")
-        public void memberSessionSuccess() throws Exception {
+        public void memberSessionSuccess() {
             // given
             // 회원, 트레이너, 세션 정보가 있을 때
             Member member = testDataHandler.createMember();
@@ -920,7 +921,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 내역 조회 성공 - 상태별 조회")
-        public void memberSessionSuccessByStatus() throws Exception {
+        public void memberSessionSuccessByStatus() {
             // given
             // 회원, 트레이너, 세션 정보가 있을 때
             Member member = testDataHandler.createMember();
@@ -958,7 +959,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 내역 조회 성공 - 페이징 조회")
-        public void memberSessionSuccessByPaging() throws Exception {
+        public void memberSessionSuccessByPaging() {
             // given
             // 회원, 트레이너, 세션 정보가 있을 때
             Member member = testDataHandler.createMember();
@@ -996,7 +997,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 내역 조회 성공 - 다른 트레이너와 진행한 PT 세션은 제외")
-        public void memberSessionSuccessByAnotherTrainer() throws Exception {
+        public void memberSessionSuccessByAnotherTrainer() {
             // given
             // 회원, 트레이너, 세션 정보가 있을 때
             Member member = testDataHandler.createMember();
@@ -1036,7 +1037,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 내역 조회 실패 - 트레이너와 연결이 안되어있는 멤버일 때")
-        public void memberSessionFailByNotConnected() throws Exception {
+        public void memberSessionFailByNotConnected() {
             // given
             // 회원이 있을 때
             Member member = testDataHandler.createMember();
@@ -1070,7 +1071,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 횟수 수정 성공")
-        public void memberSessionCountUpdateSuccess() throws Exception {
+        public void memberSessionCountUpdateSuccess() {
             // given
             // 회원, 트레이너 정보가 있을 때
             Member member = testDataHandler.createMember();
@@ -1121,7 +1122,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 PT 횟수 수정 실패 - 트레이너가 회원과 연결이 안되어 있을 때")
-        public void memberSessionCountUpdateFailByNotConnected() throws Exception {
+        public void memberSessionCountUpdateFailByNotConnected() {
             // given
             // 회원, 트레이너 정보가 있을 때
             Member member = testDataHandler.createMember();
@@ -1162,7 +1163,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("내 회원 리스트 조회 성공")
-        public void memberListSuccess() throws Exception {
+        public void memberListSuccess() {
             // given
             // 트레이너, 회원 정보가 있을 때
             Trainer trainer = testDataHandler.createTrainer("AB1423");
@@ -1196,7 +1197,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("내 회원 리스트 조회 성공 - 페이징 조회")
-        public void memberListSuccessByPaging() throws Exception {
+        public void memberListSuccessByPaging() {
             // given
             // 트레이너, 회원 정보가 있을 때
             Trainer trainer = testDataHandler.createTrainer("AB1423");
@@ -1231,7 +1232,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("내 회원 리스트 조회 성공 - 키워드 검색")
-        public void memberListSuccessByKeyword() throws Exception {
+        public void memberListSuccessByKeyword() {
             // given
             // 트레이너, 회원 정보가 있을 때
             Trainer trainer = testDataHandler.createTrainer("AB1423");
@@ -1272,7 +1273,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 정보 조회 성공")
-        public void memberInfoSuccess() throws Exception {
+        public void memberInfoSuccess() {
             // given
             // 회원, 트레이너, 세션 정보, PT 희망 시간 정보가 있을 때
             Member member = testDataHandler.createMember();
@@ -1324,7 +1325,7 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
 
         @Test
         @DisplayName("회원 정보 조회 실패 - 트레이너와 연결이 안되어있는 멤버일 때")
-        public void memberInfoFailByNotConnected() throws Exception {
+        public void memberInfoFailByNotConnected() {
             // given
             // 회원, 트레이너 정보가 있을 때
             Member member = testDataHandler.createMember();

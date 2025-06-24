@@ -28,4 +28,7 @@ public interface ConnectingInfoJpaRepository extends JpaRepository<ConnectingInf
 
     @EntityGraph(attributePaths = {"member", "trainer"})
     List<ConnectingInfoEntity> findByMember_MemberId(Long memberId);
+
+    @EntityGraph(attributePaths = {"member", "trainer"})
+    List<ConnectingInfoEntity> findAllByTrainer_TrainerId(Long trainerId);
 }
