@@ -19,6 +19,7 @@ public class ReservationConsumer {
 
     private final ReservationFacade reservationFacade;
 
+    @Deprecated
     @SqsListener(queueNames = EventTopic.RESERVATION_QUEUE)
     public void handleReservationMessage(String message) {
         GenerateFixedReservationEvent payload = JsonUtils.toObject(message, GenerateFixedReservationEvent.class);

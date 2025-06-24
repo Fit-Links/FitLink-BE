@@ -14,6 +14,7 @@ public enum ErrorCode {
 
     AVAILABLE_TIMES_IS_NOT_FOUND("해당 날짜에 수업 시간이 없습니다.", 404),
     DAY_OFF_DUPLICATED("해당 날짜에 이미 적용된 휴무일이 있습니다.", 409),
+    DAY_OFF_EXISTS("해당 날짜에 휴무일이 있습니다.", 409),
     DAY_OFF_NOT_FOUND("휴무일이 존재하지 않습니다.", 404),
     CONFIRMED_RESERVATION_EXISTS("해당 날짜에 확정된 예약이 존재합니다.", 409),
 
@@ -35,20 +36,21 @@ public enum ErrorCode {
 
     APPROVED_RESERVATION_EXISTS("승인된 예약이 존재합니다.", 409),
 
-    RESERVATION_NOT_ALLOWED("예약을 할 수 있는 상태가 아닙니다.", 400),
+    RESERVATION_NOT_ALLOWED("예약을 할 수 있는 상태가 아닙니다.", 409),
     SET_DISABLE_DATE_FAILED("예약 불가 설정에 실패하였습니다.", 400),
+    DISABLE_DATE_EXISTS("예약 불가 날짜와 겹칩니다.", 409),
     RESERVATION_CANCEL_FAILED("예약 취소에 실패하였습니다.", 400),
-    RESERVATION_IS_ALREADY_CANCEL("이미 예약이 취소되었습니다.", 400),
+    RESERVATION_IS_ALREADY_CANCEL("이미 예약이 취소되었습니다.", 409),
     RESERVATION_IS_NOT_WAITING_STATUS("예약 상태가 대기 상태가 아닙니다.", 400),
     RESERVATION_WAITING_MEMBERS_EMPTY("이 날짜에 예약 대기자가 없습니다.", 400),
     RESERVATION_COMPLETE_NOT_ALLOWED("다른 사람의 예약을 완료시킬 수 없습니다.", 400),
-    RESERVATION_IS_ALREADY_COMPLETED("이미 예약이 완료되었습니다.", 400),
-    RESERVATION_CHANGE_REQUEST_NOT_ALLOWED("예약 변경을 요청할 수 없는 상태입니다.", 400),
-    RESERVATION_RELEASE_NOT_ALLOWED("예약 해지를 할 수 없는 상태입니다.", 400),
-    RESERVATION_CANCEL_NOT_ALLOWED("예약 취소를 할 수 없는 상태입니다.", 400),
-    RESERVATION_REFUSE_NOT_ALLOWED("예약 거절을 할 수 없는 상태입니다.", 400),
-    RESERVATION_APPROVE_NOT_ALLOWED("예약 확정을 할 수 없는 상태입니다.", 400),
-    RESERVATION_IS_ALREADY_APPROVED("이미 예약이 승인 되었습니다.", 400),
+    RESERVATION_IS_ALREADY_COMPLETED("이미 예약이 완료되었습니다.", 409),
+    RESERVATION_CHANGE_REQUEST_NOT_ALLOWED("예약 변경을 요청할 수 없는 상태입니다.", 409),
+    RESERVATION_RELEASE_NOT_ALLOWED("예약 해지를 할 수 없는 상태입니다.", 409),
+    RESERVATION_CANCEL_NOT_ALLOWED("예약 취소를 할 수 없는 상태입니다.", 409),
+    RESERVATION_REFUSE_NOT_ALLOWED("예약 거절을 할 수 없는 상태입니다.", 409),
+    RESERVATION_APPROVE_NOT_ALLOWED("예약 확정을 할 수 없는 상태입니다.", 409),
+    RESERVATION_IS_ALREADY_APPROVED("이미 예약이 승인 되었습니다.", 409),
     RESERVATION_NOT_FOUND("예약 정보를 찾지 못하였습니다.", 404),
     RESERVATION_DATE_NOT_FOUND("예약 날짜를 찾지 못하였습니다.", 404),
     FAILED_TO_CONVERT_JSON("Failed to convert LocalDateTime list to JSON", 400),
@@ -57,8 +59,8 @@ public enum ErrorCode {
     // Session 관련 ErrorCode
     SESSION_CREATE_FAILED("세션 생성에 실패하였습니다.", 400),
     SESSION_NOT_FOUND("세션 정보를 찾지 못하였습니다.", 404),
-    SESSION_IS_ALREADY_CANCEL("이미 세션이 취소되었습니다.", 400),
-    SESSION_IS_ALREADY_END("이미 세션이 종료되었습니다.", 400),
+    SESSION_IS_ALREADY_CANCEL("이미 세션이 취소되었습니다.", 409),
+    SESSION_IS_ALREADY_END("이미 세션이 종료되었습니다.", 409),
     SESSION_REMAINING_COUNT_NOT_VALID("세션 남은 횟수가 적절하지 않습니다.", 400),
 
     // Notification 관련 ErrorCode
@@ -94,8 +96,8 @@ public enum ErrorCode {
     // Outbox 관련
     OUTBOX_IS_FAILED("outbox 데이터 생성에 실패하였습니다.", 400),
     OUTBOX_IS_NOT_FOUND("outbox 데이터가 존재하지 않습니다.", 404),
-    OUTBOX_IS_ALREADY_DONE("이미 완료된 outbox 데이터 입니다.", 400),
-    OUTBOX_IS_ALREADY_FAIL("이미 실패한 outbox 데이터 입니다.", 400),
+    OUTBOX_IS_ALREADY_DONE("이미 완료된 outbox 데이터 입니다.", 409),
+    OUTBOX_IS_ALREADY_FAIL("이미 실패한 outbox 데이터 입니다.", 409),
     OUTBOX_IS_NOT_INIT_STATUS("outbox 데이터가 초기 상태가 아닙니다.", 400),
     OUTBOX_PAYLOAD_INVALID("outbox 데이터가 정상 상태가 아닙니다.", 400),
 
