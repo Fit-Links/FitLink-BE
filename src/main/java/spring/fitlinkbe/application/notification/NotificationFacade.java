@@ -55,6 +55,12 @@ public class NotificationFacade {
         return NotificationResult.NotificationDetail.from(notification, trainerDetail);
     }
 
+    public Notification markAsRead(Long notificationId) {
+        return notificationService.markAsRead(notificationId);
+
+
+    }
+
     public void registerPushToken(NotificationCriteria.PushTokenRequest criteria, SecurityUser user) {
         authService.registerPushToken(criteria.toCommand(), user);
     }

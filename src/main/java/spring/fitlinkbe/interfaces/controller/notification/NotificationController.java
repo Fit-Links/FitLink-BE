@@ -69,6 +69,20 @@ public class NotificationController {
     }
 
     /**
+     * 알림 읽음 처리
+     *
+     * @param notificationId 읽음 처리할 알림 ID
+     * @return ApiResultResponse 앍음 처리 완료 된 알림 정보를 반환한다.
+     */
+    @PatchMapping("/{notificationId}")
+    public ApiResultResponse<NotificationResponseDto.Success> markAsRead(@PathVariable("notificationId")
+                                                                         Long notificationId) {
+        Notification notification = notificationFacade.markAsRead(notificationId);
+
+        return ApiResultResponse.ok(NotificationResponseDto.Success.of(notification));
+    }
+
+    /**
      * push token 등록
      *
      * @param request push-token 정보

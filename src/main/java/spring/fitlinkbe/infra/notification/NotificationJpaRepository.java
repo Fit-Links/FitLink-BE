@@ -3,6 +3,7 @@ package spring.fitlinkbe.infra.notification;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.notification.Notification;
 
@@ -12,7 +13,11 @@ import java.util.Optional;
 public interface NotificationJpaRepository extends JpaRepository<NotificationEntity, Long>, NotificationRepositoryCustom {
 
     @EntityGraph(attributePaths = {"personalDetail"})
-    Optional<NotificationEntity> findByPersonalDetail_PersonalDetailId(Long personalDetailId);
+    @Query("SELECT n FROM NotificationEntity n")
+    List<NotificationEntity> findAll();
+
+    @EntityGraph(attributePaths = {"personalDetail"})
+    Optional<NotificationEntity> findByNotificationId(Long notificationId);
 
     @EntityGraph(attributePaths = {"personalDetail"})
     Optional<NotificationEntity> findByPersonalDetail_PersonalDetailIdAndNotificationType(Long personalDetailId, Notification.NotificationType type);
