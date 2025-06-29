@@ -14,13 +14,13 @@ public interface AvailableTimeJpaRepository extends JpaRepository<AvailableTimeE
 
     @Query("SELECT MAX(at.applyAt) FROM AvailableTimeEntity at " +
             "WHERE at.trainer.trainerId = :trainerId " +
-            "AND at.applyAt <= CURRENT_TIMESTAMP")
-    LocalDate getCurrentAppliedDate(Long trainerId);
+            "AND at.applyAt <= :currentDate")
+    LocalDate getCurrentAppliedDate(Long trainerId, LocalDate currentDate);
 
     @Query("SELECT MIN(at.applyAt) FROM AvailableTimeEntity at " +
             "WHERE at.trainer.trainerId = :trainerId " +
-            "AND at.applyAt > CURRENT_TIMESTAMP")
-    LocalDate getScheduledAppliedDate(Long trainerId);
+            "AND at.applyAt > :currentDate")
+    LocalDate getScheduledAppliedDate(Long trainerId, LocalDate currentDate);
 
     @Query("SELECT at FROM AvailableTimeEntity at " +
             "JOIN FETCH at.trainer " +

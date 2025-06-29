@@ -16,12 +16,12 @@ public class AvailableTimeRepositoryImpl implements AvailableTimeRepository {
 
     @Override
     public LocalDate getCurrentAppliedDate(Long trainerId) {
-        return availableTimeJpaRepository.getCurrentAppliedDate(trainerId);
+        return availableTimeJpaRepository.getCurrentAppliedDate(trainerId, LocalDate.now());
     }
 
     @Override
     public LocalDate getScheduledAppliedDate(Long trainerId) {
-        return availableTimeJpaRepository.getScheduledAppliedDate(trainerId);
+        return availableTimeJpaRepository.getScheduledAppliedDate(trainerId, LocalDate.now());
     }
 
     @Override
