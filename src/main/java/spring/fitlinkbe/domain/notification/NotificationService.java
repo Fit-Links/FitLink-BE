@@ -54,6 +54,7 @@ public class NotificationService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
     }
 
+    @Transactional
     public Notification markAsRead(Long notificationId) {
         Notification notification = notificationRepository.getNotification(notificationId);
         notification.process();
