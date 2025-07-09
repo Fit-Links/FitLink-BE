@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.producer.EventTopic;
@@ -15,6 +16,7 @@ import spring.fitlinkbe.domain.reservation.event.GenerateFixedReservationEvent;
 import spring.fitlinkbe.domain.reservation.strategy.cancel.ReservationCancelStrategy;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.support.security.SecurityUser;
+import spring.fitlinkbe.support.utils.DateUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,6 +47,16 @@ public class ReservationService {
         LocalDateTime startDate = command.date().atStartOfDay();
         LocalDateTime endDate = getEndDate(startDate, command.role());
         List<Reservation> reservations = reservationRepository.getReservations(command.role(), command.userId());
+
+        return reservations.stream()
+                .filter(reservation -> reservation.isReservationInRange(startDate, endDate))
+                .toList();
+    }
+
+    public List<Reservation> getTrainerReservations(LocalDate date, Long trainerId) {
+        LocalDateTime startDate = date.atStartOfDay();
+        LocalDateTime endDate = DateUtils.getTwoWeekAfterDate(startDate);
+        List<Reservation> reservations = reservationRepository.getReservations(UserRole.TRAINER, trainerId);
 
         return reservations.stream()
                 .filter(reservation -> reservation.isReservationInRange(startDate, endDate))

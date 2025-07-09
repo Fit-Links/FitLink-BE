@@ -79,6 +79,13 @@ public class ReservationFacade {
         return List.of();
     }
 
+    public List<Reservation> getTrainerReservations(LocalDate date, SecurityUser user) {
+        ConnectingInfo connectingInfo = memberService.getConnectingInfo(user.getMemberId());
+        Trainer trainer = connectingInfo.getTrainer();
+
+        return reservationService.getTrainerReservations(date, trainer.getTrainerId());
+    }
+
 
     public ReservationResult.ReservationDetail getReservationDetail(Long reservationId) {
 
