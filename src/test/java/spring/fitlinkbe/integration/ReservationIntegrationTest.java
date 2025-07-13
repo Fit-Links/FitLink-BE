@@ -354,6 +354,106 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
     }
 
     @Nested
+    @DisplayName("트레이너 예약 목록 조회 Integration TEST")
+    class GetTrainerReservationsIntegrationTest {
+        @Test
+        @DisplayName("멤버가 트레이너의 예약 목록 조회 성공")
+        void GetTrainerReservations() {
+            // given
+            Map<String, String> params = new HashMap<>();
+            params.put("date", LocalDate.now().toString());
+
+            Trainer trainer = trainerRepository.getTrainerInfo(1L).orElseThrow();
+            Member member = memberRepository.getMember(1L).orElseThrow();
+
+            LocalDate dayOffDate = LocalDate.now().plusDays(1);
+
+            DayOff dayOff1 = DayOff.builder()
+                    .trainer(trainer)
+                    .dayOffDate(LocalDate.now().plusDays(1))
+                    .build();
+
+            DayOff dayOff2 = DayOff.builder()
+                    .trainer(trainer)
+                    .dayOffDate(LocalDate.now().plusDays(2))
+                    .build();
+
+            trainerRepository.saveDayOff(dayOff1);
+            trainerRepository.saveDayOff(dayOff2);
+
+            ConnectingInfo connectingInfo = ConnectingInfo.builder()
+                    .trainer(trainer)
+                    .member(member)
+                    .status(ConnectingInfo.ConnectingStatus.CONNECTED)
+                    .build();
+
+            connectingInfoRepository.save(connectingInfo);
+            // 예약 불가 설정1
+            Reservation disabledReservation1 = Reservation.builder()
+                    .reservationDates(List.of(dayOffDate.atStartOfDay()))
+                    .trainer(trainer)
+                    .isDayOff(true)
+                    .status(DISABLED_TIME_RESERVATION)
+                    .createdAt(LocalDateTime.now().plusSeconds(2))
+                    .build();
+
+            reservationRepository.saveReservation(disabledReservation1);
+
+            // 예약 불가 설정2
+            Reservation disabledReservation2 = Reservation.builder()
+                    .reservationDates(List.of(dayOffDate.atStartOfDay()))
+                    .trainer(trainer)
+                    .isDayOff(true)
+                    .status(DISABLED_TIME_RESERVATION)
+                    .createdAt(LocalDateTime.now().plusDays(3))
+                    .build();
+
+            reservationRepository.saveReservation(disabledReservation2);
+
+            // 새로운 회원 생성
+            Member newMember = testDataHandler.createMember();
+            SessionInfo sessionInfo = testDataHandler.createSessionInfo(newMember, trainer);
+
+            // 새로운 회원 예약 생성
+            Reservation confirmedReservation = Reservation.builder()
+                    .trainer(trainer)
+                    .member(newMember)
+                    .sessionInfo(sessionInfo)
+                    .reservationDates(List.of(LocalDateTime.now().plusDays(4)))
+                    .status(RESERVATION_APPROVED)
+                    .confirmDate(LocalDateTime.now().plusDays(4))
+                    .createdAt(LocalDateTime.now().plusSeconds(3))
+                    .build();
+
+            reservationRepository.saveReservation(confirmedReservation).orElseThrow();
+
+            PersonalDetail personalDetail = personalDetailRepository.getMemberDetail(1L)
+                    .orElseThrow();
+
+            String accessToken = tokenProvider.createAccessToken(PersonalDetail.Status.NORMAL,
+                    personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
+
+            // when
+            ExtractableResponse<Response> result = get(LOCAL_HOST + port + PATH + "/trainers", params, accessToken);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                List<ReservationResponseDto.Summary> content = result.body().jsonPath()
+                        .getList("data", ReservationResponseDto.Summary.class);
+                softly.assertThat(content.size()).isEqualTo(3);
+                softly.assertThat(content.get(0).isDayOff()).isTrue();
+                softly.assertThat(content.get(2).memberInfo().memberId()).isNotEqualTo(member.getMemberId());
+
+                // 휴무일 잘 등록됐는지 확인
+                List<DayOff> dayOffs = trainerRepository.findScheduledDayOff(1L);
+                softly.assertThat(dayOffs.size()).isEqualTo(2);
+            });
+        }
+
+    }
+
+    @Nested
     @DisplayName("예약 상세 조회 Integration TEST")
     class GetReservationDetailIntegrationTest {
 

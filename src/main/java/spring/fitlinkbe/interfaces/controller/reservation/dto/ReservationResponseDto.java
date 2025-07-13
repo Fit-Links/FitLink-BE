@@ -57,7 +57,7 @@ public class ReservationResponseDto {
                     .build();
         }
 
-        private record MemberInfo(Long memberId, String name) {
+        public record MemberInfo(Long memberId, String name) {
 
         }
     }
