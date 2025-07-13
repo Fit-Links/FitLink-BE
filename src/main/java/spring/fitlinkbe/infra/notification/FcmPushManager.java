@@ -6,6 +6,8 @@ import com.google.firebase.messaging.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 @Slf4j
 public class FcmPushManager implements PushManager {
@@ -14,10 +16,10 @@ public class FcmPushManager implements PushManager {
     public void pushNotification(String token, String title, String content) {
         Message message = Message.builder()
                 .setToken(token)
-                .setNotification(com.google.firebase.messaging.Notification.builder()
-                        .setTitle(title)
-                        .setBody(content)
-                        .build())
+                .putAllData(Map.of(
+                        "title", title,
+                        "content", content
+                ))
                 .build();
         try {
             String response = FirebaseMessaging.getInstance().send(message);
