@@ -386,7 +386,7 @@ public class ReservationFacade {
 
         // 해당 알림에 대한 읽음 처리
         Notification notificationByRef = notificationService.getNotificationByReferenceAndMember(criteria.reservationId(),
-                Notification.ReferenceType.SESSION, criteria.memberId());
+                Notification.ReferenceType.RESERVATION_REQUEST, criteria.memberId());
         notificationService.markAsRead(notificationByRef.getNotificationId());
 
 
