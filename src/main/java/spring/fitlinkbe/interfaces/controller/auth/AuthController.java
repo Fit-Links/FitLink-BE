@@ -67,7 +67,7 @@ public class AuthController {
         PersonalDetail.Status status = user.getStatus();
         String accessToken = authFacade.createAccessToken(user.getPersonalDetailId(), user.getUserRole(), status);
 
-        return ApiResultResponse.ok(new AuthDto.UserStatusResponse(status, accessToken));
+        return ApiResultResponse.ok(new AuthDto.UserStatusResponse(status, user.getUserRole(), accessToken));
     }
 
     @PostMapping("/access-token")
