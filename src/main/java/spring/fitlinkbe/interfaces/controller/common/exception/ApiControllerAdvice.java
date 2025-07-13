@@ -105,7 +105,7 @@ public class ApiControllerAdvice {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public ApiResultResponse<Object> handlerException(Exception e) {
-        log.error("Exception is occurred! {}", e);
+        log.error("Exception is occurred!", e); // 전체 stack trace 출력
         return ApiResultResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, false, e.getMessage(), null);
     }
 }
