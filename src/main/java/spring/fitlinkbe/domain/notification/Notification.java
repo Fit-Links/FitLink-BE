@@ -181,6 +181,24 @@ public class Notification {
                 .build();
     }
 
+    public static Notification completeReminderSession(PersonalDetail trainerDetail, Long sessionId,
+                                                       Long memberId, String name) {
+
+        String content = " %s 회원님의 PT가 곧 종료됩니다. 세션 참석 여부를 확인해주세요.".formatted(name);
+
+        return Notification.builder()
+                .refId(sessionId)
+                .refType(ReferenceType.SESSION)
+                .target(UserRole.TRAINER)
+                .notificationType(NotificationType.SESSION_FINISHED)
+                .personalDetail(trainerDetail)
+                .partnerId(memberId)
+                .name(NotificationType.SESSION_FINISHED.name)
+                .content(content)
+                .sendDate(LocalDateTime.now())
+                .build();
+    }
+
     public static Notification completeSession(PersonalDetail memberDetail, Long sessionId,
                                                Long memberId, String name) {
 
@@ -342,6 +360,7 @@ public class Notification {
         CONNECT("트레이너 연동 요청", "트레이너와 연동 요청이 왔습니다."),
         CONNECT_RESPONSE("트레이너 연동 처리", "트레이너와 연동 요청 결과가 생성되었습니다."),
         DISCONNECT("트레이너 연동 해제", "회원과 연동이 해제되었습니다."),
+        SESSION_FINISHED("세션 곧 종료", "곧 세션이 종료됩니다. 세션 완료 여부를 처리해주세요."),
 
         //회원
         RESERVATION_CHANGE_REQUEST_APPROVED("예약 변경 요청 승인", "예약 변경 요청이 승인 되었습니다"),
