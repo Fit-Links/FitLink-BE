@@ -6,6 +6,7 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import spring.fitlinkbe.domain.auth.command.AuthCommand;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.domain.common.model.PersonalDetail.Gender;
 
@@ -20,6 +21,7 @@ public class AuthDto {
     @Builder
     public record UserStatusResponse(
             PersonalDetail.Status status,
+            UserRole userRole,
             String accessToken
     ) {
     }
