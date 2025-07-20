@@ -58,6 +58,7 @@ public enum ErrorCode {
 
     // Session 관련 ErrorCode
     SESSION_CREATE_FAILED("세션 생성에 실패하였습니다.", 400),
+    INVALID_SESSION_COUNT("세션 횟수가 적절하지 않습니다.", 400),
     SESSION_NOT_FOUND("세션 정보를 찾지 못하였습니다.", 404),
     SESSION_IS_ALREADY_CANCEL("이미 세션이 취소되었습니다.", 409),
     SESSION_IS_ALREADY_END("이미 세션이 종료되었습니다.", 409),

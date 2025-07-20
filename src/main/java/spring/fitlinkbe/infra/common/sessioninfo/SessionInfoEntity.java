@@ -2,6 +2,8 @@ package spring.fitlinkbe.infra.common.sessioninfo;
 
 import jakarta.persistence.*;
 import lombok.*;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.SessionInfo;
 import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
 import spring.fitlinkbe.infra.member.MemberEntity;
@@ -54,5 +56,19 @@ public class SessionInfoEntity extends BaseTimeEntity {
                 .totalCount(totalCount)
                 .remainingCount(remainingCount)
                 .build();
+    }
+
+    @PrePersist
+    @PreUpdate
+    public void prePersist() {
+        validateSessionCount();
+    }
+
+    public void validateSessionCount() {
+        if (remainingCount > totalCount) {
+            throw new CustomException(ErrorCode.INVALID_SESSION_COUNT,
+                    "남은 세션 수는 총 세션 수보다 클 수 없습니다. [remainingCount: %d, totalCount: %d]"
+                            .formatted(remainingCount, totalCount));
+        }
     }
 }
