@@ -25,8 +25,7 @@ import java.util.*;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_WAITING_MEMBERS_EMPTY;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.SESSION_CREATE_FAILED;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status;
-import static spring.fitlinkbe.domain.reservation.Reservation.Status.DISABLED_TIME_RESERVATION;
-import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_WAITING;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
 import static spring.fitlinkbe.domain.reservation.Reservation.getEndDate;
 import static spring.fitlinkbe.domain.reservation.Session.Status.SESSION_WAITING;
 
@@ -353,6 +352,15 @@ public class ReservationService {
             session.cancel("고정 예약 취소 요청으로 세션이 최소되었습니다");
             reservationRepository.saveSession(session);
         }
+    }
+
+    public List<Reservation> getInProgressReservations() {
+        List<Reservation> reservations = reservationRepository.getReservations();
+
+        return reservations.stream()
+                .filter(r -> r.getStatus() == RESERVATION_APPROVED)
+                .filter(r -> r.getConfirmDate().getHour() == LocalDateTime.now().getHour())
+                .toList();
     }
 
     /**

@@ -57,7 +57,7 @@ public class ReservationController {
     @RoleCheck(allowedRoles = {UserRole.MEMBER})
     @GetMapping("/trainers")
     public ApiResultResponse<List<ReservationResponseDto.Summary>> getTrainerReservations(@RequestParam LocalDate date,
-                                                                                   @Login SecurityUser user) {
+                                                                                          @Login SecurityUser user) {
 
         List<Reservation> result = reservationFacade.getTrainerReservations(date, user);
 

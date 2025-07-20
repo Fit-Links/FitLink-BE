@@ -448,4 +448,33 @@ public class NotificationCommand {
         }
 
     }
+
+    @Builder
+    public record SessionCompleteReminder(PersonalDetail trainerDetail, Long sessionId, Long memberId,
+                                          String name,
+                                          String pushToken)
+            implements NotificationRequest {
+        @Override
+        public Notification.NotificationType getType() {
+            return Notification.NotificationType.SESSION_FINISHED;
+        }
+
+        @Override
+        public String getPushToken() {
+            return this.pushToken;
+        }
+
+        public static SessionCompleteReminder of(PersonalDetail trainerDetail, Long sessionId, Long memberId,
+                                                 String name,
+                                                 String pushToken) {
+            return SessionCompleteReminder.builder()
+                    .trainerDetail(trainerDetail)
+                    .sessionId(sessionId)
+                    .memberId(memberId)
+                    .name(name)
+                    .pushToken(pushToken)
+                    .build();
+        }
+
+    }
 }

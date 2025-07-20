@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import static spring.fitlinkbe.domain.common.enums.UserRole.MEMBER;
 import static spring.fitlinkbe.domain.common.enums.UserRole.TRAINER;
 import static spring.fitlinkbe.domain.notification.Notification.Reason.RESERVATION_CANCEL;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_APPROVED;
 
 @Component
 @RequiredArgsConstructor
@@ -421,6 +422,24 @@ public class ReservationFacade {
     public List<Reservation> releaseFixedReservation(Long reservationId) {
         // 관련 고정 예약 모두 해지
         return reservationService.releaseFixedReservation(reservationId);
+    }
+
+    @Transactional
+    public void sendSessionCompleteReminder() {
+        List<Reservation> inProgressReservations = reservationService.getInProgressReservations();
+
+        inProgressReservations.forEach(r -> {
+            Session session = reservationService.getSession(RESERVATION_APPROVED, r.getReservationId());
+            PersonalDetail trainerDetail = trainerService.getTrainerDetail(r.getTrainer().getTrainerId());
+            Token token = authService.getTokenByPersonalDetailId(trainerDetail.getPersonalDetailId());
+
+            notificationService.sendNotification(NotificationCommand.SessionCompleteReminder.of(
+                    trainerDetail,
+                    session.getSessionId(),
+                    r.getMember().getMemberId(),
+                    r.getName(),
+                    token.getPushToken()));
+        });
     }
 
 }

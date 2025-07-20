@@ -30,4 +30,12 @@ public class ReservationScheduler { //
         reservationFacade.checkTodaySessionReminder();
     }
 
+    /**
+     * 매일 매 50분마다, 세션 완료 처리를 해야한다는 알림을 보낸다.
+     */
+    @Scheduled(cron = "0 50 * * * *") // 매일 00:50:00에 실행
+    public void confirmSessionReminder() {
+        reservationFacade.sendSessionCompleteReminder();
+    }
+
 }
