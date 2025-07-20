@@ -1154,6 +1154,43 @@ public class MemberIntegrationTest extends BaseIntegrationTest {
             });
         }
 
+        @Test
+        @DisplayName("회원 PT 횟수 수정 실패 - 남은 세션 수가 총 세션 수보다 많을 때")
+        public void memberSessionCountUpdateFailByRemainingCountExceedingTotalCount() {
+            // given
+            // 회원, 트레이너 정보가 있을 때
+            Member member = testDataHandler.createMember();
+            testDataHandler.createToken(testDataHandler.getMemberPersonalDetail(member.getMemberId()));
+            Trainer trainer = testDataHandler.createTrainer("AB1423");
+            testDataHandler.connectMemberAndTrainer(member, trainer);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+
+            SessionInfo sessionInfo = testDataHandler.createSessionInfo(member, trainer);
+
+            // when
+            // 트레이너가 회원 PT 횟수 수정 요청을 보낸다면 남은 세션 수가 총 세션 수보다 많을 때
+            int remainingCount = 6;
+            int totalCount = 5;
+            String url = MEMBER_SESSION_COUNT_UPDATE_API.replace("{memberId}", member.getMemberId().toString())
+                    .replace("{sessionInfoId}", sessionInfo.getSessionInfoId().toString());
+            SessionInfoDto.UpdateRequest request = new SessionInfoDto.UpdateRequest(remainingCount, totalCount);
+            String requestBody = writeValueAsString(request);
+            ExtractableResponse<Response> result = patch(url, requestBody, token);
+
+            // then
+            // 남은 세션 수가 총 세션 수보다 많다는 에러 응답을 받는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isFalse();
+                softly.assertThat(response.status()).isEqualTo(400);
+                softly.assertThat(response.data()).isNull();
+            });
+        }
+
     }
 
     @Nested
