@@ -451,7 +451,7 @@ public class NotificationCommand {
 
     @Builder
     public record SessionCompleteReminder(PersonalDetail trainerDetail, Long sessionId, Long memberId,
-                                          String name,
+                                          String name, LocalDateTime reservationDate,
                                           String pushToken)
             implements NotificationRequest {
         @Override
@@ -465,13 +465,14 @@ public class NotificationCommand {
         }
 
         public static SessionCompleteReminder of(PersonalDetail trainerDetail, Long sessionId, Long memberId,
-                                                 String name,
+                                                 String name, LocalDateTime reservationDate,
                                                  String pushToken) {
             return SessionCompleteReminder.builder()
                     .trainerDetail(trainerDetail)
                     .sessionId(sessionId)
                     .memberId(memberId)
                     .name(name)
+                    .reservationDate(reservationDate)
                     .pushToken(pushToken)
                     .build();
         }
