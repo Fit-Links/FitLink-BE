@@ -182,9 +182,9 @@ public class Notification {
     }
 
     public static Notification completeReminderSession(PersonalDetail trainerDetail, Long sessionId,
-                                                       Long memberId, String name) {
+                                                       Long memberId, String name, LocalDateTime reservationDate) {
 
-        String content = " %s 회원님의 PT가 곧 종료됩니다. 세션 참석 여부를 확인해주세요.".formatted(name);
+        String content = " %s 회원님의 PT가 곧 종료됩니다. 세션 참석 여부를 확인해주세요.\n 날짜: %s".formatted(name, formatDateTime(reservationDate));
 
         return Notification.builder()
                 .refId(sessionId)
@@ -199,7 +199,7 @@ public class Notification {
                 .build();
     }
 
-    public static Notification completeSession(PersonalDetail memberDetail, Long sessionId,
+    public static Notification completeSession(PersonalDetail trainerDetail, Long sessionId,
                                                Long memberId, String name) {
 
         String content = " %s 회원님의 PT가 종료되었습니다.".formatted(name);
@@ -209,7 +209,7 @@ public class Notification {
                 .refType(ReferenceType.SESSION)
                 .target(UserRole.TRAINER)
                 .notificationType(NotificationType.SESSION_COMPLETED)
-                .personalDetail(memberDetail)
+                .personalDetail(trainerDetail)
                 .partnerId(memberId)
                 .name(NotificationType.SESSION_COMPLETED.name)
                 .content(content)

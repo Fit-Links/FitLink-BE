@@ -105,7 +105,8 @@ public class NotificationStrategyHandler {
 
     private Notification handleCompleteReminderSession(NotificationRequest request) {
         NotificationCommand.SessionCompleteReminder dto = (NotificationCommand.SessionCompleteReminder) request;
-        return Notification.completeReminderSession(dto.trainerDetail(), dto.sessionId(), dto.memberId(), dto.name());
+        return Notification.completeReminderSession(dto.trainerDetail(), dto.sessionId(), dto.memberId(), dto.name(),
+                dto.reservationDate());
     }
 
     private Notification handleDeductSession(NotificationRequest request) {

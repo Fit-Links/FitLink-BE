@@ -13,6 +13,7 @@ public class NotificationResponseDto {
     public record Summary(
             Long notificationId,
             String type,
+            String notificationType,
             String content,
             LocalDateTime sendDate,
             boolean isProcessed
@@ -24,6 +25,7 @@ public class NotificationResponseDto {
             return Summary.builder()
                     .notificationId(notification.getNotificationId())
                     .type(notification.getRefType().getName())
+                    .notificationType(notification.getNotificationType().getName())
                     .content(notification.getContent())
                     .sendDate(notification.getSendDate())
                     .isProcessed(notification.isProcessed())
@@ -36,6 +38,7 @@ public class NotificationResponseDto {
             Long notificationId,
             Long refId,
             String type,
+            String notificationType,
             String content,
             LocalDateTime sendDate,
             boolean isProcessed,
@@ -54,6 +57,7 @@ public class NotificationResponseDto {
                     .notificationId(notificationDetail.notification().getNotificationId())
                     .refId(notificationDetail.notification().getRefId())
                     .type(notificationDetail.notification().getRefType().getName())
+                    .notificationType(notificationDetail.notification().getNotificationType().getName())
                     .content(notificationDetail.notification().getContent())
                     .sendDate(notificationDetail.notification().getSendDate())
                     .isProcessed(notificationDetail.notification().isProcessed())

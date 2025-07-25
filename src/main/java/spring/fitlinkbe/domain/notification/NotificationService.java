@@ -47,10 +47,29 @@ public class NotificationService {
                         "알림을 찾을 수 없습니다. [notificationId: %d]".formatted(notificationId)));
     }
 
-    public Notification getNotificationByReferenceAndMember(Long refId, Notification.ReferenceType refType, Long memberId) {
-        List<Notification> notifications = notificationRepository.getNotification(refId, refType);
+    public Notification getNotificationByReferenceAndType(
+            Long refId,
+            Notification.ReferenceType refType,
+            Notification.NotificationType notificationType,
+            Long memberId) {
+        List<Notification> notifications = notificationRepository.getNotification(refId, UserRole.TRAINER, refType);
 
-        return notifications.stream().filter(n -> n.getPartnerId().equals(memberId)).findFirst()
+        return notifications.stream()
+                .filter(n -> n.getNotificationType() == notificationType)
+                .filter(n -> n.getPartnerId().equals(memberId))
+                .findFirst()
+                .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
+    }
+
+    public Notification getNotificationByReferenceAndMember(
+            Long refId,
+            Notification.ReferenceType refType,
+            Long memberId) {
+        List<Notification> notifications = notificationRepository.getNotification(refId, UserRole.TRAINER, refType);
+
+        return notifications.stream()
+                .filter(n -> n.getPartnerId().equals(memberId))
+                .findFirst()
                 .orElseThrow(() -> new CustomException(ErrorCode.NOTIFICATION_NOT_FOUND));
     }
 

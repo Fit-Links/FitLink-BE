@@ -292,7 +292,7 @@ public class ReservationFacade {
                 approvedReservation.getReservationId(),
                 approvedReservation.getTrainer().getTrainerId(), criteria.isApprove(), token.getPushToken()));
 
-        // 해당 알림에 대한 읽음 처리
+        // 해당 트레이너 알림에 대한 읽음 처리
         Notification notificationByRef = notificationService.getNotificationByReferenceAndMember(criteria.reservationId(),
                 Notification.ReferenceType.RESERVATION_CANCEL, criteria.memberId());
         notificationService.markAsRead(notificationByRef.getNotificationId());
@@ -351,7 +351,7 @@ public class ReservationFacade {
                 approvedReservation.getReservationId(), approvedReservation.getTrainer().getTrainerId(),
                 criteria.isApprove(), token.getPushToken()));
 
-        // 해당 알림에 대한 읽음 처리
+        // 해당 트레이너 알림에 대한 읽음 처리
         Notification notificationByRef = notificationService.getNotificationByReferenceAndMember(criteria.reservationId(),
                 Notification.ReferenceType.RESERVATION_CHANGE, criteria.memberId());
         notificationService.markAsRead(notificationByRef.getNotificationId());
@@ -385,9 +385,14 @@ public class ReservationFacade {
                     sessionInfo.getSessionInfoId(), user.getTrainerId(), memberToken.getPushToken()));
         }
 
-        // 해당 알림에 대한 읽음 처리
-        Notification notificationByRef = notificationService.getNotificationByReferenceAndMember(criteria.reservationId(),
-                Notification.ReferenceType.RESERVATION_REQUEST, criteria.memberId());
+        // 해당 트레이너 알림에 대한 읽음 처리
+        Notification notificationByRef = notificationService.getNotificationByReferenceAndType(
+                completedSession.getSessionId(),
+                Notification.ReferenceType.SESSION,
+                Notification.NotificationType.SESSION_FINISHED,
+                memberDetail.getMemberId()
+        );
+
         notificationService.markAsRead(notificationByRef.getNotificationId());
 
 
@@ -438,6 +443,7 @@ public class ReservationFacade {
                     session.getSessionId(),
                     r.getMember().getMemberId(),
                     r.getName(),
+                    r.getConfirmDate(),
                     token.getPushToken()));
         });
     }
