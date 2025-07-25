@@ -2614,12 +2614,17 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .status(SESSION_WAITING)
                     .build();
 
-            reservationRepository.saveSession(session);
+            Session savedSession = reservationRepository.saveSession(session).orElseThrow();
 
             // 알림 생성
             PersonalDetail memberDetail = personalDetailRepository.getMemberDetail(1L).orElseThrow();
-            Notification notification = Notification.approveReservation(memberDetail, savedReservation.getReservationId(),
-                    reservation.getReservationDate(), 1L, true);
+            Notification notification = Notification.completeReminderSession(
+                    personalDetail,
+                    savedSession.getSessionId(),
+                    memberDetail.getMemberId(),
+                    memberDetail.getName(),
+                    LocalDateTime.now().plusSeconds(2)
+            );
             notificationRepository.save(notification);
 
             // when
@@ -2638,7 +2643,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(content.sessionId()).isEqualTo(1L);
                 softly.assertThat(content.status()).isEqualTo(Notification.NotificationType.SESSION_COMPLETED.getName());
                 softly.assertThat(notification).isNotNull();
-                softly.assertThat(notification.getNotificationType()).isEqualTo(RESERVATION_APPROVE);
+                softly.assertThat(notification.getNotificationType()).isEqualTo(SESSION_FINISHED);
 
             });
         }
@@ -2675,12 +2680,18 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .status(SESSION_WAITING)
                     .build();
 
-            reservationRepository.saveSession(session);
+            Session savedSession = reservationRepository.saveSession(session).orElseThrow();
 
             // 알림 생성
             PersonalDetail memberDetail = personalDetailRepository.getMemberDetail(1L).orElseThrow();
-            Notification notification = Notification.approveReservation(memberDetail, savedReservation.getReservationId(),
-                    reservation.getReservationDate(), 1L, true);
+            Notification notification = Notification.completeReminderSession(
+                    personalDetail,
+                    savedSession.getSessionId(),
+                    memberDetail.getMemberId(),
+                    memberDetail.getName(),
+                    LocalDateTime.now().plusSeconds(2)
+            );
+
             notificationRepository.save(notification);
 
             // when
@@ -3371,6 +3382,19 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             reservationRepository.saveSession(session);
 
+
+            // 예약 변경 요청 알림 생성
+            Member member = memberRepository.getMember(1L).orElseThrow();
+            Notification notification = Notification.changeRequestReservation(
+                    personalDetail,
+                    savedReservation.getReservationId(),
+                    member.getMemberId(),
+                    member.getName(),
+                    LocalDateTime.now(),
+                    reservationDate
+            );
+            notificationRepository.save(notification);
+
             // when
             ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/change-approve".formatted(1),
                     request,
@@ -3392,7 +3416,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                         Notification.ReferenceType.RESERVATION_CHANGE);
                 softly.assertThat(notifications.get(0)).isNotNull();
                 softly.assertThat(notifications.get(0).getNotificationType()).isEqualTo(
-                        Notification.NotificationType.RESERVATION_CHANGE_REQUEST_APPROVED);
+                        Notification.NotificationType.RESERVATION_CHANGE_REQUEST);
             });
         }
 
@@ -3434,6 +3458,18 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             reservationRepository.saveSession(session);
 
+            // 예약 변경 요청 알림 생성
+            Member member = memberRepository.getMember(1L).orElseThrow();
+            Notification notification = Notification.changeRequestReservation(
+                    personalDetail,
+                    savedReservation.getReservationId(),
+                    member.getMemberId(),
+                    member.getName(),
+                    LocalDateTime.now(),
+                    reservationDate
+            );
+            notificationRepository.save(notification);
+
             // when
             ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/change-approve".formatted(1),
                     request,
@@ -3455,7 +3491,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                         Notification.ReferenceType.RESERVATION_CHANGE);
                 softly.assertThat(notifications.get(0)).isNotNull();
                 softly.assertThat(notifications.get(0).getNotificationType()).isEqualTo(
-                        Notification.NotificationType.RESERVATION_CHANGE_REQUEST_REFUSED);
+                        Notification.NotificationType.RESERVATION_CHANGE_REQUEST);
             });
         }
 
@@ -3491,6 +3527,18 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             Member member2 = testDataHandler.createMember("하하");
             testDataHandler.createTokenInfo(member2);
+
+            // 예약 변경 요청 알림 생성
+            Member member = memberRepository.getMember(1L).orElseThrow();
+            Notification notification = Notification.changeRequestReservation(
+                    personalDetail,
+                    reservation1.getReservationId(),
+                    member.getMemberId(),
+                    member.getName(),
+                    LocalDateTime.now(),
+                    reservationDate
+            );
+            notificationRepository.save(notification);
 
             // 다른 예약 대기 상태 예약 생성
             Reservation reservation2 = Reservation.builder()
@@ -3531,7 +3579,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                         Notification.ReferenceType.RESERVATION_CHANGE);
                 softly.assertThat(notifications.get(0)).isNotNull();
                 softly.assertThat(notifications.get(0).getNotificationType()).isEqualTo(
-                        Notification.NotificationType.RESERVATION_CHANGE_REQUEST_APPROVED);
+                        Notification.NotificationType.RESERVATION_CHANGE_REQUEST);
 
                 // 거절 알림이 잘 생성됐는지 확인
                 List<Notification> notifications2 = notificationRepository.getNotification(savedReservation2.getReservationId(),
@@ -3671,6 +3719,19 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             reservationRepository.saveSession(session);
 
+            // 예약 취소 요청 알림 생성
+            Member member = memberRepository.getMember(1L).orElseThrow();
+            Notification notification = Notification.cancelRequestReservation(
+                    personalDetail,
+                    savedReservation.getReservationId(),
+                    member.getMemberId(),
+                    member.getName(),
+                    LocalDateTime.now(),
+                    "개인 사유",
+                    Notification.Reason.RESERVATION_CANCEL
+            );
+            notificationRepository.save(notification);
+
             // when
             ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel-approve".formatted(1),
                     request,
@@ -3697,7 +3758,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                         Notification.ReferenceType.RESERVATION_CANCEL);
                 softly.assertThat(notifications.get(0)).isNotNull();
                 softly.assertThat(notifications.get(0).getNotificationType()).isEqualTo(
-                        Notification.NotificationType.RESERVATION_CANCEL_REQUEST_APPROVED);
+                        Notification.NotificationType.RESERVATION_CANCEL);
             });
         }
 
@@ -3736,6 +3797,19 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
 
             reservationRepository.saveSession(session);
 
+            // 예약 취소 요청 알림 생성
+            Member member = memberRepository.getMember(1L).orElseThrow();
+            Notification notification = Notification.cancelRequestReservation(
+                    personalDetail,
+                    savedReservation.getReservationId(),
+                    member.getMemberId(),
+                    member.getName(),
+                    LocalDateTime.now(),
+                    "개인 사유",
+                    Notification.Reason.RESERVATION_CANCEL
+            );
+            notificationRepository.save(notification);
+
             // when
             ExtractableResponse<Response> result = post(LOCAL_HOST + port + PATH + "/%s/cancel-approve".formatted(1),
                     request,
@@ -3757,7 +3831,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                         Notification.ReferenceType.RESERVATION_CANCEL);
                 softly.assertThat(notifications.get(0)).isNotNull();
                 softly.assertThat(notifications.get(0).getNotificationType()).isEqualTo(
-                        Notification.NotificationType.RESERVATION_CANCEL_REQUEST_REFUSED);
+                        Notification.NotificationType.RESERVATION_CANCEL);
             });
         }
 
