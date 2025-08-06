@@ -3355,6 +3355,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+            LocalDateTime changeDate = LocalDateTime.now().plusDays(2);
 
             ReservationRequestDto.ChangeApproval request = ReservationRequestDto.ChangeApproval
                     .builder()
@@ -3368,6 +3369,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
                     .reservationDates(List.of(reservationDate))
+                    .changeDate(changeDate)
                     .status(RESERVATION_CHANGE_REQUEST)
                     .createdAt(LocalDateTime.now().plusSeconds(3))
                     .build();
@@ -3431,6 +3433,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+            LocalDateTime changeDate = LocalDateTime.now().plusDays(2);
 
             ReservationRequestDto.ChangeApproval request = ReservationRequestDto.ChangeApproval
                     .builder()
@@ -3444,6 +3447,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
                     .reservationDates(List.of(reservationDate))
+                    .changeDate(changeDate)
                     .status(RESERVATION_CHANGE_REQUEST)
                     .createdAt(LocalDateTime.now().plusSeconds(3))
                     .build();
@@ -3506,6 +3510,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     personalDetail.getPersonalDetailId(), personalDetail.getUserRole());
 
             LocalDateTime reservationDate = LocalDateTime.now().plusDays(1);
+            LocalDateTime changeDate = LocalDateTime.now().plusDays(2);
 
             ReservationRequestDto.ChangeApproval request = ReservationRequestDto.ChangeApproval
                     .builder()
@@ -3519,6 +3524,7 @@ public class ReservationIntegrationTest extends BaseIntegrationTest {
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
                     .reservationDates(List.of(reservationDate))
+                    .changeDate(changeDate)
                     .status(RESERVATION_CHANGE_REQUEST)
                     .createdAt(LocalDateTime.now().plusSeconds(3))
                     .build();

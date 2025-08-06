@@ -167,6 +167,7 @@ public class Reservation {
 
         this.confirmDate = isApprove ? this.changeDate : null;
         this.status = isApprove ? RESERVATION_APPROVED : RESERVATION_CHANGE_REQUEST_REFUSED;
+        this.reservationDates = List.of(this.changeDate); // 임시 조치
     }
 
 
