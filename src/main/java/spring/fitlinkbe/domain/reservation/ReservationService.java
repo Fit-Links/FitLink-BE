@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.producer.EventTopic;
@@ -15,19 +16,16 @@ import spring.fitlinkbe.domain.reservation.event.GenerateFixedReservationEvent;
 import spring.fitlinkbe.domain.reservation.strategy.cancel.ReservationCancelStrategy;
 import spring.fitlinkbe.domain.trainer.Trainer;
 import spring.fitlinkbe.support.security.SecurityUser;
+import spring.fitlinkbe.support.utils.DateUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.RESERVATION_WAITING_MEMBERS_EMPTY;
 import static spring.fitlinkbe.domain.common.exception.ErrorCode.SESSION_CREATE_FAILED;
 import static spring.fitlinkbe.domain.reservation.Reservation.Status;
-import static spring.fitlinkbe.domain.reservation.Reservation.Status.DISABLED_TIME_RESERVATION;
-import static spring.fitlinkbe.domain.reservation.Reservation.Status.RESERVATION_WAITING;
+import static spring.fitlinkbe.domain.reservation.Reservation.Status.*;
 import static spring.fitlinkbe.domain.reservation.Reservation.getEndDate;
 import static spring.fitlinkbe.domain.reservation.Session.Status.SESSION_WAITING;
 
@@ -48,6 +46,16 @@ public class ReservationService {
         LocalDateTime startDate = command.date().atStartOfDay();
         LocalDateTime endDate = getEndDate(startDate, command.role());
         List<Reservation> reservations = reservationRepository.getReservations(command.role(), command.userId());
+
+        return reservations.stream()
+                .filter(reservation -> reservation.isReservationInRange(startDate, endDate))
+                .toList();
+    }
+
+    public List<Reservation> getTrainerReservations(LocalDate date, Long trainerId) {
+        LocalDateTime startDate = date.atStartOfDay();
+        LocalDateTime endDate = DateUtils.getTwoWeekAfterDate(startDate);
+        List<Reservation> reservations = reservationRepository.getReservations(UserRole.TRAINER, trainerId);
 
         return reservations.stream()
                 .filter(reservation -> reservation.isReservationInRange(startDate, endDate))
@@ -78,6 +86,16 @@ public class ReservationService {
 
     @Transactional
     public Reservation setDisabledReservation(ReservationCommand.SetDisabledTime command) {
+        List<Reservation> reservationsWithDisabledTimeStatus = reservationRepository.getReservationsWithDisabledTimeStatus(command.trainerId());
+
+        boolean hasMatchedDate = reservationsWithDisabledTimeStatus.stream()
+                .flatMap(reservation -> reservation.getReservationDates().stream())
+                .anyMatch(date -> date.isEqual(command.date()));
+
+        if (hasMatchedDate) {
+            throw new CustomException(ErrorCode.DISABLE_DATE_EXISTS);
+        }
+
         Reservation reservation = Reservation.builder()
                 .trainer(Trainer.builder().trainerId(command.trainerId()).build())
                 .reservationDates(List.of(command.date()))
@@ -317,6 +335,34 @@ public class ReservationService {
         return reservationRepository.saveReservations(releaseFixedReservations);
     }
 
+    @Transactional
+    public void cancelLastFixedReservation(Long memberId, String message) {
+        List<Reservation> fixedReservations = reservationRepository.getFixedReservations(memberId);
+
+        if (!fixedReservations.isEmpty()) {
+            Reservation lastFixedReservation = fixedReservations.get(fixedReservations.size() - 1);
+            lastFixedReservation.cancel(message);
+            reservationRepository.saveReservation(lastFixedReservation)
+                    .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_IS_FAILED,
+                            "고정 예약 취소에 실패하였습니다."));
+
+            Session session = reservationRepository.getSession(lastFixedReservation.getReservationId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.SESSION_NOT_FOUND,
+                            "세션 정보를 찾을 수 없습니다. [reservationId: %d]".formatted(lastFixedReservation.getReservationId())));
+            session.cancel("고정 예약 취소 요청으로 세션이 최소되었습니다");
+            reservationRepository.saveSession(session);
+        }
+    }
+
+    public List<Reservation> getInProgressReservations() {
+        List<Reservation> reservations = reservationRepository.getReservations();
+
+        return reservations.stream()
+                .filter(r -> r.getStatus() == RESERVATION_APPROVED)
+                .filter(r -> r.getConfirmDate().getHour() == LocalDateTime.now().getHour())
+                .toList();
+    }
+
     /**
      * Related Session
      */
@@ -379,6 +425,22 @@ public class ReservationService {
     public void checkConfirmedReservationExistOrThrow(Long trainerId, LocalDateTime checkDate) {
         if (reservationRepository.isConfirmedReservationExists(trainerId, checkDate)) {
             throw new CustomException(ErrorCode.CONFIRMED_RESERVATION_EXISTS);
+        }
+    }
+
+    /**
+     * 해당 날짜가 예약 불가 설정된 시간인지 확인
+     */
+    public void checkDisabledReservationExistOrThrow(Long trainerId, List<LocalDateTime> checkDates) {
+        Set<LocalDateTime> targetDateSet = new HashSet<>(checkDates);
+        List<Reservation> reservationsWithDisabledTimeStatus = reservationRepository.getReservationsWithDisabledTimeStatus(trainerId);
+
+        boolean hasIntersectionDate = reservationsWithDisabledTimeStatus.stream()
+                .flatMap(reservation -> reservation.getReservationDates().stream())
+                .anyMatch(targetDateSet::contains);
+
+        if (hasIntersectionDate) {
+            throw new CustomException(ErrorCode.DISABLE_DATE_EXISTS);
         }
     }
 }

@@ -33,6 +33,7 @@ public class NotificationRepositoryCustomImpl implements NotificationRepositoryC
                         eqPartnerId(partnerId),
                         likeKeyword(keyword)
                 )
+                .orderBy(notificationEntity.sendDate.desc())
                 .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize())
                 .fetch();

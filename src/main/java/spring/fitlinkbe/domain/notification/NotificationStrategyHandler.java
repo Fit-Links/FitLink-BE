@@ -31,6 +31,7 @@ public class NotificationStrategyHandler {
         strategyMap.put(Notification.NotificationType.RESERVATION_REQUESTED, this::handleRequestReservation);
         strategyMap.put(Notification.NotificationType.SESSION_COMPLETED, this::handleCompleteSession);
         strategyMap.put(Notification.NotificationType.SESSION_DEDUCTED, this::handleDeductSession);
+        strategyMap.put(Notification.NotificationType.SESSION_FINISHED, this::handleCompleteReminderSession);
         strategyMap.put(Notification.NotificationType.RESERVATION_CHANGE_REQUEST, this::handleChangeRequestReservation);
         strategyMap.put(Notification.NotificationType.RESERVATION_CANCEL_REQUEST_APPROVED, this::handleCancelApproveReservation);
         strategyMap.put(Notification.NotificationType.RESERVATION_CANCEL_REQUEST_REFUSED, this::handleCancelApproveReservation);
@@ -100,6 +101,12 @@ public class NotificationStrategyHandler {
     private Notification handleCompleteSession(NotificationRequest request) {
         NotificationCommand.CompleteSession dto = (NotificationCommand.CompleteSession) request;
         return Notification.completeSession(dto.trainerDetail(), dto.sessionId(), dto.memberId(), dto.name());
+    }
+
+    private Notification handleCompleteReminderSession(NotificationRequest request) {
+        NotificationCommand.SessionCompleteReminder dto = (NotificationCommand.SessionCompleteReminder) request;
+        return Notification.completeReminderSession(dto.trainerDetail(), dto.sessionId(), dto.memberId(), dto.name(),
+                dto.reservationDate());
     }
 
     private Notification handleDeductSession(NotificationRequest request) {

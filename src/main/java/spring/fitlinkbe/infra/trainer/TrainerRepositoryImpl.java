@@ -98,6 +98,11 @@ public class TrainerRepositoryImpl implements TrainerRepository {
     }
 
     @Override
+    public boolean isDayOffExist(Long trainerId, LocalDate dayOffDate) {
+        return dayOffJpaRepository.existsByTrainer_TrainerIdAndDayOffDateIs(trainerId, dayOffDate);
+    }
+
+    @Override
     public List<DayOff> saveAllDayOffs(List<DayOff> dayOffs) {
         List<DayOffEntity> entities = dayOffs.stream()
                 .map(DayOffEntity::from)

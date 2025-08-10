@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import spring.fitlinkbe.domain.common.enums.UserRole;
-import spring.fitlinkbe.domain.common.exception.CustomException;
-import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
@@ -86,6 +84,10 @@ public class PersonalDetail {
         return trainerId == null ? MEMBER : TRAINER;
     }
 
+    public Long getUserId() {
+        return trainerId == null ? memberId : trainerId;
+    }
+
     public void updateName(String name) {
         this.name = name;
     }
@@ -95,15 +97,19 @@ public class PersonalDetail {
     }
 
     public void verifySnsEmail(PhoneNumber phoneNumber) {
-        if (this.status != Status.REQUIRED_SMS) {
-            throw new CustomException(ErrorCode.USER_STATUS_NOT_ALLOWED);
-        }
         this.phoneNumber = phoneNumber;
-        this.status = Status.REQUIRED_REGISTER;
+
+        if (this.status == Status.REQUIRED_SMS) {
+            this.status = Status.REQUIRED_REGISTER;
+        }
     }
 
     public void updateProfile(String uploadFilePath) {
         this.profilePictureUrl = uploadFilePath;
+    }
+
+    public void deleteProfile() {
+        this.profilePictureUrl = null;
     }
 
     public enum Gender {

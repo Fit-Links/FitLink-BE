@@ -70,4 +70,22 @@ public class AttachmentFacade {
             trainerService.saveTrainer(trainer);
         }
     }
+
+    @Transactional
+    public void deleteAttachment(Long personalDetailId) {
+        PersonalDetail personalDetail = authService.getPersonalDetailById(personalDetailId);
+        if (personalDetail.getUserRole() == UserRole.MEMBER) {
+            Member member = memberService.getMember(personalDetail.getMemberId());
+            member.deleteProfile();
+            memberService.saveMember(member);
+        } else {
+            Trainer trainer = trainerService.getTrainerInfo(personalDetail.getTrainerId());
+            trainer.deleteProfile();
+            trainerService.saveTrainer(trainer);
+        }
+
+        attachmentService.deleteAttachment(personalDetailId);
+        personalDetail.deleteProfile();
+        authService.savePersonalDetail(personalDetail);
+    }
 }

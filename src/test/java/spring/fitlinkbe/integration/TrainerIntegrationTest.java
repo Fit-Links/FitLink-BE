@@ -707,6 +707,7 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             testDataHandler.createTokenInfo(member);
             PersonalDetail personalDetail = testDataHandler.getMemberPersonalDetail(member.getMemberId());
             testDataHandler.connectMemberAndTrainer(member, trainer);
+            testDataHandler.createSessionInfo(member, trainer);
 
             // when
             // 트레이너가 회원 연결 해제 요청을 한다면
@@ -730,6 +731,9 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
 
                 Notification notification = notificationRepository.getNotification(personalDetail.getPersonalDetailId(), Notification.NotificationType.DISCONNECT_TRAINER);
                 softly.assertThat(notification).isNotNull();
+
+                Optional<SessionInfo> updatedSessionInfo = sessionInfoRepository.getSessionInfoWithNoLock(trainer.getTrainerId(), member.getMemberId());
+                softly.assertThat(updatedSessionInfo).isNotEmpty();
             });
         }
 
@@ -1071,6 +1075,8 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // 수업 가능 시간 생성
             LocalDate now = LocalDate.now();
             createAvailableTimes(trainer, now);
+            testDataHandler.createDayOff(trainer, LocalDate.now().plusDays(3));
+            testDataHandler.createDayOff(trainer, LocalDate.now().plusDays(4));
 
             // when
             // 트레이너가 수업 가능 시간 조회 요청을 한다면
@@ -1091,6 +1097,8 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(availableTimes.currentSchedules()).isNotNull();
                 softly.assertThat(availableTimes.currentSchedules().schedules().size()).isEqualTo(4);
                 softly.assertThat(availableTimes.currentSchedules().applyAt()).isEqualTo(now);
+
+                softly.assertThat(availableTimes.dayOffs().size()).isEqualTo(2);
             });
         }
 
@@ -1157,19 +1165,19 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // when
             // 트레이너가 멤버 연결 요청 처리 요청을 한다면
             String url = URL.replace("{notificationId}", notification.getNotificationId().toString());
-            ExtractableResponse<Response> result = post(url, writeValueAsString(new ConnectRequestDecisionDto(true)), token);
+            ExtractableResponse<Response> result = post(url, writeValueAsString(new ConnectRequestDecisionDto.Request(true)), token);
 
             // then
             // 멤버 연결 요청 처리 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<ConnectRequestDecisionDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
 
                 softly.assertThat(response).isNotNull();
                 softly.assertThat(response.success()).isTrue();
                 softly.assertThat(response.status()).isEqualTo(204);
-                softly.assertThat(response.data()).isNull();
+                softly.assertThat(response.data().memberId()).isEqualTo(member.getMemberId());
 
                 Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT_RESPONSE);
                 softly.assertThat(createdNotification).isNotNull();
@@ -1179,6 +1187,57 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
                 softly.assertThat(sessionInfo.getRemainingCount()).isEqualTo(0);
                 softly.assertThat(sessionInfo.getTotalCount()).isEqualTo(0);
 
+                ConnectingInfo updatedConnectingInfo = connectingInfoRepository.findConnectingInfo(trainer.getTrainerId(), member.getMemberId()).get();
+                softly.assertThat(updatedConnectingInfo.getStatus()).isEqualTo(ConnectingInfo.ConnectingStatus.CONNECTED);
+            });
+        }
+
+        @Test
+        @DisplayName("트레이너 멤버 연결 요청 처리 성공 - 이미 세션 정보가 있을 때")
+        void decisionConnectSuccessWithExistingSession() throws Exception {
+            // given
+            // 멤버가 트레이너와 연동한 세션 정보가 이미 있을 때
+            String trainerCode = "AB1423";
+            Trainer trainer = testDataHandler.createTrainer(trainerCode);
+            String token = testDataHandler.createTokenFromTrainer(trainer);
+            Member member = testDataHandler.createMember();
+            PersonalDetail trainerDetail = testDataHandler.getTrainerPersonalDetail(trainer.getTrainerId());
+            PersonalDetail memberDetail = testDataHandler.getMemberPersonalDetail(member.getMemberId());
+            testDataHandler.createToken(memberDetail);
+            ConnectingInfo connectingInfo = testDataHandler.createConnectingInfo(trainer, member);
+
+            Notification notification = testDataHandler.saveNotification(
+                    Notification.connectRequest(trainerDetail, member.getMemberId(),
+                            member.getName(), connectingInfo.getConnectingInfoId())
+            );
+
+            // 세션 정보 생성
+            SessionInfo sessionInfo = testDataHandler.createSessionInfo(member, trainer);
+
+            // when
+            // 트레이너가 멤버 연결 요청 처리 요청을 한다면
+            String url = URL.replace("{notificationId}", notification.getNotificationId().toString());
+            ExtractableResponse<Response> result = post(url, writeValueAsString(new ConnectRequestDecisionDto.Request(true)), token);
+
+            // then
+            // 멤버 연결 요청 처리 성공한다, 세션 정보는 새로 생성하지 않는다
+            SoftAssertions.assertSoftly(softly -> {
+                softly.assertThat(result.statusCode()).isEqualTo(200);
+                ApiResultResponse<ConnectRequestDecisionDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                });
+
+                softly.assertThat(response).isNotNull();
+                softly.assertThat(response.success()).isTrue();
+                softly.assertThat(response.status()).isEqualTo(204);
+                softly.assertThat(response.data().memberId()).isEqualTo(member.getMemberId());
+                softly.assertThat(response.data().sessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
+
+                Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT_RESPONSE);
+                softly.assertThat(createdNotification).isNotNull();
+
+                Optional<SessionInfo> updatedSessionInfo = sessionInfoRepository.getSessionInfoWithNoLock(trainer.getTrainerId(), member.getMemberId());
+                softly.assertThat(updatedSessionInfo).isNotEmpty();
+                softly.assertThat(updatedSessionInfo.get().getSessionInfoId()).isEqualTo(sessionInfo.getSessionInfoId());
 
                 ConnectingInfo updatedConnectingInfo = connectingInfoRepository.findConnectingInfo(trainer.getTrainerId(), member.getMemberId()).get();
                 softly.assertThat(updatedConnectingInfo.getStatus()).isEqualTo(ConnectingInfo.ConnectingStatus.CONNECTED);
@@ -1207,19 +1266,21 @@ public class TrainerIntegrationTest extends BaseIntegrationTest {
             // when
             // 트레이너가 멤버 연결 요청 처리 요청을 한다면
             String url = URL.replace("{notificationId}", notification.getNotificationId().toString());
-            ExtractableResponse<Response> result = post(url, writeValueAsString(new ConnectRequestDecisionDto(false)), token);
+            ExtractableResponse<Response> result = post(url, writeValueAsString(new ConnectRequestDecisionDto.Request(false)), token);
 
             // then
             // 멤버 연결 요청 처리 성공한다
             SoftAssertions.assertSoftly(softly -> {
                 softly.assertThat(result.statusCode()).isEqualTo(200);
-                ApiResultResponse<Object> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
+                ApiResultResponse<ConnectRequestDecisionDto.Response> response = readValue(result.body().jsonPath().prettify(), new TypeReference<>() {
                 });
 
                 softly.assertThat(response).isNotNull();
                 softly.assertThat(response.success()).isTrue();
                 softly.assertThat(response.status()).isEqualTo(204);
-                softly.assertThat(response.data()).isNull();
+                softly.assertThat(response.data().memberId()).isEqualTo(member.getMemberId());
+                softly.assertThat(response.data().sessionInfoId()).isNull();
+
 
                 Notification createdNotification = notificationRepository.getNotification(memberDetail.getPersonalDetailId(), Notification.NotificationType.CONNECT_RESPONSE);
                 softly.assertThat(createdNotification).isNotNull();

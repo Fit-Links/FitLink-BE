@@ -48,6 +48,25 @@ public class ReservationController {
     }
 
     /**
+     * 트레이너 예약 목록 조회
+     *
+     * @param date 예약 정보를 받고 싶은 date 정보
+     * @param user 인증된 유저 정보
+     * @return ApiResultResponse 예약 목록을 반환한다.
+     */
+    @RoleCheck(allowedRoles = {UserRole.MEMBER})
+    @GetMapping("/trainers")
+    public ApiResultResponse<List<ReservationResponseDto.Summary>> getTrainerReservations(@RequestParam LocalDate date,
+                                                                                          @Login SecurityUser user) {
+
+        List<Reservation> result = reservationFacade.getTrainerReservations(date, user);
+
+        return ApiResultResponse.ok(result.stream()
+                .map(ReservationResponseDto.Summary::of)
+                .toList());
+    }
+
+    /**
      * 예약 상세 조회
      *
      * @param reservationId reservationId

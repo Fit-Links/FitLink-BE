@@ -2,6 +2,7 @@ package spring.fitlinkbe.domain.common;
 
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ConnectingInfoRepository {
@@ -27,4 +28,8 @@ public interface ConnectingInfoRepository {
     Optional<ConnectingInfo> findConnectingInfo(Long trainerId, Long memberId);
 
     ConnectingInfo getConnectedInfoById(Long connectingInfoId);
+
+    List<ConnectingInfo> findConnectingInfos(Long memberId);
+
+    List<ConnectingInfo> getConnectingInfos(Long trainerId);
 }

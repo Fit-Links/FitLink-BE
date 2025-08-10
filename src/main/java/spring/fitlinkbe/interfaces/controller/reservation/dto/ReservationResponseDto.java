@@ -40,6 +40,7 @@ public class ReservationResponseDto {
     @Builder(toBuilder = true)
     public record Summary(Long reservationId, Long sessionInfoId,
                           boolean isDayOff, DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates,
+                          LocalDateTime confirmDate,
                           String status, MemberInfo memberInfo) {
 
         public static ReservationResponseDto.Summary of(Reservation reservation) {
@@ -51,20 +52,21 @@ public class ReservationResponseDto {
                     .isDayOff(reservation.isDayOff())
                     .dayOfWeek(reservation.getDayOfWeek())
                     .reservationDates(reservation.getReservationDates())
+                    .confirmDate(reservation.getConfirmDate())
                     .status(reservation.getStatus().getName())
                     .memberInfo(reservation.isReservationNotAllowed() ? null :
                             new MemberInfo(reservation.getMember().getMemberId(), reservation.getName()))
                     .build();
         }
 
-        private record MemberInfo(Long memberId, String name) {
+        public record MemberInfo(Long memberId, String name) {
 
         }
     }
 
     @Builder(toBuilder = true)
     public record Detail(Long reservationId, Long sessionId,
-                         DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates,
+                         DayOfWeek dayOfWeek, List<LocalDateTime> reservationDates, LocalDateTime confirmDate,
                          Reservation.Status status, PersonalInfo memberInfo) {
 
         public static ReservationResponseDto.Detail of(ReservationResult.ReservationDetail result) {
@@ -74,6 +76,7 @@ public class ReservationResponseDto {
                     .sessionId(result.session() != null ? result.session().getSessionId() : null)
                     .dayOfWeek(result.reservation().getDayOfWeek())
                     .reservationDates(result.reservation().getReservationDates())
+                    .confirmDate(result.reservation().getConfirmDate())
                     .status(result.reservation().getStatus())
                     .memberInfo(new PersonalInfo(result.personalDetail().getMemberId(),
                             result.reservation().getName(),

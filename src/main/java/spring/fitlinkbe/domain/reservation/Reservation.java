@@ -61,8 +61,12 @@ public class Reservation {
     }
 
     public static List<Reservation> createFixedReservations(List<Reservation> baseReservations, int remainingCount) {
-        List<Reservation> generatedReservations = new ArrayList<>();
+
         List<Reservation> currentReservations = new ArrayList<>(baseReservations);
+        List<Reservation> firstReservations = currentReservations.stream()
+                .limit(remainingCount)
+                .toList();
+        List<Reservation> generatedReservations = new ArrayList<>(firstReservations);
 
         while (generatedReservations.size() < remainingCount) {
             int remainingToCreate = remainingCount - generatedReservations.size();
@@ -163,6 +167,7 @@ public class Reservation {
 
         this.confirmDate = isApprove ? this.changeDate : null;
         this.status = isApprove ? RESERVATION_APPROVED : RESERVATION_CHANGE_REQUEST_REFUSED;
+        this.reservationDates = List.of(this.changeDate); // 임시 조치
     }
 
 

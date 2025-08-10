@@ -93,6 +93,12 @@ public class TrainerService {
         }
     }
 
+    public void checkDayOffExistOrThrow(Long trainerId, LocalDate dayOffDate) {
+        if (trainerRepository.isDayOffExist(trainerId, dayOffDate)) {
+            throw new CustomException(ErrorCode.DAY_OFF_EXISTS);
+        }
+    }
+
     public List<DayOff> saveAllDayOffs(List<DayOff> dayOffs) {
         return trainerRepository.saveAllDayOffs(dayOffs);
     }
@@ -120,6 +126,10 @@ public class TrainerService {
         return connectingInfoRepository.getConnectingInfo(memberId, trainerId);
     }
 
+    public List<ConnectingInfo> getConnectingInfos(Long trainerId) {
+        return connectingInfoRepository.getConnectingInfos(trainerId);
+    }
+
     public ConnectingInfo getConnectingInfo(Long connectingInfoId) {
         return connectingInfoRepository.getConnectedInfoById(connectingInfoId);
     }
@@ -128,11 +138,12 @@ public class TrainerService {
         connectingInfoRepository.save(connectingInfo);
     }
 
-    public void createSessionInfo(Trainer trainer, Member member) {
+    public SessionInfo createSessionInfo(Trainer trainer, Member member) {
         SessionInfo sessionInfo = SessionInfo.builder()
                 .trainer(trainer)
                 .member(member)
                 .build();
-        sessionInfoRepository.saveSessionInfo(sessionInfo);
+        return sessionInfoRepository.saveSessionInfo(sessionInfo)
+                .orElseThrow(() -> new CustomException(ErrorCode.SESSION_INFO_SAVE_FAILED));
     }
 }

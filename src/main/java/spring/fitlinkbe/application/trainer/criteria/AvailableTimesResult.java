@@ -26,11 +26,13 @@ public class AvailableTimesResult {
 
     @Builder
     public record CurrentAvailableTimesResponse(
-            ScheduledChangeResponse currentSchedules
+            ScheduledChangeResponse currentSchedules,
+            List<LocalDate> dayOffs
     ) {
-        public static CurrentAvailableTimesResponse of(List<AvailableTime> currentSchedules) {
+        public static CurrentAvailableTimesResponse of(List<AvailableTime> currentSchedules, List<LocalDate> dayOffs) {
             return CurrentAvailableTimesResponse.builder()
                     .currentSchedules(ScheduledChangeResponse.from(currentSchedules))
+                    .dayOffs(dayOffs)
                     .build();
         }
     }

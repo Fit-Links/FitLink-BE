@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import spring.fitlinkbe.domain.common.exception.CustomException;
+import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.member.Member;
 import spring.fitlinkbe.domain.trainer.Trainer;
 
@@ -50,6 +52,17 @@ public class ConnectingInfo {
         } else {
             this.status = ConnectingStatus.REJECTED;
         }
+    }
+
+    public boolean isNotDisConnected() {
+        return this.status != ConnectingStatus.DISCONNECTED && this.status != ConnectingStatus.REJECTED;
+    }
+
+    public void requestConnect() {
+        if (isNotDisConnected()) {
+            throw new CustomException(ErrorCode.CONNECT_AVAILABLE_AFTER_DISCONNECTED);
+        }
+        this.status = ConnectingStatus.REQUESTED;
     }
 
     public enum ConnectingStatus {

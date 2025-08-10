@@ -7,6 +7,7 @@ import spring.fitlinkbe.domain.common.exception.CustomException;
 import spring.fitlinkbe.domain.common.exception.ErrorCode;
 import spring.fitlinkbe.domain.common.model.ConnectingInfo;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -45,5 +46,20 @@ public class ConnectingInfoRepositoryImpl implements ConnectingInfoRepository {
         return connectingInfoJpaRepository.findById(connectingInfoId)
                 .map(ConnectingInfoEntity::toDomain)
                 .orElseThrow(() -> new CustomException(ErrorCode.CONNECTING_INFO_NOT_FOUND));
+    }
+
+    @Override
+    public List<ConnectingInfo> findConnectingInfos(Long memberId) {
+        return connectingInfoJpaRepository.findByMember_MemberId(memberId)
+                .stream()
+                .map(ConnectingInfoEntity::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<ConnectingInfo> getConnectingInfos(Long trainerId) {
+        return connectingInfoJpaRepository.findAllByTrainer_TrainerId(trainerId).stream()
+                .map(ConnectingInfoEntity::toDomain)
+                .toList();
     }
 }

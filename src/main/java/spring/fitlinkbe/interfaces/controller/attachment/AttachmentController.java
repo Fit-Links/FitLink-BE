@@ -3,12 +3,10 @@ package spring.fitlinkbe.interfaces.controller.attachment;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.attachment.AttachmentFacade;
 import spring.fitlinkbe.application.attachment.dto.PresignedUrlResult;
+import spring.fitlinkbe.domain.common.model.PersonalDetail;
 import spring.fitlinkbe.interfaces.controller.attachment.dto.AttachmentDto;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
 import spring.fitlinkbe.support.argumentresolver.Login;
@@ -40,4 +38,13 @@ public class AttachmentController {
         return ApiResultResponse.of(HttpStatus.CREATED, true, null);
     }
 
+    @DeleteMapping("/user-profile")
+    public ApiResultResponse<Object> deleteAttachment(
+            @Login SecurityUser user
+    ) {
+        user.checkUserStatusOrThrow(PersonalDetail.Status.NORMAL);
+        attachmentFacade.deleteAttachment(user.getPersonalDetailId());
+
+        return ApiResultResponse.of(HttpStatus.NO_CONTENT, true, null);
+    }
 }

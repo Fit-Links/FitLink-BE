@@ -18,6 +18,8 @@ public class MemberInfoResult {
     public record Response(
             Long memberId,
             String name,
+            LocalDate birthDate,
+            String phoneNumber,
             Long trainerId,
             String trainerName,
             String trainerPhone,
@@ -28,19 +30,21 @@ public class MemberInfoResult {
             SessionInfoResponse sessionInfo,
             List<WorkoutScheduleResult.Response> workoutSchedules
     ) {
-        public static Response of(Member me, ConnectingInfo connectingInfo,
+        public static Response of(Member member, ConnectingInfo connectingInfo,
                                   SessionInfo sessionInfo, List<WorkoutSchedule> workoutSchedules, List<Reservation> fixedReservations) {
             Trainer trainer = connectingInfo != null ? connectingInfo.getTrainer() : null;
 
             return Response.builder()
-                    .memberId(me.getMemberId())
-                    .name(me.getName())
+                    .memberId(member.getMemberId())
+                    .name(member.getName())
+                    .birthDate(member.getBirthDate())
+                    .phoneNumber(member.getPhoneNumber())
                     .trainerId(trainer != null ? trainer.getTrainerId() : null)
                     .trainerName(trainer != null ? trainer.getName() : null)
                     .trainerPhone(trainer != null ? trainer.getPhoneNumber() : null)
                     .trainerProfileUrl(trainer != null ? trainer.getProfilePictureUrl() : null)
                     .connectingStatus(connectingInfo != null ? connectingInfo.getStatus() : null)
-                    .profilePictureUrl(me.getProfilePictureUrl())
+                    .profilePictureUrl(member.getProfilePictureUrl())
                     .sessionInfo(sessionInfo != null ? SessionInfoResponse.from(sessionInfo) : null)
                     .fixedReservations(fixedReservations.stream().map(ReservationResponse::from).toList())
                     .workoutSchedules(workoutSchedules.stream().map(WorkoutScheduleResult.Response::from).toList())

@@ -54,7 +54,6 @@ public class AuthController {
     public ApiResultResponse<AuthDto.EmailAuthTokenResponse> getEmailVerificationToken(
             @Login SecurityUser user
     ) {
-        user.checkUserStatusOrThrow(PersonalDetail.Status.REQUIRED_SMS);
         String verificationToken = authFacade.getEmailVerificationToken(user.getPersonalDetailId());
 
         return ApiResultResponse.ok(new AuthDto.EmailAuthTokenResponse(verificationToken));
@@ -68,7 +67,7 @@ public class AuthController {
         PersonalDetail.Status status = user.getStatus();
         String accessToken = authFacade.createAccessToken(user.getPersonalDetailId(), user.getUserRole(), status);
 
-        return ApiResultResponse.ok(new AuthDto.UserStatusResponse(status, accessToken));
+        return ApiResultResponse.ok(new AuthDto.UserStatusResponse(status, user.getUserRole(), accessToken));
     }
 
     @PostMapping("/access-token")

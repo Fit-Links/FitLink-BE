@@ -578,6 +578,7 @@ class ReservationServiceTest {
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
                     .reservationDates(List.of(reservationDate))
+                    .changeDate(LocalDateTime.now().plusDays(2))
                     .status(RESERVATION_CHANGE_REQUEST)
                     .build();
 
@@ -586,6 +587,7 @@ class ReservationServiceTest {
                     .trainer(Trainer.builder().trainerId(1L).build())
                     .member(Member.builder().memberId(1L).build())
                     .reservationDates(List.of(reservationDate))
+                    .changeDate(LocalDateTime.now().plusDays(2))
                     .status(RESERVATION_APPROVED)
                     .build();
 

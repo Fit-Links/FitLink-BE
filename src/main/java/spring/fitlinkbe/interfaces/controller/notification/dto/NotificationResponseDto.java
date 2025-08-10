@@ -1,6 +1,7 @@
 package spring.fitlinkbe.interfaces.controller.notification.dto;
 
 import lombok.Builder;
+import spring.fitlinkbe.application.notification.criteria.NotificationResult;
 import spring.fitlinkbe.domain.notification.Notification;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ public class NotificationResponseDto {
     public record Summary(
             Long notificationId,
             String type,
+            String notificationType,
             String content,
             LocalDateTime sendDate,
             boolean isProcessed
@@ -23,6 +25,7 @@ public class NotificationResponseDto {
             return Summary.builder()
                     .notificationId(notification.getNotificationId())
                     .type(notification.getRefType().getName())
+                    .notificationType(notification.getNotificationType().getName())
                     .content(notification.getContent())
                     .sendDate(notification.getSendDate())
                     .isProcessed(notification.isProcessed())
@@ -35,6 +38,7 @@ public class NotificationResponseDto {
             Long notificationId,
             Long refId,
             String type,
+            String notificationType,
             String content,
             LocalDateTime sendDate,
             boolean isProcessed,
@@ -43,25 +47,43 @@ public class NotificationResponseDto {
     ) {
 
         @Builder(toBuilder = true)
-        public record UserDetail(String name, LocalDate birthDate, String phoneNumber,
+        public record UserDetail(Long userId, String name, LocalDate birthDate, String phoneNumber,
                                  String profilePictureUrl) {
         }
 
-        public static NotificationResponseDto.Detail of(Notification notification) {
+        public static NotificationResponseDto.Detail of(NotificationResult.NotificationDetail notificationDetail) {
 
             return Detail.builder()
-                    .notificationId(notification.getNotificationId())
-                    .refId(notification.getRefId())
-                    .type(notification.getRefType().getName())
-                    .content(notification.getContent())
-                    .sendDate(notification.getSendDate())
-                    .isProcessed(notification.isProcessed())
+                    .notificationId(notificationDetail.notification().getNotificationId())
+                    .refId(notificationDetail.notification().getRefId())
+                    .type(notificationDetail.notification().getRefType().getName())
+                    .notificationType(notificationDetail.notification().getNotificationType().getName())
+                    .content(notificationDetail.notification().getContent())
+                    .sendDate(notificationDetail.notification().getSendDate())
+                    .isProcessed(notificationDetail.notification().isProcessed())
                     .userDetail(UserDetail.builder()
-                            .name(notification.getPersonalDetail().getName())
-                            .birthDate(notification.getPersonalDetail().getBirthDate())
-                            .phoneNumber(notification.getPersonalDetail().getPhoneNumber())
-                            .profilePictureUrl(notification.getPersonalDetail().getProfilePictureUrl())
+                            .userId(notificationDetail.personalDetail().getUserId())
+                            .name(notificationDetail.personalDetail().getName())
+                            .birthDate(notificationDetail.personalDetail().getBirthDate())
+                            .phoneNumber(notificationDetail.personalDetail().getPhoneNumber())
+                            .profilePictureUrl(notificationDetail.personalDetail().getProfilePictureUrl())
                             .build())
+                    .build();
+        }
+    }
+
+    @Builder(toBuilder = true)
+    public record Success(
+            Long notificationId,
+            boolean isProcessed
+
+    ) {
+
+        public static NotificationResponseDto.Success of(Notification notification) {
+
+            return Success.builder()
+                    .notificationId(notification.getNotificationId())
+                    .isProcessed(notification.isProcessed())
                     .build();
         }
     }

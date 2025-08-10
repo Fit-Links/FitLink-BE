@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
 import spring.fitlinkbe.domain.trainer.DayOff;
-import spring.fitlinkbe.infra.common.model.BaseTimeEntity;
 
 import java.time.LocalDate;
 
@@ -14,7 +13,7 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "day_off")
-public class DayOffEntity extends BaseTimeEntity {
+public class DayOffEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long dayOffId;

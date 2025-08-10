@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import spring.fitlinkbe.support.security.AuthTokenProvider;
 import spring.fitlinkbe.support.security.RestAuthenticationEntryPoint;
 import spring.fitlinkbe.support.security.filter.ExceptionHandlerFilter;
 import spring.fitlinkbe.support.security.filter.JwtAuthFilter;
+import spring.fitlinkbe.support.security.handler.CustomOAuth2AuthorizationRequestResolver;
 import spring.fitlinkbe.support.security.handler.CustomOauth2FailureHandler;
 import spring.fitlinkbe.support.security.handler.CustomOauth2SuccessHandler;
 
@@ -49,7 +51,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -66,6 +68,14 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(customOauth2SuccessHandler)
                         .failureHandler(customOauth2FailureHandler)
+                        .authorizationEndpoint(auth -> auth
+                                .authorizationRequestResolver(
+                                        new CustomOAuth2AuthorizationRequestResolver(
+                                                clientRegistrationRepository,
+                                                "/oauth2/authorization"
+                                        )
+                                )
+                        )
                 );
 
         http.addFilterBefore(new JwtAuthFilter(authTokenProvider, personalDetailRepository), UsernamePasswordAuthenticationFilter.class);

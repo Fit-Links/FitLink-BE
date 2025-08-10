@@ -9,6 +9,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import spring.fitlinkbe.application.notification.NotificationFacade;
 import spring.fitlinkbe.application.notification.criteria.NotificationCriteria;
+import spring.fitlinkbe.application.notification.criteria.NotificationResult;
 import spring.fitlinkbe.domain.common.enums.UserRole;
 import spring.fitlinkbe.domain.notification.Notification;
 import spring.fitlinkbe.interfaces.controller.common.dto.ApiResultResponse;
@@ -61,10 +62,24 @@ public class NotificationController {
     public ApiResultResponse<NotificationResponseDto.Detail> getNotificationDetail(@PathVariable("notificationId")
                                                                                    Long notificationId,
                                                                                    @Login SecurityUser user) {
-        Notification result = notificationFacade.getNotificationDetail(notificationId, user);
+        NotificationResult.NotificationDetail result = notificationFacade.getNotificationDetail(notificationId, user);
 
         return ApiResultResponse.ok(NotificationResponseDto.Detail.of(result));
 
+    }
+
+    /**
+     * 알림 읽음 처리
+     *
+     * @param notificationId 읽음 처리할 알림 ID
+     * @return ApiResultResponse 앍음 처리 완료 된 알림 정보를 반환한다.
+     */
+    @PatchMapping("/{notificationId}")
+    public ApiResultResponse<NotificationResponseDto.Success> markAsRead(@PathVariable("notificationId")
+                                                                         Long notificationId) {
+        Notification notification = notificationFacade.markAsRead(notificationId);
+
+        return ApiResultResponse.ok(NotificationResponseDto.Success.of(notification));
     }
 
     /**

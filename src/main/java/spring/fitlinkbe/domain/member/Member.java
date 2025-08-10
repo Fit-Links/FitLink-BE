@@ -58,4 +58,12 @@ public class Member {
     public void updateProfile(String uploadFilePath) {
         this.profilePictureUrl = uploadFilePath;
     }
+
+    public void updatePhoneNumber(PhoneNumber phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void deleteProfile() {
+        this.profilePictureUrl = null;
+    }
 }
